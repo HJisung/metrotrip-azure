@@ -7,6 +7,9 @@
     "types": ["vite/client"],
     "allowArbitraryExtensions": true,
     "skipLibCheck": true,
+    /* stations.json 등 JSON 파일 import 허용 */
+    "resolveJsonModule": true,
+    "strict": true,
 
     /* Bundler mode */
     "moduleResolution": "bundler",
