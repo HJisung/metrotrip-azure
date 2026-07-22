@@ -1,0 +1,11 @@
+# 여러 PC(Windows/macOS)에서 작업하므로 줄바꿈을 저장소 기준(LF)으로 통일한다.
+# 이게 없으면 내용 변경 없이 파일 전체가 diff로 잡힌다.
+* text=auto eol=lf
+
+# 바이너리
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg text
