@@ -67,6 +67,7 @@ MetroTrip — 지하철 역을 선택하면 반경 1km 내 장소를 지도에 �
 
 | 문서 | 내용 |
 |---|---|
+| `docs/HANDOFF.md` | **다른 PC에서 이어받을 때 필요한 현재 상태** — 작업 재개 시 먼저 읽을 것 |
 | `docs/REQUIREMENTS.md` | 전체 요구사항 P0/P1/P2 |
 | `docs/CONVENTIONS.md` | 협업 규칙 |
 | `docs/GIT-GUIDE.md` | Git 사용법 (팀원용) |
