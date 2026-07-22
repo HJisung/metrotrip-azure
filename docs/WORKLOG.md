@@ -15,6 +15,32 @@
 
 ---
 
+## 2026-07-22 — 프론트 1~3단계 (브랜치: `feat/fe-project-setup`)
+- 한 것:
+  - SPEC 1단계 — Vite + React 19 + TypeScript 세팅
+  - SPEC 2단계 — 카카오맵 SDK 연동, 탕정역 기준 지도 표시 (브라우저 확인 완료)
+  - SPEC 3단계 — 1호선 천안·아산 구간 11개 역 데이터 + `src/api/stations.ts`
+- 다음 할 것: SPEC 4~5단계 (역 목록 UI + 클릭 시 지도 이동).
+  건드릴 파일: `src/components/StationList/*`, `src/App.tsx`
+- 막힌 것 / 공유할 것: 아래 카카오 설정 참고
+
+### 카카오 설정 (팀원 각자 필요)
+1. `.env.example`을 복사해 `.env` 생성 → `VITE_KAKAO_MAP_KEY`에 **JavaScript 키** 입력
+   (REST API 키 아님)
+2. 키는 팀에서 공유받아 쓸 것. **각자 새 앱을 만들지 말 것** —
+   카카오맵 무료 쿼터는 계정당 **첫 번째로 활성화한 앱에만** 제공되며,
+   두 번째 앱부터는 비즈월렛(결제수단) 연결이 필요함 (2026-07-21 정책 변경)
+3. 앱 관리자는 `제품 설정 > 카카오맵` 활성화 ON 필요.
+   이게 꺼져 있으면 SDK가 403 (`disabled OPEN_MAP_AND_LOCAL service`)
+4. `유료 API > 일반`의 카카오맵은 **`사용 안 함` 유지** —
+   쿼터 초과 시 과금 대신 호출이 막히므로 학생 프로젝트에 안전
+5. 배포 시 `JavaScript SDK 도메인`에 배포 URL 추가 등록 필요 (현재 `http://localhost:5173`만 등록됨)
+
+### 무료 쿼터 (참고)
+지도 SDK 30만건/일, 키워드·카테고리 장소 검색 각 10만건/일 — 데모에는 충분
+
+---
+
 ## 2026-07-22 — (문서 세팅)
 - 한 것: 저장소 초기 세팅, `.gitignore` 추가, `docs/` 문서 6종 작성 (SPEC / REQUIREMENTS / CONVENTIONS / PRESENTATION / BACKEND-HANDOFF / WORKLOG)
 - 다음 할 것: Vite + React + TS 프로젝트 세팅 (SPEC 구현 순서 1단계)
