@@ -14,6 +14,7 @@
 | 문서 | 언제 보나 |
 |---|---|
 | [docs/GIT-GUIDE.md](docs/GIT-GUIDE.md) | **Git이 처음이라면 여기부터.** 명령어·충돌 해결·사고 복구 |
+| [docs/CLAUDE-CODE-WORKFLOW.md](docs/CLAUDE-CODE-WORKFLOW.md) | Claude Code로 작업하는 흐름과 프롬프트 모음 |
 | [docs/SPEC.md](docs/SPEC.md) | **개발 시작 전 필독.** MVP 범위와 구현 순서 |
 | [docs/CONVENTIONS.md](docs/CONVENTIONS.md) | **작업 시작 전 필독.** 브랜치·커밋·PR·파일 담당 |
 | [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | 전체 요구사항과 P0/P1/P2 단계 구분 |

@@ -96,6 +96,8 @@ docs: MVP 범위에서 다크모드 제외 명시
 | 문서 | 용도 |
 |---|---|
 | [GIT-GUIDE.md](GIT-GUIDE.md) | Git/GitHub 사용법 (명령어, 충돌 해결, 사고 복구) |
+| [CLAUDE-CODE-WORKFLOW.md](CLAUDE-CODE-WORKFLOW.md) | Claude Code 작업 흐름, 프롬프트 모음 |
+| [`CLAUDE.md`](../CLAUDE.md) | Claude Code가 자동으로 읽는 팀 공통 규칙 |
 | [SPEC.md](SPEC.md) | MVP 범위 — 개발의 기준 |
 | [REQUIREMENTS.md](REQUIREMENTS.md) | 전체 요구사항 + 단계 구분 |
 | [CONVENTIONS.md](CONVENTIONS.md) | 이 문서 (협업 규칙) |
@@ -104,6 +106,9 @@ docs: MVP 범위에서 다크모드 제외 명시
 | [WORKLOG.md](WORKLOG.md) | 날짜별 작업 기록 |
 
 ## 7. Claude Code를 쓸 때
+
+> 상세한 작업 흐름과 프롬프트 예시는 [CLAUDE-CODE-WORKFLOW.md](CLAUDE-CODE-WORKFLOW.md) 참고.
+> 저장소 루트의 [`CLAUDE.md`](../CLAUDE.md)는 **Claude Code가 자동으로 읽는 팀 공통 규칙**입니다.
 
 여러 PC에서 각자 Claude Code를 돌리면 **같은 파일을 서로 다르게 고쳐놓는 일**이 생깁니다.
 
