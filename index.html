@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MetroTrip — 지하철 역 주변 관광 추천</title>
+    <!--
+      카카오맵 SDK.
+      %VITE_KAKAO_MAP_KEY% 는 Vite가 빌드 시 .env 값으로 치환한다.
+      autoload=false 로 두고 kakao.maps.load() 안에서 초기화한다 (로드 완료 시점 보장).
+      libraries=services 는 주변 장소 검색(Places)에 필요하다.
+    -->
+    <script
+      src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=%VITE_KAKAO_MAP_KEY%&libraries=services&autoload=false"
+    ></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,43 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+
+.app-header {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text-h);
+}
+
+.app-header p {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--text);
+}
+
+.app-main {
+  flex: 1;
+  /* min-height: 0 이 없으면 flex 자식이 줄어들지 않아 지도가 넘친다 */
+  min-height: 0;
+}
+
+/* 지도는 부모 높이를 꽉 채운다. 높이가 0이면 지도가 아예 보이지 않으므로 주의. */
+.map-view {
+  width: 100%;
+  height: 100%;
+}
+
+.map-error {
+  padding: 1.5rem;
+  color: #b91c1c;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  text-align: left;
+}
