@@ -176,7 +176,13 @@ Git 규칙·검증 규칙·한국어 응답 같은 팀 규칙은 **노트북에�
 
 ---
 
-## 5. 배포 — GitHub Pages
+## 5. 배포 — GitHub Pages ✅ 완료
+
+**배포 주소: https://lellon0403.github.io/MetroTrip/**
+
+`main`에 푸시되면 자동으로 다시 배포됩니다. 아래는 설정 내역과 문제 해결용 기록입니다.
+
+
 
 **Vercel은 로그인이 안 되어 포기했습니다.** (데스크톱·노트북 양쪽에서 복구 코드를 요구함)
 대신 GitHub Pages를 쓰며, 이미 쓰는 GitHub 계정 안에서 끝나므로 새로 로그인할 것이 없습니다.
@@ -189,28 +195,39 @@ Git 규칙·검증 규칙·한국어 응답 같은 팀 규칙은 **노트북에�
 - `vite.config.ts` — 빌드 시에만 `base: '/MetroTrip/'` 적용
   (개발 서버는 `/` 그대로라 `localhost:5173` 접속 방식은 바뀌지 않음)
 
-### 사람이 해야 하는 것 (저장소 설정, 각 1회)
+### 저장소 설정 (완료됨 — 재설정 시 참고)
 
-1. **Settings → Pages → Source** 를 **`GitHub Actions`** 로 변경
-2. **Settings → Secrets and variables → Actions → New repository secret**
+1. ✅ **Settings → Pages → Source** = `GitHub Actions`
+2. ✅ **Settings → Secrets and variables → Actions**
    - Name: `VITE_KAKAO_MAP_KEY`
-   - Secret: 카카오 **JavaScript 키**
-   - ※ 이걸 빼먹으면 빌드는 성공하는데 **지도만 안 뜹니다**
-3. **카카오 콘솔 → JavaScript SDK 도메인**에 추가
+   - Secret: 카카오 **JavaScript 키** (`87a8`로 시작하는 것)
+3. ✅ **카카오 콘솔 → JavaScript SDK 도메인** — 아래 **두 개 모두** 등록
    ```
    https://lellon0403.github.io
+   http://localhost:5173
    ```
-   - 기존 `http://localhost:5173`은 지우지 말고 **같이** 둘 것
-   - 미등록 상태에서는 401로 막힙니다 (실측 확인함)
-4. **PR 병합** — 워크플로가 `main` 기준이므로 앱 코드가 `main`에 있어야 합니다
-   https://github.com/lellon0403/MetroTrip/pull/new/feat/fe-project-setup
+
+### 배포하면서 실제로 겪은 문제 (같은 실수 방지)
+
+| 증상 | 원인 | 해결 |
+|---|---|---|
+| `configure-pages` 단계에서 `Get Pages site failed / Not Found` | Pages Source를 `GitHub Actions`로 바꾸기 **전에** 워크플로가 실행됨 | 설정 후 워크플로 재실행 |
+| 배포는 됐는데 지도 자리에 빨간 에러 문구 | GitHub Secret에 **REST API 키**(`1e21…`)를 넣음 | **JavaScript 키**(`87a8…`)로 교체 후 **재실행** |
+| 로컬에서 지도가 갑자기 안 뜸 | 카카오 도메인에 github.io를 **추가**가 아니라 **교체**로 넣어 localhost가 사라짐 | 두 도메인을 함께 등록 |
+
+> **Secret은 빌드 시점에 읽힙니다.** 값을 바꾼 뒤에는 반드시 워크플로를 **재실행**해야 반영됩니다.
+> Actions 탭 → `Deploy to GitHub Pages` → `Run workflow`
 
 ### 배포 확인
 
-`main`에 병합되면 자동으로 돌아갑니다. 진행 상황은 저장소 **Actions** 탭에서 볼 수 있습니다.
-초록 체크가 뜨면 위 주소로 접속해 지도가 보이는지 확인하세요.
+`main`에 푸시되면 자동으로 돌아갑니다. 진행 상황은 저장소 **Actions** 탭에서 볼 수 있습니다.
+초록 체크가 뜨면 배포 주소로 접속해 지도가 보이는지 확인하세요.
 
-수동으로 다시 배포하려면 Actions 탭 → `Deploy to GitHub Pages` → **Run workflow**.
+수동 배포: Actions 탭 → `Deploy to GitHub Pages` → **Run workflow**
+
+배포본 검증 결과 (2026-07-23):
+카카오 SDK 로드 성공, 지도 타일 25개 렌더, 콘솔 에러 없음,
+중심 좌표가 탕정역과 일치.
 
 ---
 
