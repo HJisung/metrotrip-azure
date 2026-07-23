@@ -20,10 +20,12 @@ const MIN_LEVEL = 1; // 확대 한계 (숫자가 작을수록 확대)
 const MAX_LEVEL = 5; // 축소 한계 — 축척 250m
 
 /**
- * 휠 1칸(deltaY 100~120)이 약 0.3레벨 움직이도록 하는 계수.
- * 값을 키우면 조금만 굴려도 크게 변한다.
+ * 소수점 레벨(예: 3.5)은 쓰지 않는다.
+ *
+ * SDK가 소수 레벨을 받아주기는 하고 좌표 계산도 그에 맞게 나오지만,
+ * 타일이 그려지지 않고 축척 표시가 NaN 으로 깨진다. 정식 지원 범위가 아니다.
+ * 확대/축소는 카카오 기본 동작(정수 레벨 1칸씩)을 그대로 쓴다.
  */
-const WHEEL_SENSITIVITY = 0.0025;
 
 
 /**
@@ -49,15 +51,10 @@ export function MapView({ lat, lng }: MapViewProps) {
       return;
     }
 
-    let detachWheel: (() => void) | undefined;
-
     window.kakao.maps.load(() => {
       const map = new window.kakao.maps.Map(container, {
         center: new window.kakao.maps.LatLng(lat, lng),
         level: DEFAULT_LEVEL,
-        // 카카오 기본 휠 동작은 한 번에 한 레벨씩 계단식으로 움직인다.
-        // 스크롤 양에 비례한 가변 확대를 쓰기 위해 끄고 직접 처리한다.
-        scrollwheel: false,
       });
 
       // 축소 한계를 두는 이유:
@@ -66,25 +63,8 @@ export function MapView({ lat, lng }: MapViewProps) {
       map.setMinLevel(MIN_LEVEL);
       map.setMaxLevel(MAX_LEVEL);
 
-      // 스크롤 양에 비례한 가변 확대/축소.
-      // 카카오맵은 소수점 레벨을 실제로 렌더링하므로(레벨 3.5 = 축척 약 140m)
-      // deltaY에 비례한 소수값을 그대로 넘긴다.
-      const handleWheel = (event: WheelEvent) => {
-        // 페이지가 같이 스크롤되지 않도록 막는다. passive: false 가 필요하다.
-        event.preventDefault();
-
-        const next = map.getLevel() + event.deltaY * WHEEL_SENSITIVITY;
-        const clamped = Math.min(MAX_LEVEL, Math.max(MIN_LEVEL, next));
-        map.setLevel(clamped);
-      };
-
-      container.addEventListener('wheel', handleWheel, { passive: false });
-      detachWheel = () => container.removeEventListener('wheel', handleWheel);
-
       mapRef.current = map;
     });
-
-    return () => detachWheel?.();
     // 최초 1회만 생성한다. 이후 좌표 변경은 아래 effect에서 처리.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

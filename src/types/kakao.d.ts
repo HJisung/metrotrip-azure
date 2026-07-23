@@ -24,10 +24,8 @@ declare global {
 
     interface MapOptions {
       center: LatLng;
-      /** 숫자가 작을수록 확대. 1~14 */
+      /** 숫자가 작을수록 확대. 1~14 정수만 사용할 것 (소수는 타일이 깨진다) */
       level: number;
-      /** 휠 스크롤로 확대/축소 허용 (기본 true) */
-      scrollwheel?: boolean;
     }
 
     /** 지도 */
