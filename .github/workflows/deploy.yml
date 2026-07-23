@@ -1,0 +1,60 @@
+# main 브랜치에 푸시되면 빌드해서 GitHub Pages에 배포한다.
+#
+# 사전 준비 (저장소 설정에서 1회):
+#   1) Settings > Pages > Build and deployment > Source 를 "GitHub Actions" 로 변경
+#   2) Settings > Secrets and variables > Actions > New repository secret 로
+#      VITE_KAKAO_MAP_KEY 등록 (카카오 JavaScript 키)
+#   3) 카카오 개발자 콘솔의 [JavaScript SDK 도메인]에
+#      https://lellon0403.github.io 등록
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # Actions 탭에서 수동 실행도 가능하게 한다
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 배포가 겹치면 최신 것만 남긴다
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+        env:
+          # .env 는 저장소에 없으므로 Secret 에서 주입한다.
+          # 비어 있으면 빌드는 성공하지만 지도가 뜨지 않는다.
+          VITE_KAKAO_MAP_KEY: ${{ secrets.VITE_KAKAO_MAP_KEY }}
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

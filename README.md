@@ -13,6 +13,7 @@
 
 | 문서 | 언제 보나 |
 |---|---|
+| [docs/HANDOFF.md](docs/HANDOFF.md) | **다른 PC에서 이어서 작업할 때.** 현재 상태·세팅·함정·배포 |
 | [docs/GIT-GUIDE.md](docs/GIT-GUIDE.md) | **Git이 처음이라면 여기부터.** 명령어·충돌 해결·사고 복구 |
 | [docs/CLAUDE-CODE-WORKFLOW.md](docs/CLAUDE-CODE-WORKFLOW.md) | Claude Code로 작업하는 흐름과 프롬프트 모음 |
 | [docs/SPEC.md](docs/SPEC.md) | **개발 시작 전 필독.** MVP 범위와 구현 순서 |
