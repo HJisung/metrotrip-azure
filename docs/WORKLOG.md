@@ -15,14 +15,25 @@
 
 ---
 
+## 2026-07-23 — 프론트 4~5단계 (브랜치: `feat/fe-station-list`)
+- 한 것: SPEC 4~5단계 — `StationList` 컴포넌트(검색+목록), 역 클릭 시 `MapView` 중심 이동 연결
+- 다음 할 것: SPEC 6단계 (반경 1km 장소 검색 → 마커 표시).
+  건드릴 파일: `src/api/places.ts`(신규), `src/components/MapView/MapView.tsx`
+- 막힌 것 / 공유할 것: 없음
+
+> 집 PC에는 `.env`가 없어 지도 연동을 확인하지 못했으나,
+> 이후 데스크톱에서 검증 완료 — 역 클릭 시 지도 중심이 해당 역 좌표로 이동,
+> 검색/빈 결과/검색어 삭제 동작 정상, 콘솔 에러 없음, 빌드 통과.
+
+---
+
 ## 2026-07-23 — GitHub Pages 배포 완료
 - 한 것:
   - Vercel은 로그인(복구 코드 요구)이 막혀 **GitHub Pages로 전환**
   - `.github/workflows/deploy.yml` + `vite.config.ts` base 설정
   - 배포 성공 확인 → **https://lellon0403.github.io/MetroTrip/**
   - `feat/fe-project-setup` 브랜치 main 병합 (PR #3)
-- 다음 할 것: SPEC 4~5단계 (역 목록 UI + 클릭 시 지도 이동).
-  건드릴 파일: `src/components/StationList/*`, `src/App.tsx`
+- 다음 할 것: SPEC 4~5단계 (역 목록 UI + 클릭 시 지도 이동) — 위 항목에서 완료됨
 - 막힌 것 / 공유할 것:
   - `main`에 `test.txt`(내용 `test`)가 남아 있음 — PR 흐름 테스트 흔적으로 보임. 삭제 여부 확인 필요
   - 커스텀 도메인은 발표 후로 미룸 (DNS 전파 24~48시간 리스크)
