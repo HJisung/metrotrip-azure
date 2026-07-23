@@ -3,6 +3,8 @@
 **지하철 노선 기반 관광 추천 서비스** — 자차 없이 지하철만으로 이동하는 사용자를 위해,
 역을 선택하면 그 역 **반경 1km 안의 가볼 만한 장소**를 지도에 보여주는 웹 앱입니다.
 
+**배포 주소: https://lellon0403.github.io/MetroTrip/** (`main` 푸시 시 자동 배포)
+
 > 현재 단계: **발표용 MVP (프론트엔드 단독, 백엔드 없음)**
 > 대상 노선: **1호선 천안·아산 구간** 우선 (전체 노선은 최종 목표)
 > 만들 범위는 [docs/SPEC.md](docs/SPEC.md)에 정의되어 있습니다. 여기 없는 기능은 지금 만들지 않습니다.
@@ -13,6 +15,7 @@
 
 | 문서 | 언제 보나 |
 |---|---|
+| [docs/HANDOFF.md](docs/HANDOFF.md) | **다른 PC에서 이어서 작업할 때.** 현재 상태·세팅·함정·배포 |
 | [docs/GIT-GUIDE.md](docs/GIT-GUIDE.md) | **Git이 처음이라면 여기부터.** 명령어·충돌 해결·사고 복구 |
 | [docs/CLAUDE-CODE-WORKFLOW.md](docs/CLAUDE-CODE-WORKFLOW.md) | Claude Code로 작업하는 흐름과 프롬프트 모음 |
 | [docs/SPEC.md](docs/SPEC.md) | **개발 시작 전 필독.** MVP 범위와 구현 순서 |
