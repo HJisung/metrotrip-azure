@@ -26,6 +26,8 @@ declare global {
       center: LatLng;
       /** 숫자가 작을수록 확대. 1~14 */
       level: number;
+      /** 휠 스크롤로 확대/축소 허용 (기본 true) */
+      scrollwheel?: boolean;
     }
 
     /** 지도 */
@@ -38,6 +40,10 @@ declare global {
       getCenter(): LatLng;
       setLevel(level: number): void;
       getLevel(): number;
+      /** 확대 한계 (가장 크게 확대했을 때의 레벨) */
+      setMinLevel(level: number): void;
+      /** 축소 한계 (가장 작게 축소했을 때의 레벨) */
+      setMaxLevel(level: number): void;
     }
 
     interface MarkerOptions {
