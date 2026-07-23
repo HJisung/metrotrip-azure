@@ -15,6 +15,22 @@
 
 ---
 
+## 2026-07-23 — GitHub Pages 배포 완료
+- 한 것:
+  - Vercel은 로그인(복구 코드 요구)이 막혀 **GitHub Pages로 전환**
+  - `.github/workflows/deploy.yml` + `vite.config.ts` base 설정
+  - 배포 성공 확인 → **https://lellon0403.github.io/MetroTrip/**
+  - `feat/fe-project-setup` 브랜치 main 병합 (PR #3)
+- 다음 할 것: SPEC 4~5단계 (역 목록 UI + 클릭 시 지도 이동).
+  건드릴 파일: `src/components/StationList/*`, `src/App.tsx`
+- 막힌 것 / 공유할 것:
+  - `main`에 `test.txt`(내용 `test`)가 남아 있음 — PR 흐름 테스트 흔적으로 보임. 삭제 여부 확인 필요
+  - 커스텀 도메인은 발표 후로 미룸 (DNS 전파 24~48시간 리스크)
+
+> 배포 중 겪은 문제와 해결은 `docs/HANDOFF.md` 5장에 정리했습니다.
+
+---
+
 ## 2026-07-22 — 프론트 1~3단계 (브랜치: `feat/fe-project-setup`)
 - 한 것:
   - SPEC 1단계 — Vite + React 19 + TypeScript 세팅
