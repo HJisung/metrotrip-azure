@@ -176,38 +176,41 @@ Git 규칙·검증 규칙·한국어 응답 같은 팀 규칙은 **노트북에�
 
 ---
 
-## 5. 배포 (아직 안 됨)
+## 5. 배포 — GitHub Pages
 
-Vercel 로그인에서 막혀 있는 상태입니다. 노트북에는 로그인 세션이 남아 있을 테니 **노트북에서 진행**하세요.
+**Vercel은 로그인이 안 되어 포기했습니다.** (데스크톱·노트북 양쪽에서 복구 코드를 요구함)
+대신 GitHub Pages를 쓰며, 이미 쓰는 GitHub 계정 안에서 끝나므로 새로 로그인할 것이 없습니다.
 
-### 순서
+배포 주소: `https://lellon0403.github.io/MetroTrip/`
 
-1. **PR 병합** — 앱 코드가 `main`에 있어야 배포됩니다
-   https://github.com/lellon0403/MetroTrip/pull/new/feat/fe-project-setup
-2. [vercel.com](https://vercel.com) → Add New… → Project → `MetroTrip` Import
-3. Framework Preset은 **Vite**로 자동 인식됨. Build 설정은 건드리지 말 것
-4. **Environment Variables**에 추가 ← 빼먹으면 지도가 안 뜸
+### 이미 되어 있는 것 (코드)
 
-   | Name | Value |
-   |---|---|
-   | `VITE_KAKAO_MAP_KEY` | JavaScript 키 |
+- `.github/workflows/deploy.yml` — `main`에 푸시되면 자동 빌드·배포
+- `vite.config.ts` — 빌드 시에만 `base: '/MetroTrip/'` 적용
+  (개발 서버는 `/` 그대로라 `localhost:5173` 접속 방식은 바뀌지 않음)
 
-5. Deploy
-6. 배포 주소(`https://xxx.vercel.app`)를 **카카오 콘솔 → JavaScript SDK 도메인에 추가**
+### 사람이 해야 하는 것 (저장소 설정, 각 1회)
+
+1. **Settings → Pages → Source** 를 **`GitHub Actions`** 로 변경
+2. **Settings → Secrets and variables → Actions → New repository secret**
+   - Name: `VITE_KAKAO_MAP_KEY`
+   - Secret: 카카오 **JavaScript 키**
+   - ※ 이걸 빼먹으면 빌드는 성공하는데 **지도만 안 뜹니다**
+3. **카카오 콘솔 → JavaScript SDK 도메인**에 추가
+   ```
+   https://lellon0403.github.io
+   ```
    - 기존 `http://localhost:5173`은 지우지 말고 **같이** 둘 것
-   - `https` 입니다
+   - 미등록 상태에서는 401로 막힙니다 (실측 확인함)
+4. **PR 병합** — 워크플로가 `main` 기준이므로 앱 코드가 `main`에 있어야 합니다
+   https://github.com/lellon0403/MetroTrip/pull/new/feat/fe-project-setup
 
-### 주의
+### 배포 확인
 
-Vercel은 커밋마다 미리보기 URL(`...-git-xxx.vercel.app`)을 따로 만듭니다.
-그 주소는 카카오에 등록되어 있지 않아 지도가 안 뜹니다.
-**팀원에게는 프로덕션 URL을 공유**하세요.
+`main`에 병합되면 자동으로 돌아갑니다. 진행 상황은 저장소 **Actions** 탭에서 볼 수 있습니다.
+초록 체크가 뜨면 위 주소로 접속해 지도가 보이는지 확인하세요.
 
-### Vercel 로그인이 계속 막히면
-
-GitHub Pages로도 배포할 수 있습니다. 새로 로그인할 계정이 없다는 게 장점입니다.
-필요하면 Claude Code에게 "GitHub Pages 배포 설정 만들어줘"라고 요청하세요.
-(GitHub Actions 워크플로 + `vite.config.ts`의 `base` 설정 + 저장소 Secret 등록이 필요합니다)
+수동으로 다시 배포하려면 Actions 탭 → `Deploy to GitHub Pages` → **Run workflow**.
 
 ---
 
