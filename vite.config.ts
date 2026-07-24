@@ -1,9 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
 
   // GitHub Pages는 https://<계정>.github.io/<저장소명>/ 하위 경로로 서비스되므로
   // 빌드 결과의 asset 경로 앞에 저장소명을 붙여야 한다.
