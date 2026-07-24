@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Icon } from '../Icon';
 
 type MapViewProps = {
   /** 지도 중심 위도 */
@@ -27,12 +28,12 @@ const MAX_LEVEL = 5; // 축소 한계 — 축척 250m
  * 확대/축소는 카카오 기본 동작(정수 레벨 1칸씩)을 그대로 쓴다.
  */
 
-
 /**
  * 카카오맵을 표시하는 컴포넌트.
  *
  * SDK는 index.html에서 autoload=false로 로드되므로,
  * kakao.maps.load() 안에서 지도를 생성해야 한다.
+ * 지도 위에 확대/축소·재중심 플로팅 컨트롤을 함께 얹는다 (Stitch 디자인).
  */
 export function MapView({ lat, lng }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -76,9 +77,61 @@ export function MapView({ lat, lng }: MapViewProps) {
     map.panTo(new window.kakao.maps.LatLng(lat, lng));
   }, [lat, lng]);
 
+  const zoom = (delta: number) => {
+    const map = mapRef.current;
+    if (!map) return;
+    const next = Math.min(MAX_LEVEL, Math.max(MIN_LEVEL, map.getLevel() + delta));
+    map.setLevel(next);
+  };
+
+  // 현재 선택된 역으로 다시 중심을 맞춘다 (지도를 옮긴 뒤 제자리로).
+  const recenter = () => {
+    const map = mapRef.current;
+    if (!map) return;
+    map.panTo(new window.kakao.maps.LatLng(lat, lng));
+  };
+
   if (error) {
-    return <div className="map-error">{error}</div>;
+    return (
+      <div className="flex h-full items-center justify-center p-lg">
+        <p className="max-w-md text-body-md leading-relaxed text-error">{error}</p>
+      </div>
+    );
   }
 
-  return <div ref={containerRef} className="map-view" />;
+  return (
+    <div className="relative h-full w-full">
+      <div ref={containerRef} className="h-full w-full" />
+
+      {/* 플로팅 지도 컨트롤 (우하단) */}
+      <div className="absolute bottom-lg right-lg z-30 flex flex-col gap-sm">
+        <button
+          type="button"
+          onClick={recenter}
+          aria-label="선택한 역으로 이동"
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-outline-variant bg-white text-primary shadow-lg transition-all hover:bg-surface-container-low active:scale-95"
+        >
+          <Icon name="my_location" />
+        </button>
+        <div className="flex flex-col overflow-hidden rounded-xl border border-outline-variant bg-white shadow-lg">
+          <button
+            type="button"
+            onClick={() => zoom(-1)}
+            aria-label="확대"
+            className="flex h-12 w-12 items-center justify-center border-b border-outline-variant text-on-surface-variant transition-colors hover:bg-surface-container-low"
+          >
+            <Icon name="add" />
+          </button>
+          <button
+            type="button"
+            onClick={() => zoom(1)}
+            aria-label="축소"
+            className="flex h-12 w-12 items-center justify-center text-on-surface-variant transition-colors hover:bg-surface-container-low"
+          >
+            <Icon name="remove" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
