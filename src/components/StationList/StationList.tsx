@@ -28,7 +28,7 @@ export function StationList({ selected, onSelect }: StationListProps) {
   }, [keyword]);
 
   return (
-    <div className="flex h-full flex-col gap-md">
+    <div className="flex h-full flex-col gap-sm">
       {/* 검색창 */}
       <div className="flex items-center gap-sm rounded-xl border border-outline-variant bg-white/80 p-sm pr-md shadow-lg backdrop-blur-md">
         <Icon name="search" className="px-sm text-primary" />
@@ -59,8 +59,8 @@ export function StationList({ selected, onSelect }: StationListProps) {
                   onClick={() => onSelect(station)}
                   className={
                     isActive
-                      ? 'flex w-full items-center justify-between gap-sm rounded-lg border-l-4 border-primary bg-primary/5 px-md py-sm text-left transition-colors'
-                      : 'flex w-full items-center justify-between gap-sm rounded-lg border-l-4 border-transparent px-md py-sm text-left transition-colors hover:bg-surface-container-low'
+                      ? 'flex w-full items-center justify-between gap-sm rounded-lg border-l-4 border-primary bg-primary/5 px-sm py-xs text-left transition-colors'
+                      : 'flex w-full items-center justify-between gap-sm rounded-lg border-l-4 border-transparent px-sm py-xs text-left transition-colors hover:bg-surface-container-low'
                   }
                 >
                   <span
