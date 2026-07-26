@@ -50,7 +50,15 @@
     'Inter', system-ui, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
-  /* 4px 베이스라인 간격 스케일 */
+  /*
+   * 4px 베이스라인 간격 스케일.
+   *
+   * 주의: 여기서 --spacing-md 같은 이름을 정의하면
+   * `max-w-md` / `w-lg` 처럼 같은 이름을 쓰는 유틸리티도 이 값으로 계산된다.
+   * (max-w-md 가 28rem 이 아니라 16px 이 된다 — 실제로 겪은 버그)
+   * 폭 제한이 필요하면 `max-w-[28rem]` 처럼 값을 직접 적거나,
+   * 이름이 겹치지 않는 `max-w-4xl` 같은 것을 쓸 것.
+   */
   --spacing-unit: 4px;
   --spacing-xs: 4px;
   --spacing-sm: 8px;

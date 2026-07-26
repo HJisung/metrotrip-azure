@@ -94,7 +94,10 @@ export function MapView({ lat, lng }: MapViewProps) {
   if (error) {
     return (
       <div className="flex h-full items-center justify-center p-lg">
-        <p className="max-w-md text-body-md leading-relaxed text-error">{error}</p>
+        {/* max-w-md 는 16px로 계산된다 — src/index.css 주석 참고 */}
+        <p className="max-w-[28rem] text-body-md leading-relaxed text-error">
+          {error}
+        </p>
       </div>
     );
   }
