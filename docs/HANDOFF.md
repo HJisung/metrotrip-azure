@@ -3,7 +3,7 @@
 > 데스크톱에서 작업하던 내용을 **노트북 등 다른 PC에서 그대로 이어받기 위한 문서**입니다.
 > 이 문서만 읽으면 지금까지의 맥락 없이도 이어서 작업할 수 있습니다.
 >
-> 마지막 갱신: 2026-07-22 / 작업 브랜치: `feat/fe-project-setup`
+> 마지막 갱신: 2026-07-26 / 작업 브랜치: `fix/fe-map-panel-polish`
 
 ---
 
@@ -15,31 +15,38 @@
 |---|---|---|
 | 1 | Vite + React + TypeScript 세팅 | ✅ 완료 |
 | 2 | 카카오맵 SDK 로드 + 지도 표시 | ✅ 완료 (탕정역 기준) |
-| 3 | 역 데이터 + 역 목록 UI | ✅ 데이터만 완료 (UI는 4단계) |
-| 4 | 역 목록 UI | ⬜ **다음 작업** |
-| 5 | 역 클릭 → 지도 중심 이동 | ⬜ |
-| 6 | 반경 1km 장소 검색 → 마커 | ⬜ |
+| 3 | 역 데이터 + 역 목록 UI | ✅ 완료 |
+| 4 | 역 목록 UI | ✅ 완료 |
+| 5 | 역 클릭 → 지도 중심 이동 | ✅ 완료 |
+| 6 | 반경 1km 장소 검색 → 마커 | ⬜ **다음 작업** |
 | 7 | 마커 클릭 → 인포윈도우 | ⬜ |
 | 8 | 반응형 정리 + README | ⬜ |
+| — | 발표용 프리뷰 화면 3종 (SPEC 2-1) | ✅ 완료 (노선도/경로/시간표, 동작 없음) |
 
 ### 만들어져 있는 것
 
 ```
 src/
-├─ api/stations.ts          역 데이터 접근 계층 (async, 나중에 fetch로 교체)
-├─ data/stations.json       1호선 천안·아산 11개 역 (좌표 검증 완료)
-├─ types/station.ts         Station 타입
-├─ types/kakao.d.ts         카카오맵 SDK 타입 선언
-├─ components/MapView/      지도 컴포넌트
-└─ App.tsx                  탕정역 기준 초기 렌더
+├─ api/stations.ts             역 데이터 접근 계층 (async, 나중에 fetch로 교체)
+├─ data/stations.json          1호선 천안·아산 11개 역 (배열 순서 = 노선 순서)
+├─ types/station.ts            Station 타입
+├─ types/view.ts               화면 종류 (map / line / route / timetable)
+├─ types/kakao.d.ts            카카오맵 SDK 타입 선언
+├─ components/MapView/         지도 컴포넌트
+├─ components/StationList/     역 검색 + 목록 (지도 위 플로팅 카드)
+├─ components/Sidebar/         좌측 내비 + navItems.ts (메뉴 정의)
+├─ components/Preview/         프리뷰 화면 공통 껍데기
+├─ components/LineMap/         노선도 프리뷰
+├─ components/RoutePlan/       경로 프리뷰
+├─ components/Timetable/       시간표 프리뷰
+└─ App.tsx                     화면 전환 + 선택 역 상태
 ```
 
 ### 아직 없는 것
 
-- 역 목록/검색 UI (`src/components/StationList/`)
 - 장소 검색 (`src/api/places.ts`)
 - 마커, 인포윈도우
-- 배포
+- 노선도/경로/시간표의 **실제 동작** (지금은 화면만 — SPEC 2-1 참고)
 
 ---
 
@@ -57,16 +64,16 @@ git clone https://github.com/lellon0403/MetroTrip.git
 cd MetroTrip
 ```
 
-### ② 작업 브랜치로 이동
+### ② 최신 코드 받기
 
-**`main`에는 앱 코드가 없습니다.** 반드시 브랜치로 이동하세요.
+앱 코드는 이제 `main`에 있습니다. 새 작업은 `main`에서 브랜치를 따서 시작하세요.
 
 ```bash
 git fetch origin
 ```
 
 ```bash
-git checkout feat/fe-project-setup
+git checkout main
 ```
 
 ```bash
@@ -113,7 +120,7 @@ npm run dev
 ```
 docs/HANDOFF.md 를 읽고 현재 상태를 파악해줘.
 그 다음 git fetch 해서 브랜치가 최신인지 확인하고,
-SPEC 4단계(역 목록 UI)부터 이어서 작업하자.
+SPEC 6단계(반경 1km 장소 검색 → 마커 표시)부터 이어서 작업하자.
 ```
 
 저장소 루트의 `CLAUDE.md`를 Claude Code가 자동으로 읽기 때문에,
@@ -169,7 +176,14 @@ Git 규칙·검증 규칙·한국어 응답 같은 팀 규칙은 **노트북에�
 
 무료 쿼터: 지도 SDK 30만건/일, 장소 검색 10만건/일 — 데모에는 충분합니다.
 
-### ⑤ 지도 컨테이너 높이가 0이면 지도가 안 보인다
+### ⑤ `max-w-md` 같은 클래스는 쓰면 안 된다
+
+`src/index.css`의 `@theme`에서 `--spacing-md: 16px`를 정의해 뒀기 때문에,
+같은 이름을 쓰는 `max-w-md` / `w-lg` 등이 **28rem이 아니라 16px로 계산**됩니다.
+글자가 한 줄에 하나씩 떨어지면 이 문제입니다. `max-w-[28rem]`처럼 값을 직접 적으세요.
+(`max-w-4xl`처럼 이름이 겹치지 않는 것은 정상 동작합니다)
+
+### ⑥ 지도 컨테이너 높이가 0이면 지도가 안 보인다
 
 에러도 안 나고 그냥 안 보여서 헷갈립니다. `.map-view`는 부모 높이를 채우도록 되어 있고,
 부모(`.app-main`)에 `min-height: 0`이 필요합니다. 레이아웃을 고칠 때 이 부분을 깨뜨리지 마세요.
