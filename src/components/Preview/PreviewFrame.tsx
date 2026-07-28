@@ -27,7 +27,7 @@ export function PreviewFrame({
 }: PreviewFrameProps) {
   return (
     <div className="h-full overflow-y-auto bg-background">
-      <div className="mx-auto flex max-w-4xl flex-col gap-md p-md pt-16 lg:pt-md">
+      <div className="mx-auto flex max-w-4xl flex-col gap-md p-md">
         <header className="flex flex-col gap-xs">
           <div className="flex items-center gap-sm">
             <h2 className="text-headline-sm font-heading font-bold text-on-surface">

@@ -1,0 +1,22 @@
+{
+  "탕정역": [
+    {
+      "id": "tangjeong-subway",
+      "name": "써브웨이 아산탕정점",
+      "category": "FD6",
+      "categoryName": "음식점",
+      "address": "충남 아산시 탕정면 한들물빛도시로 88",
+      "lat": 36.78721697041934,
+      "lng": 127.08384579316329
+    },
+    {
+      "id": "tangjeong-maehwa-park",
+      "name": "매화공원",
+      "category": "AT4",
+      "categoryName": "관광명소",
+      "address": "충남 아산시 탕정면 매곡리 1001-23",
+      "lat": 36.7914457910363,
+      "lng": 127.085265460342
+    }
+  ]
+}

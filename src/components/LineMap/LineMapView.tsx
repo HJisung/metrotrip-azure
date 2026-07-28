@@ -3,6 +3,7 @@ import { getStations } from '../../api/stations';
 import type { Station } from '../../types/station';
 import { Icon } from '../Icon';
 import { PreviewFrame } from '../Preview/PreviewFrame';
+import { MetroMap } from './MetroMap';
 
 type LineMapViewProps = {
   selected: Station | null;
@@ -34,7 +35,7 @@ export function LineMapView({ selected, onSelect }: LineMapViewProps) {
     <PreviewFrame
       title="노선도"
       description="노선 위에서 역을 골라 바로 지도로 이동합니다."
-      notice="지금은 1호선 천안·아산 구간만 그려져 있습니다. 수도권 전체 노선도는 다음 단계에 붙입니다."
+      notice="아래 두 노선도 모두 화면 확인용입니다. 역을 눌러 지도로 이동하는 것은 천안·아산 구간에서만 동작합니다."
     >
       <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-md">
         <h3 className="text-label-caps uppercase tracking-widest text-on-surface-variant">
@@ -81,15 +82,23 @@ export function LineMapView({ selected, onSelect }: LineMapViewProps) {
         </div>
       </section>
 
-      <section className="flex flex-col items-center gap-sm rounded-xl border border-dashed border-outline-variant p-xl text-center">
-        <Icon name="image" className="text-[32px] text-on-surface-variant" />
-        <p className="text-body-lg font-bold text-on-surface">
-          수도권 전체 노선도 자리
-        </p>
-        {/* max-w-md 는 쓰지 말 것 — src/index.css 주석 참고 */}
-        <p className="max-w-[28rem] text-body-md text-on-surface-variant">
-          공공기관이 배포하는 공식 노선도 이미지를 여기에 넣을 예정입니다.
-          출처와 이용 조건(공공누리 유형)을 확인한 뒤 추가합니다.
+      <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-md">
+        <div className="mb-sm flex flex-wrap items-baseline gap-x-sm gap-y-xs">
+          <h3 className="text-label-caps uppercase tracking-widest text-on-surface-variant">
+            수도권 간략 노선도
+          </h3>
+          <p className="text-body-md text-on-surface-variant">
+            노선에 마우스를 올리면 그 노선만 강조됩니다.
+          </p>
+        </div>
+        <MetroMap />
+        <p className="mt-sm flex items-start gap-xs text-body-md text-on-surface-variant">
+          <Icon name="info" className="shrink-0 text-[18px]" />
+          <span>
+            보기 편하도록 각도를 정리한 <strong>도식도</strong>라 실제 지리
+            위치와는 다릅니다. 지금은 주요 역·환승역만 표시되며, 전체 역은 다음
+            단계에 채웁니다.
+          </span>
         </p>
       </section>
     </PreviewFrame>

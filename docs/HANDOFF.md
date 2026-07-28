@@ -18,35 +18,40 @@
 | 3 | 역 데이터 + 역 목록 UI | ✅ 완료 |
 | 4 | 역 목록 UI | ✅ 완료 |
 | 5 | 역 클릭 → 지도 중심 이동 | ✅ 완료 |
-| 6 | 반경 1km 장소 검색 → 마커 | ⬜ **다음 작업** |
-| 7 | 마커 클릭 → 인포윈도우 | ⬜ |
-| 8 | 반응형 정리 + README | ⬜ |
-| — | 발표용 프리뷰 화면 3종 (SPEC 2-1) | ✅ 완료 (노선도/경로/시간표, 동작 없음) |
+| 6 | 반경 1km 장소 검색 → 마커 | 🔸 일부 (탕정역 2곳만 수동) — **다음 작업** |
+| 7 | 마커 클릭 → 인포윈도우 | ✅ 완료 |
+| 8 | 반응형 정리 + README | 🔸 반응형은 확인, README 남음 |
+| — | 발표용 프리뷰 화면 4종 (SPEC 2-1) | ✅ 완료 (노선도/경로/시간표/마이페이지, 동작 없음) |
 
 ### 만들어져 있는 것
 
 ```
 src/
 ├─ api/stations.ts             역 데이터 접근 계층 (async, 나중에 fetch로 교체)
+├─ api/places.ts               역 주변 장소 접근 계층 (지금은 탕정역 2곳만)
 ├─ data/stations.json          1호선 천안·아산 11개 역 (배열 순서 = 노선 순서)
+├─ data/places.json            장소 데이터 — 백엔드 응답 형태에 맞춰 둠
+├─ data/metroLines.ts          수도권 간략 노선도 좌표 (도식, 실제 지리 아님)
 ├─ types/station.ts            Station 타입
-├─ types/view.ts               화면 종류 (map / line / route / timetable)
+├─ types/place.ts              Place 타입 (백엔드 응답 예정 형태)
+├─ types/view.ts               화면 종류 (map / line / route / timetable / mypage)
 ├─ types/kakao.d.ts            카카오맵 SDK 타입 선언
-├─ components/MapView/         지도 컴포넌트
+├─ components/MapView/         지도 + 장소 마커 + 인포윈도우
 ├─ components/StationList/     역 검색 + 목록 (지도 위 플로팅 카드)
-├─ components/Sidebar/         좌측 내비 + navItems.ts (메뉴 정의)
+├─ components/TopNav/          상단 내비 + navItems.ts (메뉴 정의)
 ├─ components/Preview/         프리뷰 화면 공통 껍데기
-├─ components/LineMap/         노선도 프리뷰
+├─ components/LineMap/         노선도 프리뷰 + MetroMap.tsx (수도권 SVG)
 ├─ components/RoutePlan/       경로 프리뷰
 ├─ components/Timetable/       시간표 프리뷰
+├─ components/MyPage/          마이페이지 프리뷰
 └─ App.tsx                     화면 전환 + 선택 역 상태
 ```
 
 ### 아직 없는 것
 
-- 장소 검색 (`src/api/places.ts`)
-- 마커, 인포윈도우
-- 노선도/경로/시간표의 **실제 동작** (지금은 화면만 — SPEC 2-1 참고)
+- 카테고리 기반 장소 검색 (지금은 탕정역 2곳만 손으로 넣어 둠)
+- 노선도/경로/시간표/마이페이지의 **실제 동작** (지금은 화면만 — SPEC 2-1 참고)
+- 수도권 노선도의 전체 역 (주요 역·환승역만 있음)
 
 ---
 
