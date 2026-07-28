@@ -1,12 +1,41 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from '../Icon';
+import { getPlacesByStation } from '../../api/places';
+import type { Place } from '../../types/place';
 
 type MapViewProps = {
   /** 지도 중심 위도 */
   lat: number;
   /** 지도 중심 경도 */
   lng: number;
+  /** 선택된 역 이름 — 이 역의 주변 장소를 마커로 찍는다 */
+  stationName: string;
 };
+
+/** 인포윈도우 내용. SDK가 HTML 문자열을 받으므로 Tailwind 대신 인라인 스타일을 쓴다. */
+function infoWindowHtml(place: Place) {
+  // 장소명은 우리 데이터라 안전하지만, 나중에 API 응답으로 바뀌므로 이스케이프해 둔다
+  const escape = (text: string) =>
+    text.replace(
+      /[&<>"]/g,
+      (c) =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c,
+    );
+
+  return `
+    <div style="padding:10px 14px 14px;width:230px;line-height:1.45;font-family:Inter,system-ui,sans-serif;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.05em;color:#003d9b;">
+        ${escape(place.categoryName)}
+      </div>
+      <div style="margin-top:2px;font-size:14px;font-weight:700;color:#041b3c;">
+        ${escape(place.name)}
+      </div>
+      <div style="margin-top:4px;font-size:12px;color:#434654;">
+        ${escape(place.address)}
+      </div>
+    </div>
+  `;
+}
 
 /**
  * 지도 확대 레벨. 숫자가 작을수록 확대된다.
@@ -35,10 +64,14 @@ const MAX_LEVEL = 5; // 축소 한계 — 축척 250m
  * kakao.maps.load() 안에서 지도를 생성해야 한다.
  * 지도 위에 확대/축소·재중심 플로팅 컨트롤을 함께 얹는다 (Stitch 디자인).
  */
-export function MapView({ lat, lng }: MapViewProps) {
+export function MapView({ lat, lng, stationName }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<kakao.maps.Map | null>(null);
+  const markersRef = useRef<kakao.maps.Marker[]>([]);
+  const infoWindowRef = useRef<kakao.maps.InfoWindow | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // 지도는 SDK 로드 콜백 안에서 만들어지므로, 생성 완료를 상태로 알린다
+  const [mapReady, setMapReady] = useState(false);
 
   // 지도 최초 생성 (1회만)
   useEffect(() => {
@@ -65,6 +98,7 @@ export function MapView({ lat, lng }: MapViewProps) {
       map.setMaxLevel(MAX_LEVEL);
 
       mapRef.current = map;
+      setMapReady(true);
     });
     // 최초 1회만 생성한다. 이후 좌표 변경은 아래 effect에서 처리.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -76,6 +110,48 @@ export function MapView({ lat, lng }: MapViewProps) {
     if (!map) return;
     map.panTo(new window.kakao.maps.LatLng(lat, lng));
   }, [lat, lng]);
+
+  // 선택된 역이 바뀌면 주변 장소 마커를 다시 찍는다
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+
+    let cancelled = false;
+
+    getPlacesByStation(stationName).then((places) => {
+      if (cancelled) return;
+
+      // 이전 역의 마커와 열려 있던 인포윈도우를 정리
+      markersRef.current.forEach((marker) => marker.setMap(null));
+      markersRef.current = [];
+      infoWindowRef.current?.close();
+
+      places.forEach((place) => {
+        const marker = new window.kakao.maps.Marker({
+          position: new window.kakao.maps.LatLng(place.lat, place.lng),
+          map,
+          title: place.name,
+        });
+
+        window.kakao.maps.event.addListener(marker, 'click', () => {
+          // 인포윈도우는 하나만 열어 둔다
+          infoWindowRef.current?.close();
+          const infoWindow = new window.kakao.maps.InfoWindow({
+            content: infoWindowHtml(place),
+            removable: true,
+          });
+          infoWindow.open(map, marker);
+          infoWindowRef.current = infoWindow;
+        });
+
+        markersRef.current.push(marker);
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [stationName, mapReady]);
 
   const zoom = (delta: number) => {
     const map = mapRef.current;
