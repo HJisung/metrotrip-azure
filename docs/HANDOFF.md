@@ -40,7 +40,9 @@ src/
 ├─ components/StationList/     역 검색 + 목록 (지도 위 플로팅 카드)
 ├─ components/TopNav/          상단 내비 + navItems.ts (메뉴 정의)
 ├─ components/Preview/         프리뷰 화면 공통 껍데기
-├─ components/LineMap/         노선도 프리뷰 + MetroMap.tsx (수도권 SVG)
+├─ components/LineMap/         노선도 프리뷰
+│                              └ MetroMapPanel: 이미지 / SVG 전환
+├─ lib/asset.ts                public/ 파일 주소 만들기 (배포 경로 대응)
 ├─ components/RoutePlan/       경로 프리뷰
 ├─ components/Timetable/       시간표 프리뷰
 ├─ components/MyPage/          마이페이지 프리뷰
@@ -181,14 +183,25 @@ Git 규칙·검증 규칙·한국어 응답 같은 팀 규칙은 **노트북에�
 
 무료 쿼터: 지도 SDK 30만건/일, 장소 검색 10만건/일 — 데모에는 충분합니다.
 
-### ⑤ `max-w-md` 같은 클래스는 쓰면 안 된다
+### ⑤ `public/` 이미지는 `asset()` 을 거쳐서 쓴다
+
+GitHub Pages 는 `https://lellon0403.github.io/MetroTrip/` 하위로 서비스됩니다.
+그래서 `<img src="/logo.png">` 처럼 슬래시로 시작하는 주소를 쓰면
+**로컬에서는 되는데 배포본에서만 404** 가 납니다. 찾기 어려운 실수입니다.
+
+```tsx
+import { asset } from '../../lib/asset';
+<img src={asset('logo.png')} />
+```
+
+### ⑥ `max-w-md` 같은 클래스는 쓰면 안 된다
 
 `src/index.css`의 `@theme`에서 `--spacing-md: 16px`를 정의해 뒀기 때문에,
 같은 이름을 쓰는 `max-w-md` / `w-lg` 등이 **28rem이 아니라 16px로 계산**됩니다.
 글자가 한 줄에 하나씩 떨어지면 이 문제입니다. `max-w-[28rem]`처럼 값을 직접 적으세요.
 (`max-w-4xl`처럼 이름이 겹치지 않는 것은 정상 동작합니다)
 
-### ⑥ 지도 컨테이너 높이가 0이면 지도가 안 보인다
+### ⑦ 지도 컨테이너 높이가 0이면 지도가 안 보인다
 
 에러도 안 나고 그냥 안 보여서 헷갈립니다. `.map-view`는 부모 높이를 채우도록 되어 있고,
 부모(`.app-main`)에 `min-height: 0`이 필요합니다. 레이아웃을 고칠 때 이 부분을 깨뜨리지 마세요.

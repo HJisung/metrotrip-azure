@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { getStations } from '../../api/stations';
 import type { Station } from '../../types/station';
-import { Icon } from '../Icon';
 import { PreviewFrame } from '../Preview/PreviewFrame';
-import { MetroMap } from './MetroMap';
+import { MetroMapPanel } from './MetroMapPanel';
 
 type LineMapViewProps = {
   selected: Station | null;
@@ -83,23 +82,10 @@ export function LineMapView({ selected, onSelect }: LineMapViewProps) {
       </section>
 
       <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-md">
-        <div className="mb-sm flex flex-wrap items-baseline gap-x-sm gap-y-xs">
-          <h3 className="text-label-caps uppercase tracking-widest text-on-surface-variant">
-            수도권 간략 노선도
-          </h3>
-          <p className="text-body-md text-on-surface-variant">
-            노선에 마우스를 올리면 그 노선만 강조됩니다.
-          </p>
-        </div>
-        <MetroMap />
-        <p className="mt-sm flex items-start gap-xs text-body-md text-on-surface-variant">
-          <Icon name="info" className="shrink-0 text-[18px]" />
-          <span>
-            보기 편하도록 각도를 정리한 <strong>도식도</strong>라 실제 지리
-            위치와는 다릅니다. 지금은 주요 역·환승역만 표시되며, 전체 역은 다음
-            단계에 채웁니다.
-          </span>
-        </p>
+        <h3 className="mb-sm text-label-caps uppercase tracking-widest text-on-surface-variant">
+          수도권 전체 노선도
+        </h3>
+        <MetroMapPanel />
       </section>
     </PreviewFrame>
   );
