@@ -3,13 +3,13 @@
 > 데스크톱에서 작업하던 내용을 **노트북 등 다른 PC에서 그대로 이어받기 위한 문서**입니다.
 > 이 문서만 읽으면 지금까지의 맥락 없이도 이어서 작업할 수 있습니다.
 >
-> 마지막 갱신: 2026-07-26 / 작업 브랜치: `fix/fe-map-panel-polish`
+> 마지막 갱신: 2026-07-29 / 작업 브랜치: `feat/fe-metromap-viewer`
 
 ---
 
 ## 1. 지금 상태 요약
 
-프론트엔드 MVP의 **1~3단계까지 완료**되어 있고, 브라우저에서 지도가 뜨는 것까지 확인했습니다.
+프론트엔드 MVP의 **1~5단계와 마커·인포윈도우까지 완료**되어 있고, 배포본에서도 동작을 확인했습니다.
 
 | SPEC 단계 | 내용 | 상태 |
 |---|---|---|
@@ -31,7 +31,6 @@ src/
 ├─ api/places.ts               역 주변 장소 접근 계층 (지금은 탕정역 2곳만)
 ├─ data/stations.json          1호선 천안·아산 11개 역 (배열 순서 = 노선 순서)
 ├─ data/places.json            장소 데이터 — 백엔드 응답 형태에 맞춰 둠
-├─ data/metroLines.ts          수도권 간략 노선도 좌표 (도식, 실제 지리 아님)
 ├─ types/station.ts            Station 타입
 ├─ types/place.ts              Place 타입 (백엔드 응답 예정 형태)
 ├─ types/view.ts               화면 종류 (map / line / route / timetable / mypage)
@@ -41,11 +40,11 @@ src/
 ├─ components/TopNav/          상단 내비 + navItems.ts (메뉴 정의)
 ├─ components/Preview/         프리뷰 화면 공통 껍데기
 ├─ components/LineMap/         노선도 프리뷰
-│                              └ MetroMapPanel: 이미지 / SVG 전환
-├─ lib/asset.ts                public/ 파일 주소 만들기 (배포 경로 대응)
+│                              └ MetroMapPanel: 끌어보는 노선도 뷰어
 ├─ components/RoutePlan/       경로 프리뷰
 ├─ components/Timetable/       시간표 프리뷰
 ├─ components/MyPage/          마이페이지 프리뷰
+├─ lib/asset.ts                public/ 파일 주소 만들기 (배포 경로 대응)
 └─ App.tsx                     화면 전환 + 선택 역 상태
 ```
 
@@ -53,7 +52,6 @@ src/
 
 - 카테고리 기반 장소 검색 (지금은 탕정역 2곳만 손으로 넣어 둠)
 - 노선도/경로/시간표/마이페이지의 **실제 동작** (지금은 화면만 — SPEC 2-1 참고)
-- 수도권 노선도의 전체 역 (주요 역·환승역만 있음)
 
 ---
 
