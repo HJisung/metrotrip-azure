@@ -11,9 +11,9 @@ export type Place = {
   name: string;
   /**
    * 카카오 로컬 카테고리 코드 (docs/SPEC.md 5장)
-   * FD6 음식점 / CE7 카페 / AT4 관광명소
+   * FD6 음식점 / CE7 카페 / AT4 관광명소 / SW8 지하철역
    */
-  category: 'FD6' | 'CE7' | 'AT4';
+  category: 'FD6' | 'CE7' | 'AT4' | 'SW8';
   /** 카테고리 한글 이름 — 인포윈도우에 그대로 보여준다 */
   categoryName: string;
   address: string;

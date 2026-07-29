@@ -44,10 +44,32 @@ declare global {
       setMaxLevel(level: number): void;
     }
 
+    /** 픽셀 크기 (마커 이미지 크기 지정용) */
+    class Size {
+      constructor(width: number, height: number);
+    }
+
+    /** 픽셀 좌표 (마커 이미지의 기준점 지정용) */
+    class Point {
+      constructor(x: number, y: number);
+    }
+
+    interface MarkerImageOptions {
+      /** 이미지 안에서 좌표가 가리키는 지점 (기본은 좌상단) */
+      offset?: Point;
+    }
+
+    /** 마커 아이콘 이미지 (카테고리별 색상 구분에 사용) */
+    class MarkerImage {
+      constructor(src: string, size: Size, options?: MarkerImageOptions);
+    }
+
     interface MarkerOptions {
       position: LatLng;
       map?: Map;
       title?: string;
+      /** 지정하지 않으면 카카오 기본 빨간 핀이 쓰인다 */
+      image?: MarkerImage;
     }
 
     /** 마커 */
