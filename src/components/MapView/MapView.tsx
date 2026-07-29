@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from '../Icon';
 import { getPlacesByStation } from '../../api/places';
+import { getMarkerImage } from './markerIcons';
 import type { Place } from '../../types/place';
 
 type MapViewProps = {
@@ -131,6 +132,7 @@ export function MapView({ lat, lng, stationName }: MapViewProps) {
           position: new window.kakao.maps.LatLng(place.lat, place.lng),
           map,
           title: place.name,
+          image: getMarkerImage(place.category),
         });
 
         window.kakao.maps.event.addListener(marker, 'click', () => {
