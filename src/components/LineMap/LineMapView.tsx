@@ -34,7 +34,8 @@ export function LineMapView({ selected, onSelect }: LineMapViewProps) {
     <PreviewFrame
       title="노선도"
       description="노선 위에서 역을 골라 바로 지도로 이동합니다."
-      notice="아래 두 노선도 모두 화면 확인용입니다. 역을 눌러 지도로 이동하는 것은 천안·아산 구간에서만 동작합니다."
+      notice="아래 노선도는 화면 확인용입니다. 역을 눌러 지도로 이동하는 것은 천안·아산 구간에서만 동작합니다."
+      wide
     >
       <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-md">
         <h3 className="text-label-caps uppercase tracking-widest text-on-surface-variant">

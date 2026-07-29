@@ -10,6 +10,8 @@ type PreviewFrameProps = {
    * 발표 중 "이미 되는 기능"으로 오해받지 않도록 화면마다 반드시 밝힌다.
    */
   notice: string;
+  /** 노선도처럼 넓게 봐야 하는 화면은 가로 폭 제한을 푼다 */
+  wide?: boolean;
   children: ReactNode;
 };
 
@@ -23,11 +25,18 @@ export function PreviewFrame({
   title,
   description,
   notice,
+  wide = false,
   children,
 }: PreviewFrameProps) {
   return (
     <div className="h-full overflow-y-auto bg-background">
-      <div className="mx-auto flex max-w-4xl flex-col gap-md p-md">
+      <div
+        className={
+          wide
+            ? 'flex flex-col gap-md p-md'
+            : 'mx-auto flex max-w-4xl flex-col gap-md p-md'
+        }
+      >
         <header className="flex flex-col gap-xs">
           <div className="flex items-center gap-sm">
             <h2 className="text-headline-sm font-heading font-bold text-on-surface">
