@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { Icon } from '../Icon';
 
 type PreviewFrameProps = {
   title: string;
@@ -33,25 +32,17 @@ export function PreviewFrame({
       <div
         className={
           wide
-            ? 'flex flex-col gap-md p-md'
-            : 'mx-auto flex max-w-4xl flex-col gap-md p-md'
+            ? 'flex flex-col gap-lg p-md sm:p-lg'
+            : 'mx-auto flex max-w-4xl flex-col gap-lg p-md sm:p-lg'
         }
       >
-        <header className="flex flex-col gap-xs">
-          <div className="flex items-center gap-sm">
-            <h2 className="text-headline-sm font-heading font-bold text-on-surface">
-              {title}
-            </h2>
-            <span className="rounded-full bg-surface-container-high px-sm py-xs text-label-caps uppercase text-on-surface-variant">
-              준비중
-            </span>
-          </div>
-          <p className="text-body-md text-on-surface-variant">{description}</p>
+        <header className="flex flex-col gap-xs border-b border-outline-variant pb-md">
+          <h2 className="text-display-lg font-heading text-on-surface">{title}</h2>
+          <p className="max-w-2xl text-body-lg text-on-surface-variant">{description}</p>
         </header>
 
-        <p className="flex items-start gap-sm rounded-xl border border-tertiary-container/30 bg-tertiary-container/10 px-md py-sm text-body-md text-tertiary">
-          <Icon name="info" className="shrink-0 text-[20px]" />
-          <span>{notice}</span>
+        <p className="border-l-2 border-tertiary px-md py-xs text-body-md text-on-surface-variant">
+          {notice}
         </p>
 
         {children}

@@ -48,8 +48,8 @@ export function MyPageView() {
       notice="로그인 기능이 아직 없어서 아래는 전부 예시입니다. 회원 기능은 백엔드 연동 이후 단계입니다."
     >
       {/* 프로필 */}
-      <section className="flex items-center gap-md rounded-xl border border-outline-variant bg-surface-container-lowest p-md">
-        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary-container text-headline-sm font-bold text-on-primary-container">
+      <section className="flex items-center gap-md border-t border-outline-variant py-md">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-primary-container text-headline-sm font-bold text-on-primary-container">
           {EXAMPLE_USER.initial}
         </span>
         <div className="min-w-0 flex-1">
@@ -60,18 +60,18 @@ export function MyPageView() {
             {EXAMPLE_USER.email}
           </p>
         </div>
-        <span className="hidden shrink-0 items-center gap-xs rounded-lg border border-outline-variant px-md py-sm text-body-md text-on-surface-variant sm:flex">
+        <span className="hidden shrink-0 items-center gap-xs border-b border-outline-variant px-sm py-sm text-body-md text-on-surface-variant sm:flex">
           <Icon name="edit" className="text-[18px]" />
           프로필 수정
         </span>
       </section>
 
       {/* 요약 숫자 */}
-      <section className="grid grid-cols-3 gap-sm">
+      <section className="grid grid-cols-3 border-y border-outline-variant">
         {EXAMPLE_STATS.map((stat) => (
           <div
             key={stat.label}
-            className="flex flex-col items-center gap-xs rounded-xl border border-outline-variant bg-surface-container-lowest p-md"
+            className="flex flex-col items-center gap-xs border-r border-outline-variant p-md last:border-r-0"
           >
             <Icon name={stat.icon} className="text-[20px] text-primary" />
             <span className="text-headline-sm font-bold text-on-surface">
@@ -85,7 +85,7 @@ export function MyPageView() {
       </section>
 
       {/* 즐겨찾기한 역 */}
-      <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-md">
+      <section className="border-t border-outline-variant pt-md">
         <h3 className="text-label-caps uppercase tracking-widest text-on-surface-variant">
           즐겨찾기한 역
         </h3>
@@ -93,7 +93,7 @@ export function MyPageView() {
           {EXAMPLE_FAVORITES.map((name) => (
             <span
               key={name}
-              className="flex items-center gap-xs rounded-full border border-outline-variant px-md py-xs text-body-md text-on-surface"
+              className="flex items-center gap-xs border-b border-outline-variant px-sm py-xs text-body-md text-on-surface"
             >
               <Icon name="star" className="text-[16px] text-primary" />
               {name}
@@ -103,7 +103,7 @@ export function MyPageView() {
       </section>
 
       {/* 작성한 후기 */}
-      <section className="rounded-xl border border-outline-variant bg-surface-container-lowest">
+      <section className="border-t border-outline-variant">
         <h3 className="border-b border-outline-variant px-md py-sm text-label-caps uppercase tracking-widest text-on-surface-variant">
           작성한 후기
         </h3>
@@ -141,7 +141,7 @@ export function MyPageView() {
       </section>
 
       {/* 계정 관리 */}
-      <section className="rounded-xl border border-outline-variant bg-surface-container-lowest">
+      <section className="border-t border-outline-variant">
         {ACCOUNT_MENU.map((menu) => (
           <div
             key={menu.label}

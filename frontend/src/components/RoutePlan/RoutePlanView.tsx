@@ -16,29 +16,29 @@ export function RoutePlanView() {
       description="출발역과 도착역을 골라 지나는 역을 확인합니다."
       notice="아래는 화면 구성을 보여주기 위한 예시입니다. 실제 경로 계산은 아직 동작하지 않습니다."
     >
-      <section className="flex flex-col gap-sm rounded-xl border border-outline-variant bg-surface-container-lowest p-md">
-        <div className="flex items-center gap-sm rounded-lg border border-outline-variant px-md py-sm">
-          <span className="rounded-md bg-primary px-sm py-xs text-label-caps text-on-primary">
+      <section className="flex flex-col gap-sm border-t border-outline-variant pt-md">
+        <div className="flex items-center gap-sm border-b border-outline-variant px-xs py-sm">
+          <span className="border-l-2 border-primary px-sm py-xs text-label-caps text-primary">
             출발
           </span>
           <span className="text-body-lg text-on-surface">{EXAMPLE.from}</span>
         </div>
 
         <div className="flex justify-end pr-sm">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full border border-outline-variant text-on-surface-variant">
+          <span className="flex h-8 w-8 items-center justify-center text-on-surface-variant">
             <Icon name="swap_vert" className="text-[20px]" />
           </span>
         </div>
 
-        <div className="flex items-center gap-sm rounded-lg border border-outline-variant px-md py-sm">
-          <span className="rounded-md bg-secondary px-sm py-xs text-label-caps text-on-secondary">
+        <div className="flex items-center gap-sm border-b border-outline-variant px-xs py-sm">
+          <span className="border-l-2 border-secondary px-sm py-xs text-label-caps text-secondary">
             도착
           </span>
           <span className="text-body-lg text-on-surface">{EXAMPLE.to}</span>
         </div>
       </section>
 
-      <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-md">
+      <section className="border-t border-outline-variant pt-md">
         <h3 className="text-label-caps uppercase tracking-widest text-on-surface-variant">
           예시 결과
         </h3>
@@ -60,8 +60,8 @@ export function RoutePlanView() {
                 <span
                   className={
                     isEndpoint
-                      ? 'rounded-full bg-primary-container px-md py-xs text-body-md font-bold text-on-primary-container'
-                      : 'rounded-full border border-outline-variant px-md py-xs text-body-md text-on-surface-variant'
+                      ? 'border-b-2 border-primary px-sm py-xs text-body-md font-bold text-primary'
+                      : 'border-b border-outline-variant px-sm py-xs text-body-md text-on-surface-variant'
                   }
                 >
                   {name}

@@ -1,91 +1,151 @@
 import { useEffect, useState } from 'react';
-import { searchStations } from '../../api/stations';
+import { getStations, searchStations } from '../../api/stations';
 import type { Station } from '../../types/station';
 import { Icon } from '../Icon';
 
 type StationListProps = {
-  /** 현재 선택된 역 (지도 중심과 동기화) */
   selected: Station | null;
   onSelect: (station: Station) => void;
 };
 
-/**
- * 역 검색창 + 목록. 지도 위에 떠 있는 유리 카드(glass-card) 형태.
- * 검색어가 바뀔 때마다 api/stations.ts를 통해 목록을 갱신한다.
- */
+/** 지도 상단의 역 순서와 독립 검색 영역 */
 export function StationList({ selected, onSelect }: StationListProps) {
   const [keyword, setKeyword] = useState('');
   const [stations, setStations] = useState<Station[]>([]);
+  const [searchResults, setSearchResults] = useState<Station[]>([]);
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [searchStatus, setSearchStatus] = useState<'loading' | 'success' | 'error'>('success');
 
   useEffect(() => {
     let cancelled = false;
-    searchStations(keyword).then((result) => {
-      if (!cancelled) setStations(result);
-    });
+    setStatus('loading');
+    getStations()
+      .then((result) => {
+        if (!cancelled) {
+          setStations(result);
+          setStatus('success');
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setStatus('error');
+      });
+
+    return () => {
+      cancelled = true;
+      };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setSearchStatus('loading');
+    searchStations(keyword)
+      .then((result) => {
+        if (!cancelled) {
+          setSearchResults(result);
+          setSearchStatus('success');
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setSearchStatus('error');
+      });
+
     return () => {
       cancelled = true;
     };
   }, [keyword]);
 
   return (
-    <div className="flex h-full flex-col gap-sm">
-      {/* 검색창 */}
-      <div className="flex items-center gap-sm rounded-xl border border-outline-variant bg-white/80 p-sm pr-md shadow-lg backdrop-blur-md">
-        <Icon name="search" className="px-sm text-primary" />
-        <input
-          className="w-full border-none bg-transparent text-body-md placeholder:text-on-surface-variant focus:outline-none"
-          type="text"
-          placeholder="역 이름 검색"
-          value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
-        />
-      </div>
-
-      {/* 역 목록 카드 */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-outline-variant bg-white/80 shadow-lg backdrop-blur-md">
-        <div className="border-b border-outline-variant px-md py-sm">
-          <h3 className="text-label-caps uppercase tracking-widest text-on-surface-variant">
-            역 목록 · 1호선
-          </h3>
-        </div>
-
-        <ul className="flex-1 space-y-xs overflow-y-auto p-sm">
-          {stations.map((station) => {
-            const isActive = selected?.name === station.name;
-            return (
-              <li key={station.name}>
-                <button
-                  type="button"
-                  onClick={() => onSelect(station)}
-                  className={
-                    isActive
-                      ? 'flex w-full items-center justify-between gap-sm rounded-lg border-l-4 border-primary bg-primary/5 px-sm py-xs text-left transition-colors'
-                      : 'flex w-full items-center justify-between gap-sm rounded-lg border-l-4 border-transparent px-sm py-xs text-left transition-colors hover:bg-surface-container-low'
-                  }
-                >
-                  <span
-                    className={
+    <div className="flex w-full flex-col items-end gap-xs p-3 sm:p-[30px] lg:w-auto">
+      <section className="w-fit max-w-full rounded-[5px] border border-outline-variant bg-surface/95 px-sm py-xs backdrop-blur-sm sm:px-md">
+        {status === 'loading' ? (
+          <p className="flex min-h-10 items-center gap-xs text-body-md text-on-surface-variant" role="status">
+            <Icon name="progress_activity" className="animate-spin text-[18px]" />
+            역 목록을 불러오는 중입니다.
+          </p>
+        ) : status === 'error' ? (
+          <p className="min-h-10 py-xs text-body-md text-error" role="alert">
+            역 목록을 불러오지 못했습니다.
+          </p>
+        ) : stations.length === 0 ? (
+          <p className="min-h-10 py-xs text-body-md text-on-surface-variant">검색 결과가 없습니다.</p>
+        ) : (
+          <ul className="flex flex-wrap items-center" aria-label="역 순서">
+            {stations.map((station, index) => {
+              const isActive = selected?.name === station.name;
+              return (
+                <li key={station.name} className="flex items-center">
+                  <button
+                    type="button"
+                    aria-pressed={isActive}
+                    onClick={() => onSelect(station)}
+                    className={`min-h-9 px-xs py-xs text-body-md transition-colors ${
                       isActive
-                        ? 'text-body-lg font-bold text-primary'
-                        : 'text-body-md text-on-surface'
-                    }
+                        ? 'font-bold text-primary underline decoration-2 underline-offset-4'
+                        : 'text-on-surface-variant hover:text-primary'
+                    }`}
                   >
-                    {station.name}
-                  </span>
-                  <span className="rounded-full bg-primary px-sm text-label-caps text-white">
-                    {station.line}
-                  </span>
-                </button>
-              </li>
-            );
-          })}
+                    {station.name.replace(/역$/, '')}
+                  </button>
+                  {index < stations.length - 1 && (
+                    <span className="px-[2px] text-on-surface-variant/60" aria-hidden="true">
+                      -
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
 
-          {stations.length === 0 && (
-            <li className="px-md py-sm text-body-md text-on-surface-variant">
-              검색 결과가 없습니다.
-            </li>
+      <div className="relative flex w-full justify-end">
+        <div className="w-full max-w-64">
+          <label className="flex items-center gap-xs rounded-[5px] border border-outline-variant bg-surface/95 px-sm py-xs backdrop-blur-sm">
+            <Icon name="search" className="text-on-surface-variant" />
+            <span className="sr-only">역 이름 검색</span>
+            <input
+              aria-label="역 이름 검색"
+              className="min-w-0 flex-1 border-none bg-transparent text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none"
+              type="search"
+              placeholder="역 이름 검색"
+              value={keyword}
+              onChange={(event) => setKeyword(event.target.value)}
+            />
+            {keyword && (
+              <button
+                type="button"
+                onClick={() => setKeyword('')}
+                aria-label="역 검색어 지우기"
+                className="text-on-surface-variant hover:text-primary"
+              >
+                <Icon name="close" className="text-[18px]" />
+              </button>
+            )}
+          </label>
+          {keyword && searchStatus === 'success' && searchResults.length > 0 && (
+            <ul className="absolute right-0 z-10 mt-1 w-full overflow-hidden rounded-[5px] border border-outline-variant bg-surface shadow-md" aria-label="역 검색 결과">
+              {searchResults.map((station) => (
+                <li key={station.name}>
+                  <button
+                    type="button"
+                    className="w-full px-sm py-xs text-left text-body-md text-on-surface hover:bg-surface-container-low"
+                    onClick={() => {
+                      onSelect(station);
+                      setKeyword('');
+                    }}
+                  >
+                    {station.name.replace(/역$/, '')}
+                  </button>
+                </li>
+              ))}
+            </ul>
           )}
-        </ul>
+          {keyword && searchStatus === 'success' && searchResults.length === 0 && (
+            <p className="absolute right-0 z-10 mt-1 w-full rounded-[5px] border border-outline-variant bg-surface px-sm py-xs text-body-md text-on-surface-variant shadow-md">
+              검색 결과가 없습니다.
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
