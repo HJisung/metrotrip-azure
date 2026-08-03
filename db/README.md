@@ -18,46 +18,44 @@ MetroTrip 서비스의 데이터베이스 스키마와 관련 산출물입니다
 
 ## 초기 세팅
 
-MySQL 8.0 기준입니다.
+MySQL 8.0 기준입니다. 스크립트 상단에 `CREATE DATABASE` 문이 포함되어 있으므로 별도 생성이 필요 없습니다.
 
 ```sql
-CREATE DATABASE metrotrip_db;
-```
-
-문자셋이 utf8mb4 인지 확인합니다. MySQL 8.0 은 옵션을 생략해도 기본값이 utf8mb4 입니다.
-
-```sql
-SELECT default_character_set_name, default_collation_name
-FROM information_schema.schemata
-WHERE schema_name = 'metrotrip_db';
-```
-
-utf8mb4 가 아니라면 아래를 먼저 실행합니다.
-
-```sql
-ALTER DATABASE metrotrip_db
+CREATE DATABASE IF NOT EXISTS metrotrip
   DEFAULT CHARACTER SET utf8mb4
   DEFAULT COLLATE utf8mb4_0900_ai_ci;
 ```
 
+`utf8mb4_0900_ai_ci` 는 MySQL 8.0 의 기본 콜레이션입니다. 대소문자·악센트를 구분하지 않으므로
+영문 태그 검색과 역명 검색이 의도대로 동작합니다. 이미 만들어둔 DB 가 있다면 아래로 확인합니다.
+
+```sql
+SELECT default_character_set_name, default_collation_name
+FROM information_schema.schemata
+WHERE schema_name = 'metrotrip';
+```
+
 이후 아래 순서로 실행합니다.
 
-1. `schema/schema_V1.7.sql`
+1. `schema/schema_V1.8.sql`
 2. `migrations/` 하위 파일을 번호 순서대로 (있는 경우)
-3. `seed/` 하위 파일
+3. `seed/` 하위 파일 (있는 경우)
 
 ### 실행 결과 확인
 
 ```sql
--- 테이블 20개
+-- 테이블 22개
 SHOW TABLES;
 
--- 제약: PRIMARY KEY 20 / UNIQUE 10 / FOREIGN KEY 30 / CHECK 15
+-- 제약: PRIMARY KEY 22 / UNIQUE 11 / FOREIGN KEY 34 / CHECK 20
 SELECT constraint_type, COUNT(*)
 FROM information_schema.table_constraints
-WHERE table_schema = 'metrotrip_db'
+WHERE table_schema = 'metrotrip'
 GROUP BY constraint_type;
 ```
+
+> MySQL 은 `information_schema` 에서 PRIMARY KEY 를 UNIQUE 로도 집계하지 않습니다.
+> 다만 PK 이름은 항상 `PRIMARY` 로 저장되므로, 스크립트에 적어둔 `pk_*` 이름은 문서용 표기입니다.
 
 ---
 
@@ -65,12 +63,12 @@ GROUP BY constraint_type;
 
 | 항목 | 수 |
 | --- | --- |
-| 테이블 | 20 |
-| 컬럼 | 121 |
-| PRIMARY KEY | 20 |
-| UNIQUE | 10 |
-| FOREIGN KEY | 30 (CASCADE 12 / RESTRICT 12 / SET NULL 6) |
-| CHECK | 15 |
+| 테이블 | 22 |
+| 컬럼 | 140 |
+| PRIMARY KEY | 22 |
+| UNIQUE | 11 |
+| FOREIGN KEY | 34 (CASCADE 15 / RESTRICT 12 / SET NULL 7) |
+| CHECK | 20 |
 
 ### 테이블 목록
 
@@ -80,6 +78,7 @@ GROUP BY constraint_type;
 | 지하철 | `subway_lines` `stations` `line_stations` `train_timetables` `line_view_logs` |
 | 장소 | `places` `place_stations` `place_images` |
 | 회원 활동 | `station_favorites` `travel_plans` `travel_plan_items` `reviews` `review_media` `review_tags` |
+| 게시판 | `board_posts` `post_participants` |
 | 공지 | `notices` |
 
 ---
@@ -88,10 +87,28 @@ GROUP BY constraint_type;
 
 작업 중 자주 되묻게 되는 항목만 추렸습니다. 전체 근거는 데이터베이스 명세서를 참고하세요.
 
+**회원 탈퇴 시 콘텐츠 처리**
+회원이 남긴 콘텐츠는 **모두 함께 삭제**합니다. 후기(`reviews`)와 게시글(`board_posts`) 모두
+`ON DELETE CASCADE` 이며, 첨부 미디어·태그·참여 신청 내역까지 연쇄로 지워집니다.
+예외는 관리자 권한으로 작성한 데이터입니다. `places.created_by` 와 `notices.admin_id` 는
+`SET NULL` 로 두어, 관리자 계정이 사라져도 장소·공지는 서비스에 남습니다.
+
+**모집 글 삭제 시 알림**
+`post_participants` 는 `board_posts` 에 CASCADE 로 묶여 있어, 작성자가 탈퇴하면 참여 신청 내역이
+DB 레벨에서 조용히 삭제됩니다. FK CASCADE 는 애플리케이션을 거치지 않으므로,
+**탈퇴 처리 직전에 참여자 목록을 읽어 취소 알림을 보내야** 합니다. 삭제 후에는 조회할 방법이 없습니다.
+
 **마스터 테이블 FK 정책**
 `subway_lines` `stations` `places` 를 참조하는 FK 는 `ON DELETE RESTRICT` 로 통일했습니다.
 예외로 `train_timetables.destination_station_id`(종착역)와 `travel_plan_items.station_id`(경유역)는
 부가 정보이므로 `SET NULL` 입니다.
+
+**게시판 통합 구조**
+일반 글과 인원 모집을 `board_posts` 한 테이블에서 `post_type` 으로 구분합니다.
+`recruit_capacity` `recruit_deadline` `recruit_status` `meeting_date` 는 RECRUIT 전용이며 일반 글에서는 NULL 입니다.
+**이 조합은 DB 제약으로 강제되지 않습니다.** 일반 글에 모집 정원이 들어가거나 일반 글에 참여 신청이
+붙는 것을 막으려면 애플리케이션에서 검증해야 합니다.
+현재 모집 인원은 `post_participants` 에서 `status = 'ACCEPTED'` 건수를 세어 구합니다.
 
 **여행 계획 동선 정렬**
 `travel_plan_items` 에 순번 컬럼이 없습니다. 동선 순서는 `visit_time` 오름차순으로 결정합니다.
@@ -110,12 +127,14 @@ ORDER BY visit_time, plan_item_id
 한글·숫자 태그는 정규화 대상이 아닙니다.
 
 **수정 시각**
-`updated_at` 은 `ON UPDATE CURRENT_TIMESTAMP` 를 걸지 않았습니다.
-**UPDATE 문에서 직접 값을 넣어야 갱신됩니다.**
+`updated_at` 에 `ON UPDATE CURRENT_TIMESTAMP` 를 걸었습니다.
+**UPDATE 문에서 값을 넣지 않아도 자동으로 갱신됩니다.** 적용 대상은
+`users` `places` `travel_plans` `reviews` `notices` `board_posts` 입니다.
 
 **인덱스**
 현재 PK / UNIQUE / FK 인덱스만 있습니다. 조회 성능용 인덱스는 기능 개발 후
-`EXPLAIN` 으로 확인하며 `migrations/` 에 추가할 예정입니다.
+`EXPLAIN` 으로 확인하며 `migrations/` 에 추가할 예정입니다. 후보 목록과 우선순위는
+데이터베이스 명세서의 인덱스 시트에 정리되어 있습니다.
 
 ---
 
@@ -159,9 +178,9 @@ ORDER BY visit_time, plan_item_id
 
 | 문서 | 위치 |
 | --- | --- |
-| 데이터베이스 명세서 V1.7 | 팀 공유 드라이브 |
+| 데이터베이스 명세서 V1.8 | 팀 공유 드라이브 |
 | 요구사항 정의서 V1.3 | [Google Sheets](https://docs.google.com/spreadsheets/d/1VoXGmwvz8NwPQYi8wy_9lcEH0s8k9UKr7djuU2-z6Ss/edit) |
-| ERD | `erd/ERD_V1.7.mmd` |
+| ERD | `erd/ERD_V1.8.mmd` |
 | 백엔드 연동 지점 | [docs/BACKEND-HANDOFF.md](../docs/BACKEND-HANDOFF.md) |
 
 담당: 김유진
