@@ -92,7 +92,7 @@ def _decode_token(token: str, secret: str) -> dict[str, object]:
 
 def _send_code(email: str, code: str, settings: Settings) -> None:
     if settings.email_mode == "console":
-        logger.info("이메일 인증 코드 recipient=%s code=%s", email, code)
+        logger.warning("[MetroTrip] 이메일 인증 코드 recipient=%s code=%s", email, code)
         return
     if not all(
         (
