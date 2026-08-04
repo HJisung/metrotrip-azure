@@ -46,6 +46,29 @@ export function useKakaoMap({ lat, lng }: UseKakaoMapOptions) {
     map.panTo(new window.kakao.maps.LatLng(lat, lng));
   }, [lat, lng]);
 
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || !mapReady) return;
+
+    let animationFrameId: number | null = null;
+    const resizeObserver = new ResizeObserver(() => {
+      if (animationFrameId !== null) return;
+
+      animationFrameId = window.requestAnimationFrame(() => {
+        mapRef.current?.relayout();
+        animationFrameId = null;
+      });
+    });
+
+    resizeObserver.observe(container);
+    return () => {
+      resizeObserver.disconnect();
+      if (animationFrameId !== null) {
+        window.cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [mapReady]);
+
   const zoom = useCallback((delta: number) => {
     const map = mapRef.current;
     if (!map) return;

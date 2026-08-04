@@ -36,6 +36,8 @@ declare global {
       /** 즉시 중심 이동 */
       setCenter(latlng: LatLng): void;
       getCenter(): LatLng;
+      /** 지도 컨테이너 크기 변경 후 내부 픽셀 좌표를 다시 계산 */
+      relayout(): void;
       setLevel(level: number): void;
       getLevel(): number;
       /** 확대 한계 (가장 크게 확대했을 때의 레벨) */
