@@ -1,4 +1,5 @@
 import { Icon } from '../../../shared/ui/Icon';
+import { Button } from '../../../shared/ui/Button';
 import { DIRECTION_LABELS } from '../data/timetables';
 import type { TimetablePanelProps } from '../types';
 
@@ -33,15 +34,16 @@ export function TimetablePanel({
             </h2>
             <p className="text-body-md text-on-surface-variant">{station.line}</p>
           </div>
-          <button
+          <Button
             type="button"
             ref={closeButtonRef}
             onClick={onClose}
             aria-label="시간표 닫기"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container"
+            variant="ghost"
+            size="icon"
           >
             <Icon name="close" />
-          </button>
+          </Button>
         </header>
 
         <div className="border-b border-outline-variant p-sm">

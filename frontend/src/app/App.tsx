@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { getStations } from '../shared/lib/stations';
 import type { Station } from '../shared/types/station';
 import { AppRouter } from './router';
-import { getPath, navigate, readRoute, type AppRoute } from './route';
+import { getAuthPath, getPath, navigate, readRoute, type AppRoute } from './route';
 import { TopNav } from './ui/TopNav';
 import type { ViewId } from './view';
 
@@ -71,19 +71,28 @@ function App() {
   return (
     <div className="flex min-h-dvh flex-col bg-background text-on-background lg:flex-row">
       <TopNav
-        current={route.view}
-        onNavigate={navigateToView}
-        theme={theme}
-        onToggleTheme={() =>
-          setTheme((current) => {
-            const next = current === 'dark' ? 'light' : 'dark';
-            window.localStorage.setItem('metrotrip-theme', next);
-            return next;
-          })
-        }
+          current={route.view}
+          onNavigate={navigateToView}
+          theme={theme}
+          onToggleTheme={() =>
+            setTheme((current) => {
+              const next = current === 'dark' ? 'light' : 'dark';
+              window.localStorage.setItem('metrotrip-theme', next);
+              return next;
+            })
+          }
       />
       <main className="relative min-h-0 flex-1 overflow-hidden lg:ml-20 lg:h-dvh">
-        <AppRouter route={route} selected={selected} onSelectStation={selectStation} />
+        <AppRouter
+          route={route}
+          selected={selected}
+          onSelectStation={selectStation}
+          onLogout={() => {
+            window.localStorage.removeItem('metrotrip-access-token');
+            window.localStorage.removeItem('metrotrip-refresh-token');
+            navigate(getAuthPath('login'));
+          }}
+        />
       </main>
     </div>
   );
