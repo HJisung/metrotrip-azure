@@ -25,7 +25,7 @@ export function AuthBrand() {
       onClick={() => navigate(getPath('line'))}
       aria-label="MetroTrip 로그인으로 이동"
     >
-      <img src={asset('logo.png')} alt="MetroTrip" className="h-12 w-auto object-contain" />
+      <img src={asset('logo.png')} alt="MetroTrip" className="h-[var(--auth-logo-height)] w-auto object-contain" />
     </Button>
   );
 }
@@ -33,8 +33,8 @@ export function AuthBrand() {
 export function AuthLayout({ page, children }: AuthLayoutProps) {
   return (
     <Dialog open onOpenChange={(open) => !open && navigate(getPath('map'))}>
-      <DialogContent className="max-w-[26rem] border-outline-variant/60 p-lg sm:p-xl">
-        <div className="auth-dialog-motion flex flex-col gap-xl">
+      <DialogContent className="w-[calc(100vw-1.5rem)] max-w-[var(--auth-dialog-width)] border-outline-variant/60 p-[var(--auth-gutter)]">
+        <div className="auth-dialog-motion flex flex-col gap-[var(--auth-gap)]">
           <AuthBrand />
           {children}
           <AuthNavigation page={page} />
@@ -46,17 +46,17 @@ export function AuthLayout({ page, children }: AuthLayoutProps) {
 
 export function AuthStandaloneLayout({ page, title, description, showHeader = true, children }: AuthStandaloneLayoutProps) {
   return (
-    <main className="auth-page-shell min-h-dvh overflow-y-auto bg-background px-md py-xl sm:px-lg">
+    <main className="auth-page-shell min-h-dvh overflow-y-auto bg-background px-[var(--auth-gutter)] py-[var(--auth-vertical-gutter)]">
       <div className={cn(
-        'mx-auto flex w-full max-w-[28rem] flex-col',
-        page === 'signup' ? 'py-md sm:py-xl' : 'min-h-[calc(100dvh-5rem)] justify-center',
+        'mx-auto flex w-full max-w-[var(--auth-width)] flex-col',
+        page === 'signup' ? 'py-sm sm:py-xl' : 'min-h-[calc(100dvh-2rem)] justify-center',
       )}>
-        <section className="flex flex-col gap-xl rounded-2xl bg-surface-bright px-lg py-xl shadow-card sm:px-xl" aria-labelledby="auth-page-title">
+        <section className="flex flex-col gap-[var(--auth-gap)] rounded-2xl bg-surface-bright px-[var(--auth-gutter)] py-[var(--auth-vertical-gutter)] shadow-card" aria-labelledby="auth-page-title">
           <AuthBrand />
           {showHeader && (
             <header className="space-y-xs text-center">
-              <h1 id="auth-page-title" className="text-headline-md font-heading text-on-surface">{title}</h1>
-              <p className="text-body-md leading-relaxed text-on-surface-variant">{description}</p>
+              <h1 id="auth-page-title" className="text-[var(--auth-title-size)] leading-tight font-heading text-on-surface">{title}</h1>
+              <p className="text-[var(--auth-label-size)] leading-relaxed text-on-surface-variant">{description}</p>
             </header>
           )}
           {children}

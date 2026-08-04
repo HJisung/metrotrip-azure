@@ -20,7 +20,7 @@ export function TimetablePanel({
     >
       <section
         ref={dialogRef}
-        className="flex max-h-[min(88dvh,42rem)] w-full flex-col overflow-hidden rounded-t-2xl border border-outline-variant bg-surface-bright shadow-2xl sm:max-w-[min(100%,30rem)] lg:h-full lg:max-h-none lg:w-[clamp(22rem,26vw,26rem)] lg:max-w-none lg:rounded-none lg:border-y-0 lg:border-r-0"
+        className="flex max-h-[var(--timetable-panel-height)] w-full flex-col overflow-hidden rounded-t-2xl border border-outline-variant bg-surface-bright shadow-2xl sm:max-w-[min(100%,30rem)] lg:h-full lg:max-h-none lg:w-[var(--timetable-panel-width)] lg:max-w-none lg:rounded-none lg:border-y-0 lg:border-r-0"
         role="dialog"
         aria-modal="true"
         aria-labelledby="timetable-title"

@@ -124,7 +124,7 @@ export function MetroMapPanel({ stations, selected, onSelect, viewport: viewport
         <svg
           ref={svgRef}
           viewBox={`0 0 ${LINE1_MAP_VIEWBOX.width} ${LINE1_MAP_VIEWBOX.height}`}
-          className="block h-[clamp(18rem,62dvh,38.75rem)] min-h-0 w-full select-none"
+          className="block h-[var(--line-map-height)] min-h-0 w-full select-none"
           role="group"
           aria-label="1호선 천안·아산 구간 약도"
           style={{ touchAction: 'none', cursor: dragging ? 'grabbing' : 'grab' }}

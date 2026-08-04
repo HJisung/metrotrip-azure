@@ -82,6 +82,25 @@
  */
 :root {
   color-scheme: light;
+
+  /* 화면 배율과 레이아웃을 한 곳에서 조정하기 위한 반응형 토큰 */
+  --layout-gutter: clamp(0.75rem, 3vw, 2.5rem);
+  --layout-gap: clamp(1rem, 2.5vw, 2rem);
+  --content-title-size: clamp(1.75rem, 4vw, 2.5rem);
+  --content-description-size: clamp(0.875rem, 1.5vw, 1rem);
+  --map-panel-width: clamp(20rem, 24vw, 23rem);
+  --map-panel-height: clamp(18rem, 56dvh, 34rem);
+  --timetable-panel-width: clamp(22rem, 26vw, 26rem);
+  --timetable-panel-height: min(88dvh, 42rem);
+  --line-map-height: clamp(18rem, 62dvh, 38.75rem);
+  --auth-width: clamp(20rem, 90vw, 28rem);
+  --auth-dialog-width: clamp(20rem, 90vw, 26rem);
+  --auth-gutter: clamp(1rem, 4vw, 2.5rem);
+  --auth-vertical-gutter: clamp(1.25rem, 5dvh, 2.5rem);
+  --auth-gap: clamp(1.25rem, 4vw, 2.5rem);
+  --auth-title-size: clamp(1.25rem, 3vw, 1.5rem);
+  --auth-label-size: clamp(0.8125rem, 1.5vw, 0.875rem);
+  --auth-logo-height: clamp(3rem, 8vw, 5rem);
 }
 
 :root.dark {

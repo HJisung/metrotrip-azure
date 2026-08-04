@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 export function LoginRequiredModal({ onConfirm }: { onConfirm: () => void }) {
   return (
     <Dialog open onOpenChange={(open) => !open && navigate(getPath('map'))}>
-      <DialogContent className="max-w-[24rem] text-center">
+      <DialogContent className="w-[calc(100vw-1.5rem)] max-w-[var(--auth-dialog-width)] text-center">
         <DialogHeader className="items-center pr-0">
           <DialogTitle>로그인이 필요합니다</DialogTitle>
           <DialogDescription>마이페이지를 이용하려면 먼저 로그인해주세요.</DialogDescription>

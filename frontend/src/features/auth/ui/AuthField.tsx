@@ -23,7 +23,7 @@ export function AuthField({ label, type = 'text', value, placeholder, onChange, 
 
   return (
     <label className={cn('block', className)}>
-      <span className="text-body-md font-semibold text-on-surface">{label}</span>
+      <span className="text-[var(--auth-label-size)] font-semibold text-on-surface">{label}</span>
       <div className="relative mt-xs">
         <Input
           className={cn(type === 'password' ? 'pr-11' : undefined, error && 'border-error focus:border-error focus:ring-error/15')}

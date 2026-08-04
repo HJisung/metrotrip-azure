@@ -14,12 +14,12 @@ type PreviewFrameProps = {
 export function PreviewFrame({ title, description, notice, wide = false, children }: PreviewFrameProps) {
   return (
     <div className="h-full overflow-y-auto bg-background">
-      <div className={cn('flex flex-col gap-[clamp(1rem,2.5vw,2rem)] p-[clamp(0.75rem,3vw,2.5rem)]', wide ? 'w-full' : 'mx-auto max-w-4xl')}>
+      <div className={cn('flex flex-col gap-[var(--layout-gap)] p-[var(--layout-gutter)]', wide ? 'w-full' : 'mx-auto max-w-4xl')}>
         <header className="flex flex-col gap-sm pt-xs sm:pt-sm">
           <span className="w-fit rounded-full bg-primary-container px-sm py-xs text-label-caps text-on-primary-container">METROTRIP</span>
           <div>
-            <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] leading-tight font-heading text-on-surface">{title}</h2>
-            <p className="mt-xs max-w-2xl text-[clamp(0.875rem,1.5vw,1rem)] leading-6 text-on-surface-variant">{description}</p>
+            <h2 className="text-[var(--content-title-size)] leading-tight font-heading text-on-surface">{title}</h2>
+            <p className="mt-xs max-w-2xl text-[var(--content-description-size)] leading-6 text-on-surface-variant">{description}</p>
           </div>
         </header>
 
