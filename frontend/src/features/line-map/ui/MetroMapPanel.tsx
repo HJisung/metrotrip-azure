@@ -85,7 +85,7 @@ export function MetroMapPanel({ stations, selected, onSelect, viewport: viewport
 
   return (
     <div className="flex min-w-0 flex-col gap-sm">
-      <div className="flex flex-wrap items-start justify-between gap-sm">
+      <div className="line-map-toolbar flex flex-wrap items-start justify-between gap-sm">
         <p className="min-w-0 flex-1 text-body-md text-on-surface-variant">
           드래그해서 이동하고, 휠 또는 두 손가락으로 확대·축소할 수 있습니다.
         </p>
@@ -120,7 +120,7 @@ export function MetroMapPanel({ stations, selected, onSelect, viewport: viewport
         </div>
       </div>
 
-      <Card className="metro-map-surface overflow-hidden border-outline-variant/70 shadow-card">
+      <Card className="line-map-surface metro-map-surface overflow-hidden border-outline-variant/70 shadow-card">
         <svg
           ref={svgRef}
           viewBox={`0 0 ${LINE1_MAP_VIEWBOX.width} ${LINE1_MAP_VIEWBOX.height}`}

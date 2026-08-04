@@ -17,7 +17,7 @@ type StationListProps = {
 export function StationList({ selected, onSelect, keyword, setKeyword, stations, searchResults, status, searchStatus }: StationListProps) {
   return (
     <div className="flex w-full min-w-0 flex-col items-end gap-sm p-3 sm:p-lg lg:w-auto">
-      <Card className="w-full max-w-full overflow-x-auto bg-surface-bright/95 p-xs backdrop-blur-xl lg:w-auto">
+      <Card className="station-order-list scrollbar-none w-full max-w-full overflow-x-auto bg-surface-bright/95 p-xs backdrop-blur-xl lg:w-auto">
         {status === 'loading' ? (
           <p className="flex min-h-10 items-center gap-xs px-sm text-body-md text-on-surface-variant" role="status">
             <Icon name="progress_activity" className="animate-spin text-[18px]" /> 역 목록을 불러오는 중입니다.
@@ -27,7 +27,7 @@ export function StationList({ selected, onSelect, keyword, setKeyword, stations,
         ) : stations.length === 0 ? (
           <p className="min-h-10 px-sm py-xs text-body-md text-on-surface-variant">검색 결과가 없습니다.</p>
         ) : (
-          <ul className="flex flex-wrap items-center gap-xs" aria-label="역 순서">
+          <ul className="flex w-max min-w-full flex-nowrap items-center gap-xs" aria-label="역 순서">
             {stations.map((station, index) => {
               const isActive = selected?.name === station.name;
               return (

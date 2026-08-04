@@ -84,13 +84,13 @@
   color-scheme: light;
 
   /* 화면 배율과 레이아웃을 한 곳에서 조정하기 위한 반응형 토큰 */
-  --layout-gutter: clamp(0.75rem, 3vw, 2.5rem);
-  --layout-gap: clamp(1rem, 2.5vw, 2rem);
-  --content-title-size: clamp(1.75rem, 4vw, 2.5rem);
-  --content-description-size: clamp(0.875rem, 1.5vw, 1rem);
-  --map-panel-width: clamp(20rem, 24vw, 23rem);
+  --layout-gutter: clamp(0.75rem, 1.75vw, 2.5rem);
+  --layout-gap: clamp(1rem, 1.6vw, 2rem);
+  --content-title-size: clamp(1.75rem, 2.2vw, 2.5rem);
+  --content-description-size: clamp(0.875rem, 1vw, 1rem);
+  --map-panel-width: clamp(20rem, 20vw, 23rem);
   --map-panel-height: clamp(18rem, 56dvh, 34rem);
-  --timetable-panel-width: clamp(22rem, 26vw, 26rem);
+  --timetable-panel-width: clamp(22rem, 22vw, 26rem);
   --timetable-panel-height: min(88dvh, 42rem);
   --line-map-height: clamp(18rem, 62dvh, 38.75rem);
   --auth-width: clamp(20rem, 90vw, 28rem);
@@ -341,6 +341,92 @@ body {
   user-select: none;
   -webkit-user-select: none;
   transition: background-color 160ms ease, color 160ms ease;
+}
+
+/* 1024~1439px: 노트북과 작은 데스크톱의 밀도를 낮춘다. */
+@media (min-width: 1024px) and (max-width: 1439px) {
+  :root {
+    --layout-gutter: 1rem;
+    --layout-gap: 0.75rem;
+    --content-title-size: 2rem;
+    --content-description-size: 0.875rem;
+    --map-panel-width: 20rem;
+    --timetable-panel-width: 22rem;
+  }
+
+  .responsive-frame-header {
+    gap: 0.375rem;
+  }
+
+  .responsive-frame-header p,
+  .responsive-frame-notice p,
+  .line-map-toolbar p {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .station-places-header,
+  .timetable-panel-header {
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+
+  .line-map-toolbar {
+    gap: 0.5rem;
+  }
+}
+
+/* 낮은 노트북 높이: 내부 콘텐츠를 줄이고 각 패널 내부에서 스크롤한다. */
+@media (min-width: 1024px) and (max-height: 820px) {
+  :root {
+    --layout-gutter: 0.875rem;
+    --layout-gap: 0.625rem;
+    --map-panel-width: 20rem;
+    --timetable-panel-width: 21rem;
+  }
+
+  .responsive-frame-content {
+    gap: 0.75rem;
+  }
+
+  .responsive-frame-header {
+    padding-top: 0;
+  }
+
+  .responsive-frame-notice {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .station-places-header,
+  .timetable-panel-header {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .line-map-surface {
+    max-height: calc(100dvh - 14rem);
+  }
+}
+
+/* 1920px 이상: 글자와 컨트롤은 FHD 밀도를 유지하고 지도 영역만 확장한다. */
+@media (min-width: 1920px) {
+  :root {
+    --line-map-height: min(70dvh, 48rem);
+  }
+
+  .responsive-frame-content:not(.w-full) {
+    max-width: 64rem;
+  }
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }
 
 /* 입력값과 편집 가능한 콘텐츠는 텍스트 선택을 허용한다. */

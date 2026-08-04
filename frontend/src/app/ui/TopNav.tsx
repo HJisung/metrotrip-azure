@@ -18,7 +18,7 @@ export function TopNav({ current, onNavigate, theme, onToggleTheme }: TopNavProp
   const [logoMissing, setLogoMissing] = useState(false);
 
   return (
-    <header className="fixed inset-x-0 bottom-0 z-50 flex h-16 shrink-0 items-center gap-sm border-t border-outline-variant/70 bg-surface-bright/95 px-sm shadow-[0_-8px_24px_rgb(29_37_44_/_8%)] backdrop-blur-xl lg:inset-y-0 lg:left-0 lg:right-auto lg:h-dvh lg:w-20 lg:flex-col lg:gap-md lg:border-r lg:border-t-0 lg:px-sm lg:py-md lg:shadow-sm">
+    <header className="app-top-nav fixed inset-x-0 bottom-0 z-50 flex h-16 shrink-0 items-center gap-sm border-t border-outline-variant/70 bg-surface-bright/95 px-sm shadow-[0_-8px_24px_rgb(29_37_44_/_8%)] backdrop-blur-xl lg:inset-y-0 lg:left-0 lg:right-auto lg:h-dvh lg:w-20 lg:flex-col lg:gap-md lg:border-r lg:border-t-0 lg:px-sm lg:py-md lg:shadow-sm">
       <div className="hidden shrink-0 items-center gap-xs pr-sm lg:flex lg:pr-0">
         {logoMissing ? (
           <>

@@ -20,13 +20,13 @@ export function TimetablePanel({
     >
       <section
         ref={dialogRef}
-        className="flex max-h-[var(--timetable-panel-height)] w-full flex-col overflow-hidden rounded-t-2xl border border-outline-variant bg-surface-bright shadow-2xl sm:max-w-[min(100%,30rem)] lg:h-full lg:max-h-none lg:w-[var(--timetable-panel-width)] lg:max-w-none lg:rounded-none lg:border-y-0 lg:border-r-0"
+        className="timetable-panel flex max-h-[var(--timetable-panel-height)] w-full flex-col overflow-hidden rounded-t-2xl border border-outline-variant bg-surface-bright shadow-2xl sm:max-w-[min(100%,30rem)] lg:h-full lg:max-h-none lg:w-[var(--timetable-panel-width)] lg:max-w-none lg:rounded-none lg:border-y-0 lg:border-r-0"
         role="dialog"
         aria-modal="true"
         aria-labelledby="timetable-title"
         onClick={(event) => event.stopPropagation()}
       >
-        <header className="flex shrink-0 items-start justify-between gap-md border-b border-outline-variant p-md">
+        <header className="timetable-panel-header flex shrink-0 items-start justify-between gap-md border-b border-outline-variant p-md">
           <div>
             <p className="text-label-caps text-primary">예시 시간표</p>
             <h2 id="timetable-title" className="mt-xs text-headline-sm text-on-surface">
