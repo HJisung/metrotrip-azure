@@ -40,12 +40,12 @@ const ACCOUNT_MENU = [
 ];
 
 /** 마이페이지 프리뷰 (docs/SPEC.md 2-1). 로그인 이후 화면 구성만 보여준다. */
-export function MyPageFeature() {
+export function MyPageFeature({ onLogout }: { onLogout: () => void }) {
   return (
     <PreviewFrame
       title="마이페이지"
       description="즐겨찾기·후기·저장한 동선을 한곳에서 관리합니다."
-      notice="로그인 기능이 아직 없어서 아래는 전부 예시입니다. 회원 기능은 백엔드 연동 이후 단계입니다."
+      notice="정보를 불러올 수 없습니다."
     >
       {/* 프로필 */}
       <section className="flex items-center gap-md border-t border-outline-variant py-md">
@@ -143,8 +143,10 @@ export function MyPageFeature() {
       {/* 계정 관리 */}
       <section className="border-t border-outline-variant">
         {ACCOUNT_MENU.map((menu) => (
-          <div
+          <button
             key={menu.label}
+            type="button"
+            onClick={menu.icon === 'logout' ? onLogout : undefined}
             className="flex items-center gap-sm border-b border-outline-variant px-md py-sm text-body-lg text-on-surface last:border-b-0"
           >
             <Icon name={menu.icon} className="text-[20px] text-on-surface-variant" />
@@ -153,7 +155,7 @@ export function MyPageFeature() {
               name="chevron_right"
               className="ml-auto text-[20px] text-on-surface-variant"
             />
-          </div>
+          </button>
         ))}
       </section>
 
