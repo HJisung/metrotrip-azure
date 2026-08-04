@@ -14,13 +14,13 @@ export function TimetablePanel({
 }: TimetablePanelProps) {
   return (
     <div
-      className="absolute inset-0 z-50 flex items-end justify-center bg-black/30 p-sm backdrop-blur-[2px] sm:p-md lg:items-stretch lg:justify-end lg:p-0"
+      className="absolute inset-0 z-50 flex items-end justify-center bg-black/30 p-0 backdrop-blur-[2px] sm:p-md lg:items-stretch lg:justify-end lg:p-0"
       role="presentation"
       onClick={onClose}
     >
       <section
         ref={dialogRef}
-        className="flex max-h-[82dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-outline-variant bg-surface-bright shadow-2xl lg:h-full lg:max-h-none lg:w-[390px] lg:max-w-none lg:rounded-none lg:border-y-0 lg:border-r-0"
+        className="flex max-h-[min(88dvh,42rem)] w-full flex-col overflow-hidden rounded-t-2xl border border-outline-variant bg-surface-bright shadow-2xl sm:max-w-[min(100%,30rem)] lg:h-full lg:max-h-none lg:w-[clamp(22rem,26vw,26rem)] lg:max-w-none lg:rounded-none lg:border-y-0 lg:border-r-0"
         role="dialog"
         aria-modal="true"
         aria-labelledby="timetable-title"

@@ -56,6 +56,7 @@ frontend/src/
 - 로그인 토큰: `localStorage`의 `metrotrip-access-token`, `metrotrip-refresh-token`
 - 로그인만 Radix Dialog 기반 중앙 모달로 표시하고, 회원가입·비밀번호 찾기는 독립 페이지로 표시합니다.
 - 회원가입은 약관 동의 → 닉네임 → 이메일 인증 → 비밀번호 → 비밀번호 확인의 단계형 플로우입니다.
+- 반응형 레이아웃은 데스크톱(1024px 이상)에서 왼쪽 고정 사이드바를 사용하고, 태블릿·모바일에서는 하단 고정 메뉴와 하단 콘텐츠 패널을 사용합니다. 주요 패널 폭은 `clamp()`로 최소·최대 폭을 제한합니다.
 - 공용 UI는 `frontend/src/shared/ui/`에 두며 `Button`, `Input`, `Card`, `Dialog`, `Badge`, `SectionHeader`를 우선 재사용합니다.
 - className 결합은 `frontend/src/shared/lib/cn.ts`의 `cn()`을 사용합니다.
 - 디자인은 기존 색상 토큰을 유지하면서 지도 중심 Wanderlog 스타일의 카드·pill·여백 체계를 적용합니다.

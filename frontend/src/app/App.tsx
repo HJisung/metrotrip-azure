@@ -84,7 +84,7 @@ function App() {
           }
       />
       <main className={cn(
-        'relative min-h-0 flex-1 lg:ml-20 lg:h-dvh',
+        'relative min-h-0 min-w-0 flex-1 pb-16 lg:ml-20 lg:h-dvh lg:pb-0',
         route.authPage && route.authPage !== 'login' ? 'overflow-y-auto' : 'overflow-hidden',
       )}>
         <AppRouter

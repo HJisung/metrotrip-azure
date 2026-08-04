@@ -69,11 +69,11 @@ export function MyPageFeature({ onLogout }: { onLogout: () => void }) {
       </Card>
 
       {/* 요약 숫자 */}
-      <Card className="grid grid-cols-3 overflow-hidden">
+      <Card className="grid grid-cols-1 overflow-hidden sm:grid-cols-3">
         {EXAMPLE_STATS.map((stat) => (
           <div
             key={stat.label}
-            className="flex flex-col items-center gap-xs border-r border-outline-variant/70 p-md last:border-r-0"
+            className="flex flex-row items-center gap-sm border-b border-outline-variant/70 p-md last:border-b-0 sm:flex-col sm:border-b-0 sm:border-r sm:last:border-r-0"
           >
             <Icon name={stat.icon} className="text-[20px] text-primary" />
             <span className="text-headline-sm font-bold text-on-surface">

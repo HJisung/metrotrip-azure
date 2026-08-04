@@ -191,10 +191,13 @@ input {
 }
 
 button:focus-visible,
-a:focus-visible,
-input:focus-visible {
+a:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+input:focus-visible {
+  outline: none;
 }
 
 button:disabled {
@@ -257,6 +260,23 @@ button:disabled {
   font-weight: 600;
   pointer-events: none;
   transition: fill 140ms ease, font-size 140ms ease;
+}
+
+@media (max-width: 639px) {
+  .metro-map-background text {
+    font-size: 14px;
+  }
+
+  .metro-station-label {
+    font-size: 13px;
+  }
+
+  .metro-station:hover .metro-station-label,
+  .metro-station:focus-visible .metro-station-label,
+  .metro-station.selected .metro-station-label,
+  .metro-station-label.selected {
+    font-size: 15px;
+  }
 }
 
 .metro-station-selected-ring {

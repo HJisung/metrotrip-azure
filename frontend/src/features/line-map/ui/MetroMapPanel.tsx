@@ -84,12 +84,12 @@ export function MetroMapPanel({ stations, selected, onSelect, viewport: viewport
   }
 
   return (
-    <div className="flex flex-col gap-sm">
-      <div className="flex flex-wrap items-center justify-between gap-sm">
-        <p className="text-body-md text-on-surface-variant">
+    <div className="flex min-w-0 flex-col gap-sm">
+      <div className="flex flex-wrap items-start justify-between gap-sm">
+        <p className="min-w-0 flex-1 text-body-md text-on-surface-variant">
           드래그해서 이동하고, 휠 또는 두 손가락으로 확대·축소할 수 있습니다.
         </p>
-        <div className="flex items-center gap-xs">
+        <div className="flex shrink-0 items-center gap-xs">
           <Button
             type="button"
             variant="outline"
@@ -124,7 +124,7 @@ export function MetroMapPanel({ stations, selected, onSelect, viewport: viewport
         <svg
           ref={svgRef}
           viewBox={`0 0 ${LINE1_MAP_VIEWBOX.width} ${LINE1_MAP_VIEWBOX.height}`}
-          className="block h-[min(62vh,620px)] min-h-[360px] w-full select-none"
+          className="block h-[clamp(18rem,62dvh,38.75rem)] min-h-0 w-full select-none"
           role="group"
           aria-label="1호선 천안·아산 구간 약도"
           style={{ touchAction: 'none', cursor: dragging ? 'grabbing' : 'grab' }}

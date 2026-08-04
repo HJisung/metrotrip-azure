@@ -53,9 +53,9 @@ export function StationMapFeature({ selected, onSelectStation }: MapScreenProps)
         </div>
 
         <div className="relative min-h-0 flex-1 lg:order-1 lg:h-full lg:flex-1">
-          <Card className="pointer-events-auto absolute bottom-0 left-0 top-0 flex w-full min-h-0 flex-col overflow-hidden rounded-none border-y-0 border-l-0 bg-surface/95 shadow-xl backdrop-blur-xl sm:bottom-0 sm:left-0 sm:top-0 sm:w-[22rem] lg:left-0 lg:w-[23rem]">
-            <header className="flex shrink-0 items-center gap-sm border-b border-outline-variant/70 bg-surface-bright/75 p-md">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-container text-primary">
+          <Card className="pointer-events-auto absolute bottom-0 left-0 top-auto flex h-[clamp(18rem,56dvh,34rem)] w-full min-h-0 flex-col overflow-hidden rounded-t-2xl border-b-0 border-l-0 bg-surface/95 shadow-xl backdrop-blur-xl lg:top-0 lg:h-full lg:w-[clamp(20rem,24vw,23rem)] lg:rounded-none lg:border-y-0">
+            <header className="flex min-w-0 shrink-0 items-center gap-sm border-b border-outline-variant/70 bg-surface-bright/75 p-[clamp(0.75rem,2vw,1rem)]">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-container text-primary sm:h-11 sm:w-11">
                 <Icon name="subway" />
               </span>
               <div className="min-w-0">
@@ -70,7 +70,7 @@ export function StationMapFeature({ selected, onSelectStation }: MapScreenProps)
                 onClick={() => setTimetableOpen(true)}
                 aria-label={`${selected.name} 시간표 열기`}
                 aria-expanded={timetableOpen}
-                className="ml-auto text-primary"
+                className="ml-auto shrink-0 text-primary"
               >
                 <Icon name="schedule" className="text-[18px]" />
                 시간표

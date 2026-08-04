@@ -208,7 +208,7 @@ export function SignupForm() {
           <div className="space-y-md">
             {stage === 'confirm' && <div className="auth-field-enter"><AuthField label="비밀번호 확인" type="password" value={values.passwordConfirm} onChange={updateField('passwordConfirm')} error={errors.passwordConfirm?.message} autoFocus /></div>}
             {(stage === 'password' || stage === 'confirm') && (
-              <AuthField label="비밀번호" type="password" value={values.password} onChange={updateField('password')} error={errors.password?.message} readOnly={stage === 'confirm'} autoFocus={stage === 'password'} className={stage === 'password' ? 'auth-field-enter' : undefined} />
+              <AuthField label="비밀번호" type="password" value={values.password} onChange={updateField('password')} error={errors.password?.message} autoFocus={stage === 'password'} className={stage === 'password' ? 'auth-field-enter' : undefined} />
             )}
             {(stage === 'verification' || stage === 'password' || stage === 'confirm') && (
               <AuthField label="인증 코드" value={values.code} onChange={updateField('code')} error={errors.code?.message} placeholder="6자리 코드" readOnly={stage !== 'verification'} autoFocus={stage === 'verification'} className={stage === 'verification' ? 'auth-field-enter' : undefined} />
@@ -216,7 +216,7 @@ export function SignupForm() {
             {(stage === 'email' || stage === 'verification' || stage === 'password' || stage === 'confirm') && (
               <AuthField label="이메일" type="email" value={values.email} onChange={updateField('email')} error={errors.email?.message} readOnly={stage !== 'email'} autoFocus={stage === 'email'} className={stage === 'email' ? 'auth-field-enter' : undefined} />
             )}
-            <AuthField label="닉네임" value={values.nickname} onChange={updateField('nickname')} error={errors.nickname?.message} readOnly={stage !== 'nickname'} autoFocus={stage === 'nickname'} className={stage === 'nickname' ? 'auth-field-enter' : undefined} />
+            <AuthField label="닉네임" value={values.nickname} onChange={updateField('nickname')} error={errors.nickname?.message} autoFocus={stage === 'nickname'} className={stage === 'nickname' ? 'auth-field-enter' : undefined} />
           </div>
         )}
       </section>

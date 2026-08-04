@@ -18,8 +18,8 @@ export function TopNav({ current, onNavigate, theme, onToggleTheme }: TopNavProp
   const [logoMissing, setLogoMissing] = useState(false);
 
   return (
-    <header className="flex h-16 shrink-0 items-center gap-md border-b border-outline-variant/70 bg-surface-bright/95 px-md shadow-sm backdrop-blur-xl sm:px-lg lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:h-dvh lg:w-20 lg:flex-col lg:gap-md lg:border-b-0 lg:border-r lg:px-sm lg:py-md">
-      <div className="flex shrink-0 items-center gap-xs pr-sm sm:pr-md lg:pr-0">
+    <header className="fixed inset-x-0 bottom-0 z-50 flex h-16 shrink-0 items-center gap-sm border-t border-outline-variant/70 bg-surface-bright/95 px-sm shadow-[0_-8px_24px_rgb(29_37_44_/_8%)] backdrop-blur-xl lg:inset-y-0 lg:left-0 lg:right-auto lg:h-dvh lg:w-20 lg:flex-col lg:gap-md lg:border-r lg:border-t-0 lg:px-sm lg:py-md lg:shadow-sm">
+      <div className="hidden shrink-0 items-center gap-xs pr-sm lg:flex lg:pr-0">
         {logoMissing ? (
           <>
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-container text-primary">
@@ -37,7 +37,7 @@ export function TopNav({ current, onNavigate, theme, onToggleTheme }: TopNavProp
         )}
       </div>
 
-      <nav className="flex min-w-0 flex-1 items-center gap-xs overflow-x-auto lg:w-full lg:flex-col lg:items-stretch lg:overflow-visible">
+      <nav className="flex min-w-0 flex-1 items-center justify-around gap-xs overflow-x-auto lg:w-full lg:flex-col lg:items-stretch lg:justify-start lg:overflow-visible">
         {NAV_ITEMS.map((item) => {
           const isCurrent = item.view === current;
           return (
@@ -47,14 +47,14 @@ export function TopNav({ current, onNavigate, theme, onToggleTheme }: TopNavProp
               onClick={() => onNavigate(item.view)}
               aria-label={item.label}
               aria-current={isCurrent ? 'page' : undefined}
-              className={`flex h-11 shrink-0 items-center gap-xs rounded-xl px-sm text-body-md transition-all lg:h-auto lg:flex-col lg:px-xs lg:py-sm lg:text-center ${
+              className={`flex h-14 min-w-14 flex-1 shrink-0 flex-col items-center justify-center gap-px rounded-xl px-xs text-center text-[11px] leading-tight transition-all lg:h-auto lg:min-w-0 lg:flex-none lg:gap-xs lg:px-xs lg:py-sm lg:text-body-md ${
                 isCurrent
                   ? 'bg-primary-container font-bold text-on-primary-container shadow-sm'
                   : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
               }`}
             >
               <Icon name={item.icon} className="text-[20px]" />
-              <span className="hidden sm:inline lg:block lg:text-[11px] lg:leading-tight">{item.label}</span>
+              <span className="block lg:text-[11px] lg:leading-tight">{item.label}</span>
             </button>
           );
         })}
