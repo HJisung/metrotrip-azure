@@ -1,3 +1,8 @@
+%% 지하철 노선 기반 관광 추천 서비스 (MetroTrip) ERD
+%% 근거 문서 : 데이터베이스 명세서 V1.8
+%% 22개 테이블 / FK 34건
+%% 표기 : ||--o{ = 부모 필수(자식 FK NOT NULL) / |o--o{ = 부모 선택(자식 FK NULL 허용)
+
 erDiagram
     users ||--o{ user_agreements : "user_id"
     users ||--o{ social_accounts : "user_id"
@@ -29,6 +34,10 @@ erDiagram
     users |o--o{ notices : "admin_id"
     subway_lines ||--o{ line_view_logs : "line_id"
     users |o--o{ line_view_logs : "user_id"
+    users ||--o{ board_posts : "user_id"
+    travel_plans |o--o{ board_posts : "plan_id"
+    board_posts ||--o{ post_participants : "post_id"
+    users ||--o{ post_participants : "user_id"
 
     users {
         BIGINT user_id PK
@@ -41,25 +50,11 @@ erDiagram
         DATETIME created_at
         DATETIME updated_at
     }
-    subway_lines {
-        BIGINT line_id PK
-        VARCHAR_50 line_name UK
-        VARCHAR_10 line_number "nullable"
-        INT display_order
-    }
-    stations {
-        BIGINT station_id PK
-        VARCHAR_100 station_name
-        VARCHAR_20 station_code UK "nullable"
-        DECIMAL_10_7 latitude
-        DECIMAL_10_7 longitude
-        VARCHAR_255 address "nullable"
-    }
     user_agreements {
         BIGINT agreement_id PK
         BIGINT user_id FK
         VARCHAR_30 agreement_type
-        TINYINT_1 is_agreed
+        TINYINT is_agreed
         DATETIME agreed_at
     }
     social_accounts {
@@ -89,6 +84,20 @@ erDiagram
         DATETIME verified_at "nullable"
         DATETIME created_at
     }
+    subway_lines {
+        BIGINT line_id PK
+        VARCHAR_50 line_name UK
+        VARCHAR_10 line_number "nullable"
+        INT display_order
+    }
+    stations {
+        BIGINT station_id PK
+        VARCHAR_100 station_name
+        VARCHAR_20 station_code UK "nullable"
+        DECIMAL latitude
+        DECIMAL longitude
+        VARCHAR_255 address "nullable"
+    }
     line_stations {
         BIGINT line_station_id PK
         BIGINT line_id FK,UK
@@ -110,8 +119,8 @@ erDiagram
         VARCHAR_30 category
         TEXT description "nullable"
         VARCHAR_255 address
-        DECIMAL_10_7 latitude
-        DECIMAL_10_7 longitude
+        DECIMAL latitude
+        DECIMAL longitude
         VARCHAR_20 phone "nullable"
         BIGINT created_by FK "nullable"
         DATETIME created_at
@@ -190,4 +199,27 @@ erDiagram
         BIGINT line_id FK
         BIGINT user_id FK "nullable"
         DATETIME viewed_at
+    }
+    board_posts {
+        BIGINT post_id PK
+        BIGINT user_id FK
+        VARCHAR_20 post_type
+        VARCHAR_100 title
+        TEXT content
+        INT view_count
+        INT recruit_capacity "nullable"
+        DATE recruit_deadline "nullable"
+        VARCHAR_20 recruit_status "nullable"
+        DATE meeting_date "nullable"
+        BIGINT plan_id FK "nullable"
+        DATETIME created_at
+        DATETIME updated_at
+    }
+    post_participants {
+        BIGINT participant_id PK
+        BIGINT post_id FK,UK
+        BIGINT user_id FK,UK
+        VARCHAR_20 status
+        DATETIME applied_at
+        DATETIME responded_at "nullable"
     }
