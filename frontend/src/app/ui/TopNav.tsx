@@ -16,6 +16,7 @@ type TopNavProps = {
 
 export function TopNav({ current, onNavigate, theme, onToggleTheme }: TopNavProps) {
   const [logoMissing, setLogoMissing] = useState(false);
+  const isAuthenticated = Boolean(window.localStorage.getItem('metrotrip-access-token'));
 
   return (
     <header className="app-top-nav fixed inset-x-0 bottom-0 z-50 flex h-16 shrink-0 items-center gap-sm border-t border-outline-variant/70 bg-surface-bright/95 px-sm shadow-[0_-8px_24px_rgb(29_37_44_/_8%)] backdrop-blur-xl lg:inset-y-0 lg:left-0 lg:right-auto lg:h-dvh lg:w-20 lg:flex-col lg:gap-md lg:border-r lg:border-t-0 lg:px-sm lg:py-md lg:shadow-sm">
@@ -38,7 +39,7 @@ export function TopNav({ current, onNavigate, theme, onToggleTheme }: TopNavProp
       </div>
 
       <nav className="flex min-w-0 flex-1 items-center justify-around gap-xs overflow-x-auto lg:w-full lg:flex-col lg:items-stretch lg:justify-start lg:overflow-visible">
-        {NAV_ITEMS.map((item) => {
+        {NAV_ITEMS.filter((item) => item.view !== 'mypage').map((item) => {
           const isCurrent = item.view === current;
           return (
             <button
@@ -60,6 +61,22 @@ export function TopNav({ current, onNavigate, theme, onToggleTheme }: TopNavProp
         })}
       </nav>
 
+      <button
+        type="button"
+        onClick={() => onNavigate('mypage')}
+        aria-label="留덉씠?섏씠吏"
+        aria-current={current === 'mypage' ? 'page' : undefined}
+        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition-all lg:h-11 lg:w-11 lg:mt-auto ${
+          current === 'mypage'
+            ? 'bg-primary-container text-primary shadow-sm'
+            : isAuthenticated
+              ? 'bg-primary-container text-primary hover:bg-primary/20'
+              : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'
+        }`}
+      >
+        <Icon name={isAuthenticated ? 'person' : 'person_outline'} className="text-[22px]" />
+      </button>
+
       <Button
         type="button"
         variant="ghost"
@@ -67,7 +84,7 @@ export function TopNav({ current, onNavigate, theme, onToggleTheme }: TopNavProp
         onClick={onToggleTheme}
         aria-label={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
         aria-pressed={theme === 'dark'}
-        className="shrink-0 lg:mt-auto"
+        className="shrink-0"
       >
         <Icon name={theme === 'dark' ? 'light_mode' : 'dark_mode'} className="text-[20px]" />
       </Button>
