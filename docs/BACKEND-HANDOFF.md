@@ -13,11 +13,13 @@ MVP는 백엔드 없이 프론트 단독으로 동작합니다.
 **프론트 컴포넌트는 데이터가 어디서 오는지 몰라야 합니다.**
 
 지금은 정적 JSON에서, 나중에는 API에서 오지만 컴포넌트 코드는 그대로여야 합니다.
-그래서 데이터 접근은 반드시 **`frontend/src/api/` 아래 함수 한 겹을 거쳐서** 합니다.
+그래서 데이터 접근은 반드시 **각 Feature의 `api/` 또는 shared 데이터 접근 함수 한 겹을 거쳐서** 합니다.
 
 ```
-컴포넌트  →  frontend/src/api/stations.ts  →  (지금) stations.json
-                                           →  (나중) GET /api/v1/stations
+역 Feature  →  frontend/src/shared/lib/stations.ts  →  (지금) shared/data/stations.json
+                                                     →  (나중) GET /api/v1/stations
+장소 Feature → frontend/src/features/station-map/api/places.ts → (지금) places.json
+                                                                → (나중) 백엔드 API
 ```
 
 컴포넌트에서 `import stations from '../data/stations.json'` 처럼 **직접 import 하지 않습니다.**
@@ -25,7 +27,7 @@ MVP는 백엔드 없이 프론트 단독으로 동작합니다.
 ## 2. 지금 만들어 둘 인터페이스
 
 ```ts
-// frontend/src/types/station.ts
+// frontend/src/shared/types/station.ts
 export type Station = {
   name: string;
   lat: number;
@@ -33,7 +35,7 @@ export type Station = {
   line: string;
 };
 
-// frontend/src/api/stations.ts
+// frontend/src/shared/lib/stations.ts
 // MVP: stations.json을 반환. 백엔드 연동 시 이 함수 내부만 fetch로 교체.
 export async function getStations(): Promise<Station[]>;
 export async function searchStations(keyword: string): Promise<Station[]>;
@@ -46,9 +48,9 @@ export async function searchStations(keyword: string): Promise<Station[]>;
 
 | 현재 (MVP) | 교체 후 (P1) | 영향 파일 |
 |---|---|---|
-| `stations.json` 정적 로드 | `GET /api/v1/stations` | `frontend/src/api/stations.ts` |
-| 카카오 로컬 API 프론트 직접 호출 | 백엔드 프록시 경유 (키 은닉 + 캐싱) | `frontend/src/api/places.ts` |
-| 없음 | 인증 토큰 처리 | `frontend/src/api/client.ts` (신규) |
+| `stations.json` 정적 로드 | `GET /api/v1/stations` | `frontend/src/shared/lib/stations.ts` |
+| 카카오 로컬 API 프론트 직접 호출 | 백엔드 프록시 경유 (키 은닉 + 캐싱) | `frontend/src/features/station-map/api/places.ts` |
+| 없음 | 인증 토큰 처리 | `frontend/src/shared/lib/apiClient.ts` (신규) |
 
 ### 카카오 API를 백엔드로 옮겨야 하는 이유
 지금은 JavaScript 키가 브라우저에 노출됩니다. MVP에서는 **도메인 제한**으로 막지만,

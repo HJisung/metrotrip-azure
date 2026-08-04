@@ -3,13 +3,13 @@
 > 데스크톱에서 작업하던 내용을 **노트북 등 다른 PC에서 그대로 이어받기 위한 문서**입니다.
 > 이 문서만 읽으면 지금까지의 맥락 없이도 이어서 작업할 수 있습니다.
 >
-> 마지막 갱신: 2026-07-29 / 작업 브랜치: `feat/fe-metromap-viewer`
+> 마지막 갱신: 2026-08-04 / 기준 브랜치: `develop`
 
 ---
 
 ## 1. 지금 상태 요약
 
-프론트엔드 MVP의 **1~5단계와 마커·인포윈도우까지 완료**되어 있고, 배포본에서도 동작을 확인했습니다.
+프론트엔드 MVP의 **1~5단계와 마커·인포윈도우까지 완료**되어 있습니다. 최근 기능 동작을 유지한 채 Feature-based architecture로 구조를 정리했습니다.
 
 | SPEC 단계 | 내용 | 상태 |
 |---|---|---|
@@ -23,34 +23,30 @@
 | 8 | 반응형 정리 + README | 🔸 반응형은 확인, README 남음 |
 | — | 발표용 프리뷰 화면 4종 (SPEC 2-1) | ✅ 완료 (노선도/경로/시간표/마이페이지, 동작 없음) |
 
-### 만들어져 있는 것
+### 현재 프론트엔드 구조
 
 ```
 frontend/src/
-├─ api/stations.ts             역 데이터 접근 계층 (async, 나중에 fetch로 교체)
-├─ api/places.ts               역 주변 장소 접근 계층 (지금은 탕정역 2곳만)
-├─ data/stations.json          1호선 천안·아산 11개 역 (배열 순서 = 노선 순서)
-├─ data/places.json            장소 데이터 — 백엔드 응답 형태에 맞춰 둠
-├─ types/station.ts            Station 타입
-├─ types/place.ts              Place 타입 (백엔드 응답 예정 형태)
-├─ types/view.ts               화면 종류 (map / line / route / timetable / mypage)
-├─ types/kakao.d.ts            카카오맵 SDK 타입 선언
-├─ components/MapView/         지도 + 장소 마커 + 인포윈도우
-├─ components/StationList/     역 검색 + 목록 (지도 위 플로팅 카드)
-├─ components/TopNav/          상단 내비 + navItems.ts (메뉴 정의)
-├─ components/Preview/         프리뷰 화면 공통 껍데기
-├─ components/LineMap/         노선도 프리뷰
-│                              └ MetroMapPanel: 끌어보는 노선도 뷰어
-├─ components/RoutePlan/       경로 프리뷰
-├─ components/Timetable/       시간표 프리뷰
-├─ components/MyPage/          마이페이지 프리뷰
-├─ lib/asset.ts                frontend/public/ 파일 주소 만들기 (배포 경로 대응)
-└─ App.tsx                     화면 전환 + 선택 역 상태
+├─ app/                        앱 진입점·라우팅·전역 내비게이션
+├─ pages/                      MapPage·LineMapPage·RoutePage·MyPage
+├─ features/
+│  ├─ station-map/             카카오맵·장소·역 선택 Feature
+│  │  ├─ api/                  장소 데이터 접근
+│  │  ├─ hooks/                SDK, 마커, 장소 조회, 역 검색 상태
+│  │  └─ ui/                   지도·컨트롤·역 목록·장소 목록
+│  ├─ line-map/                노선도 Feature
+│  │  ├─ data/                 노선도 좌표
+│  │  ├─ hooks/                역 조회·drag/zoom 상태
+│  │  └─ ui/                   노선도 SVG UI
+│  ├─ timetable/               시간표 Feature·다이얼로그 Hook/UI
+│  ├─ route-plan/              경로 프리뷰 Feature
+│  └─ my-page/                 마이페이지 프리뷰 Feature
+└─ shared/                     여러 기능에서 실제 재사용하는 타입·데이터·UI·유틸리티
 ```
 
 ### 아직 없는 것
 
-- 카테고리 기반 장소 검색 (지금은 탕정역 2곳만 손으로 넣어 둠)
+- 카테고리 기반 장소 검색 (지금은 탕정역 2곳만 정적 데이터로 제공)
 - 노선도/경로/시간표/마이페이지의 **실제 동작** (지금은 화면만 — SPEC 2-1 참고)
 
 ---
@@ -71,7 +67,7 @@ cd MetroTrip
 
 ### ② 최신 코드 받기
 
-앱 코드는 이제 `main`에 있습니다. 새 작업은 `develop`에서 브랜치를 따서 시작하세요.
+앱 코드는 `develop`에 있습니다. 새 작업은 `develop`에서 브랜치를 따서 시작하세요.
 
 ```bash
 git fetch origin
@@ -192,7 +188,7 @@ GitHub Pages 는 `https://lellon0403.github.io/MetroTrip/` 하위로 서비스�
 **로컬에서는 되는데 배포본에서만 404** 가 납니다. 찾기 어려운 실수입니다.
 
 ```tsx
-import { asset } from '../../lib/asset';
+import { asset } from '../../shared/lib/asset';
 <img src={asset('logo.png')} />
 ```
 
