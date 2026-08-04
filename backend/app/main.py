@@ -41,12 +41,18 @@ def validation_exception_handler(
     _: Request,
     exception: RequestValidationError,
 ) -> JSONResponse:
+    errors = []
+    for item in exception.errors():
+        error = dict(item)
+        if error.get("ctx") and "error" in error["ctx"]:
+            error["ctx"] = {**error["ctx"], "error": str(error["ctx"]["error"])}
+        errors.append(error)
     return JSONResponse(
         status_code=422,
         content={
             "code": "VALIDATION_ERROR",
             "message": "입력값을 확인해주세요.",
-            "details": {"errors": exception.errors()},
+            "details": {"errors": errors},
         },
     )
 
