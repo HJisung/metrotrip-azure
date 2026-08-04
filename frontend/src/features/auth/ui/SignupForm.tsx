@@ -4,6 +4,7 @@ import { confirmEmailVerification, registerAccount, requestEmailVerification } f
 import { useAuthForm } from '../hooks/useAuthForm';
 import { AuthField } from './AuthField';
 import { AuthMessage } from './AuthMessage';
+import { Button } from '../../../shared/ui/Button';
 
 export function SignupForm() {
   const [form, setForm] = useState({ email: '', code: '', password: '', passwordConfirm: '', name: '', nickname: '' });
@@ -49,11 +50,11 @@ export function SignupForm() {
     <form className="space-y-md" onSubmit={submit}>
       <div className="flex items-end gap-sm">
         <div className="min-w-0 flex-1"><AuthField label="이메일" type="email" value={form.email} onChange={update('email')} /></div>
-        <button type="button" className="rounded-md border border-primary px-sm py-sm text-body-md text-primary" onClick={sendCode} disabled={loading}>인증 발송</button>
+        <Button type="button" variant="outline" onClick={sendCode} disabled={loading}>인증 발송</Button>
       </div>
       <div className="flex items-end gap-sm">
         <div className="min-w-0 flex-1"><AuthField label="인증 코드" value={form.code} onChange={update('code')} placeholder="6자리 코드" /></div>
-        <button type="button" className="rounded-md border border-primary px-sm py-sm text-body-md text-primary" onClick={verifyCode} disabled={loading}>인증 확인</button>
+        <Button type="button" variant="outline" onClick={verifyCode} disabled={loading}>인증 확인</Button>
       </div>
       <AuthField label="이름" value={form.name} onChange={update('name')} />
       <AuthField label="닉네임" value={form.nickname} onChange={update('nickname')} />
@@ -63,7 +64,7 @@ export function SignupForm() {
       <label className="flex items-center gap-sm text-body-md text-on-surface"><input type="checkbox" checked={privacyAgreed} onChange={(event) => setPrivacyAgreed(event.target.checked)} /> 개인정보처리방침에 동의합니다.</label>
       <AuthMessage message={notice} />
       <AuthMessage message={error} error />
-      <button className="w-full rounded-md bg-primary px-md py-sm font-semibold text-on-primary" disabled={loading}>{loading ? '가입 중...' : '회원가입'}</button>
+      <Button type="submit" className="w-full" disabled={loading}>{loading ? '가입 중...' : '회원가입'}</Button>
     </form>
   );
 }

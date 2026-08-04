@@ -3,6 +3,7 @@ import { LINE1_MAP_VIEWBOX, LINE1_STATION_LAYOUT } from '../data/line1MapLayout'
 import type { LineMapViewportState } from '../hooks/useLineMapViewport';
 import type { Station } from '../../../shared/types/station';
 import { Icon } from '../../../shared/ui/Icon';
+import { Card } from '../../../shared/ui/Card';
 
 type MetroMapPanelProps = {
   stations: Station[];
@@ -115,7 +116,7 @@ export function MetroMapPanel({ stations, selected, onSelect, viewport: viewport
         </div>
       </div>
 
-      <div className="metro-map-surface overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest">
+      <Card className="metro-map-surface overflow-hidden">
         <svg
           ref={svgRef}
           viewBox={`0 0 ${LINE1_MAP_VIEWBOX.width} ${LINE1_MAP_VIEWBOX.height}`}
@@ -198,7 +199,7 @@ export function MetroMapPanel({ stations, selected, onSelect, viewport: viewport
             </g>
           </g>
         </svg>
-      </div>
+      </Card>
 
       {selected && (
         <aside className="rounded-xl border border-primary/40 bg-primary/5 p-md" aria-live="polite">

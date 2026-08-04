@@ -9,6 +9,7 @@ import { MapView } from './ui/MapView';
 import { PlaceList } from './ui/PlaceList';
 import { StationList } from './ui/StationList';
 import { TimetableFeature } from '../timetable/TimetableFeature';
+import { Card } from '../../shared/ui/Card';
 
 type MapScreenProps = {
   selected: Station;
@@ -51,7 +52,7 @@ export function StationMapFeature({ selected, onSelectStation }: MapScreenProps)
         </div>
 
         <div className="relative min-h-0 flex-1 lg:order-1 lg:h-full lg:flex-1">
-          <aside className="pointer-events-auto absolute bottom-0 left-0 top-0 flex w-full min-h-0 flex-col overflow-hidden border border-outline-variant bg-surface/95 shadow-md backdrop-blur-sm sm:bottom-0 sm:left-0 sm:top-0 sm:w-[22rem] lg:left-0 lg:w-[23rem]">
+          <Card className="pointer-events-auto absolute bottom-0 left-0 top-0 flex w-full min-h-0 flex-col overflow-hidden rounded-none bg-surface/95 backdrop-blur-sm sm:bottom-0 sm:left-0 sm:top-0 sm:w-[22rem] lg:left-0 lg:w-[23rem]">
             <header className="flex shrink-0 items-center gap-sm border-b border-outline-variant p-md">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary text-on-primary">
                 <Icon name="subway" />
@@ -79,7 +80,7 @@ export function StationMapFeature({ selected, onSelectStation }: MapScreenProps)
               selectedPlaceId={placeState.selectedPlaceId}
               onSelect={placeState.selectPlace}
             />
-          </aside>
+          </Card>
         </div>
       </div>
 

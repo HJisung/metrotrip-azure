@@ -1,5 +1,7 @@
 import type { Station } from '../../../shared/types/station';
 import { Icon } from '../../../shared/ui/Icon';
+import { Card } from '../../../shared/ui/Card';
+import { Input } from '../../../shared/ui/Input';
 
 type StationListProps = {
   selected: Station | null;
@@ -25,7 +27,7 @@ export function StationList({
 }: StationListProps) {
   return (
     <div className="flex w-full flex-col items-end gap-xs p-3 sm:p-[30px] lg:w-auto">
-      <section className="w-fit max-w-full rounded-[5px] border border-outline-variant bg-surface/95 px-sm py-xs backdrop-blur-sm sm:px-md">
+      <Card className="w-fit max-w-full px-sm py-xs backdrop-blur-sm sm:px-md">
         {status === 'loading' ? (
           <p className="flex min-h-10 items-center gap-xs text-body-md text-on-surface-variant" role="status">
             <Icon name="progress_activity" className="animate-spin text-[18px]" />
@@ -65,16 +67,16 @@ export function StationList({
             })}
           </ul>
         )}
-      </section>
+      </Card>
 
       <div className="relative flex w-full justify-end">
         <div className="w-full max-w-64">
-          <label className="flex items-center gap-xs rounded-[5px] border border-outline-variant bg-surface/95 px-sm py-xs backdrop-blur-sm">
+          <label className="flex items-center gap-xs rounded-xl border border-outline-variant bg-surface-bright px-sm shadow-card backdrop-blur-sm">
             <Icon name="search" className="text-on-surface-variant" />
             <span className="sr-only">역 이름 검색</span>
-            <input
+            <Input
               aria-label="역 이름 검색"
-              className="min-w-0 flex-1 border-none bg-transparent text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none"
+              className="h-10 min-w-0 flex-1 border-none bg-transparent px-xs shadow-none focus:ring-0"
               type="search"
               placeholder="역 이름 검색"
               value={keyword}

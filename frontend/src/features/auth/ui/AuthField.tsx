@@ -1,3 +1,5 @@
+import { Input } from '../../../shared/ui/Input';
+
 type AuthFieldProps = {
   label: string;
   type?: 'text' | 'email' | 'password';
@@ -11,8 +13,8 @@ export function AuthField({ label, type = 'text', value, placeholder, onChange, 
   return (
     <label className="block">
       <span className="text-body-md font-semibold text-on-surface">{label}</span>
-      <input
-        className="mt-xs w-full rounded-md border border-outline-variant bg-surface px-md py-sm text-body-md text-on-surface placeholder:text-on-surface-variant focus:border-primary"
+      <Input
+        className="mt-xs"
         type={type}
         value={value}
         placeholder={placeholder}

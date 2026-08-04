@@ -4,6 +4,7 @@ import { loginAccount } from '../api/auth';
 import { useAuthForm } from '../hooks/useAuthForm';
 import { AuthField } from './AuthField';
 import { AuthMessage } from './AuthMessage';
+import { Button } from '../../../shared/ui/Button';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -25,9 +26,9 @@ export function LoginForm() {
       <AuthField label="이메일" type="email" value={email} onChange={setEmail} placeholder="user@example.com" />
       <AuthField label="비밀번호" type="password" value={password} onChange={setPassword} />
       <AuthMessage message={error} error />
-      <button className="w-full rounded-md bg-primary px-md py-sm font-semibold text-on-primary" disabled={loading}>
+      <Button type="submit" className="w-full" disabled={loading}>
         {loading ? '로그인 중...' : '로그인'}
-      </button>
+      </Button>
     </form>
   );
 }

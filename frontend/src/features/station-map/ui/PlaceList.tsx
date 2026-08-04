@@ -1,5 +1,6 @@
 import type { Place } from '../types';
 import { Icon } from '../../../shared/ui/Icon';
+import { Badge } from '../../../shared/ui/Badge';
 
 type PlaceListProps = {
   places: Place[];
@@ -31,9 +32,9 @@ export function PlaceList({
             역에서 가까운 장소 {places.length}곳
           </p>
         </div>
-        <span className="text-label-caps text-on-surface-variant">
+        <Badge>
           반경 1km
-        </span>
+        </Badge>
       </div>
 
       {status === 'loading' ? (
@@ -66,7 +67,7 @@ export function PlaceList({
                   onClick={() => onSelect(place)}
                   className={`flex w-full items-start gap-sm border-b px-sm py-sm text-left transition-colors ${
                     isSelected
-                      ? 'border-primary bg-primary/10'
+                      ? 'border-primary bg-primary-container/45'
                       : 'border-outline-variant/60 hover:bg-surface-container-low'
                   }`}
                 >

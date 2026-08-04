@@ -4,6 +4,7 @@ import { requestPasswordReset, resetPassword } from '../api/auth';
 import { useAuthForm } from '../hooks/useAuthForm';
 import { AuthField } from './AuthField';
 import { AuthMessage } from './AuthMessage';
+import { Button } from '../../../shared/ui/Button';
 
 export function PasswordResetForm() {
   const [email, setEmail] = useState('');
@@ -30,13 +31,13 @@ export function PasswordResetForm() {
 
   return (
     <form className="space-y-md" onSubmit={submit}>
-      <div className="flex items-end gap-sm"><div className="min-w-0 flex-1"><AuthField label="이메일" type="email" value={email} onChange={setEmail} /></div><button type="button" className="rounded-md border border-primary px-sm py-sm text-body-md text-primary" onClick={sendCode} disabled={loading}>코드 발송</button></div>
+      <div className="flex items-end gap-sm"><div className="min-w-0 flex-1"><AuthField label="이메일" type="email" value={email} onChange={setEmail} /></div><Button type="button" variant="outline" onClick={sendCode} disabled={loading}>코드 발송</Button></div>
       <AuthField label="인증 코드" value={code} onChange={setCode} placeholder="6자리 코드" />
       <AuthField label="새 비밀번호" type="password" value={newPassword} onChange={setNewPassword} />
       <AuthField label="새 비밀번호 확인" type="password" value={newPasswordConfirm} onChange={setNewPasswordConfirm} />
       <AuthMessage message={notice} />
       <AuthMessage message={error} error />
-      <button className="w-full rounded-md bg-primary px-md py-sm font-semibold text-on-primary" disabled={loading}>{loading ? '변경 중...' : '비밀번호 변경'}</button>
+      <Button type="submit" className="w-full" disabled={loading}>{loading ? '변경 중...' : '비밀번호 변경'}</Button>
     </form>
   );
 }
