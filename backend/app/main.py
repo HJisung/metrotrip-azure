@@ -25,7 +25,11 @@ def http_exception_handler(_: Request, exception: HTTPException) -> JSONResponse
     return JSONResponse(
         status_code=exception.status_code,
         content={
-            "code": f"HTTP_{exception.status_code}",
+            "code": exception.headers.get(
+                "X-Error-Code", f"HTTP_{exception.status_code}"
+            )
+            if exception.headers
+            else f"HTTP_{exception.status_code}",
             "message": str(exception.detail),
             "details": None,
         },
