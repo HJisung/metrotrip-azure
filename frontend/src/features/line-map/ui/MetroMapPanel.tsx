@@ -4,6 +4,7 @@ import type { LineMapViewportState } from '../hooks/useLineMapViewport';
 import type { Station } from '../../../shared/types/station';
 import { Icon } from '../../../shared/ui/Icon';
 import { Card } from '../../../shared/ui/Card';
+import { Button } from '../../../shared/ui/Button';
 
 type MetroMapPanelProps = {
   stations: Station[];
@@ -89,34 +90,37 @@ export function MetroMapPanel({ stations, selected, onSelect, viewport: viewport
           드래그해서 이동하고, 휠 또는 두 손가락으로 확대·축소할 수 있습니다.
         </p>
         <div className="flex items-center gap-xs">
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="icon"
             onClick={() => zoomAt(viewport.scale / 1.25, { x: 670, y: 310 })}
             aria-label="노선도 축소"
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-container"
           >
             <Icon name="remove" className="text-[20px]" />
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="outline"
+            size="icon"
             onClick={() => zoomAt(viewport.scale * 1.25, { x: 670, y: 310 })}
             aria-label="노선도 확대"
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-container"
           >
             <Icon name="add" className="text-[20px]" />
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={resetViewport}
-            className="flex h-9 items-center gap-xs rounded-lg border border-outline-variant px-sm text-body-md text-on-surface-variant hover:bg-surface-container"
           >
             <Icon name="fit_screen" className="text-[18px]" />
             초기화
-          </button>
+          </Button>
         </div>
       </div>
 
-      <Card className="metro-map-surface overflow-hidden">
+      <Card className="metro-map-surface overflow-hidden border-outline-variant/70 shadow-card">
         <svg
           ref={svgRef}
           viewBox={`0 0 ${LINE1_MAP_VIEWBOX.width} ${LINE1_MAP_VIEWBOX.height}`}
@@ -202,7 +206,7 @@ export function MetroMapPanel({ stations, selected, onSelect, viewport: viewport
       </Card>
 
       {selected && (
-        <aside className="rounded-xl border border-primary/40 bg-primary/5 p-md" aria-live="polite">
+        <Card className="border-primary/25 bg-primary-container/25 p-md" aria-live="polite">
           <div className="flex items-start justify-between gap-md">
             <div>
               <p className="text-label-caps text-primary">선택한 역</p>
@@ -214,7 +218,7 @@ export function MetroMapPanel({ stations, selected, onSelect, viewport: viewport
           <p className="mt-sm text-body-md text-on-surface-variant">
             위도 {selected.lat.toFixed(5)} · 경도 {selected.lng.toFixed(5)}
           </p>
-        </aside>
+        </Card>
       )}
     </div>
   );

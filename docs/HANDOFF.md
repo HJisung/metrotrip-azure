@@ -9,7 +9,7 @@
 
 ## 1. 지금 상태 요약
 
-프론트엔드 MVP의 **1~5단계와 마커·인포윈도우까지 완료**되어 있습니다. 최근 기능 동작을 유지한 채 Feature-based architecture로 구조를 정리했습니다.
+프론트엔드 MVP의 **1~5단계와 마커·인포윈도우까지 완료**되어 있습니다. Feature-based architecture와 shadcn 기반 공용 UI 구조를 사용하며, 이메일 인증 회원가입·로그인·비밀번호 재설정 화면이 백엔드 인증 API와 연결되어 있습니다.
 
 | SPEC 단계 | 내용 | 상태 |
 |---|---|---|
@@ -22,14 +22,16 @@
 | 7 | 마커 클릭 → 인포윈도우 | ✅ 완료 |
 | 8 | 반응형 정리 + README | 🔸 반응형은 확인, README 남음 |
 | — | 발표용 프리뷰 화면 4종 (SPEC 2-1) | ✅ 완료 (노선도/경로/시간표/마이페이지, 동작 없음) |
+| — | 이메일 인증 회원가입·로그인·비밀번호 재설정 | ✅ 프론트·백엔드 연동 완료 |
 
 ### 현재 프론트엔드 구조
 
 ```
 frontend/src/
 ├─ app/                        앱 진입점·라우팅·전역 내비게이션
-├─ pages/                      MapPage·LineMapPage·RoutePage·MyPage
+├─ pages/                      MapPage·LineMapPage·RoutePage·MyPage·AuthPage
 ├─ features/
+│  ├─ auth/                    인증 API·폼 상태·로그인/회원가입/재설정 UI
 │  ├─ station-map/             카카오맵·장소·역 선택 Feature
 │  │  ├─ api/                  장소 데이터 접근
 │  │  ├─ hooks/                SDK, 마커, 장소 조회, 역 검색 상태
@@ -41,13 +43,27 @@ frontend/src/
 │  ├─ timetable/               시간표 Feature·다이얼로그 Hook/UI
 │  ├─ route-plan/              경로 프리뷰 Feature
 │  └─ my-page/                 마이페이지 프리뷰 Feature
-└─ shared/                     여러 기능에서 실제 재사용하는 타입·데이터·UI·유틸리티
+└─ shared/
+   ├─ lib/                     cn, asset, 역 데이터 접근 유틸리티
+   ├─ types/                   여러 기능이 공유하는 타입
+   └─ ui/                      shadcn 기반 Button·Input·Card·Dialog·Badge 등
 ```
+
+### 인증과 공용 UI
+
+- 인증 경로: `/login`, `/signup`, `/password-reset`
+- API 연결: `frontend/src/features/auth/api/auth.ts`
+- 로그인 토큰: `localStorage`의 `metrotrip-access-token`, `metrotrip-refresh-token`
+- 인증 화면은 Radix Dialog 기반 중앙 모달로 표시합니다.
+- 공용 UI는 `frontend/src/shared/ui/`에 두며 `Button`, `Input`, `Card`, `Dialog`, `Badge`, `SectionHeader`를 우선 재사용합니다.
+- className 결합은 `frontend/src/shared/lib/cn.ts`의 `cn()`을 사용합니다.
+- 디자인은 기존 색상 토큰을 유지하면서 지도 중심 Wanderlog 스타일의 카드·pill·여백 체계를 적용합니다.
 
 ### 아직 없는 것
 
 - 카테고리 기반 장소 검색 (지금은 탕정역 2곳만 정적 데이터로 제공)
 - 노선도/경로/시간표/마이페이지의 **실제 동작** (지금은 화면만 — SPEC 2-1 참고)
+- `/api/v1/users/me` 회원 조회 연동 (현재 로그인 후 마이페이지에는 조회 실패 안내 표시)
 
 ---
 

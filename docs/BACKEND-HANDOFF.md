@@ -70,6 +70,10 @@ export async function searchStations(keyword: string): Promise<Station[]>;
 | POST | `/api/v1/auth/login` | 로그인 |
 | POST | `/api/v1/auth/refresh` | Access Token 갱신 |
 | POST | `/api/v1/auth/logout` | 로그아웃 |
+| POST | `/api/v1/auth/email-verifications` | 이메일 인증 코드 발송 |
+| POST | `/api/v1/auth/email-verifications/confirm` | 이메일 인증 코드 확인 |
+| POST | `/api/v1/auth/password-reset/requests` | 비밀번호 재설정 코드 발송 |
+| POST | `/api/v1/auth/password-reset/confirm` | 비밀번호 변경 |
 | GET | `/api/v1/users/me` | 내 회원 정보 |
 | PATCH | `/api/v1/users/me` | 내 회원 정보 수정 |
 | DELETE | `/api/v1/users/me` | 회원 탈퇴 |
@@ -115,8 +119,9 @@ export async function searchStations(keyword: string): Promise<Station[]>;
 | PATCH | `/api/v1/admin/places/{place_id}` | 장소 수정 |
 | DELETE | `/api/v1/admin/places/{place_id}` | 장소 삭제 |
 
-현재 `/health`를 제외한 비즈니스 API는 계약만 구현되어 있으며 호출 시
-`501 Not Implemented`를 반환합니다.
+현재 인증 API와 `/health`는 실제 구현되어 있습니다. 그 외 비즈니스 API는 계약만 구현되어 있으며 호출 시 `501 Not Implemented`를 반환합니다.
+
+프론트 인증 연결은 `frontend/src/features/auth/api/auth.ts`에서 담당합니다. 개발 환경의 이메일 발송 모드가 `console`이면 인증 코드는 백엔드 실행 터미널에 표시됩니다.
 
 ### 응답 형식
 

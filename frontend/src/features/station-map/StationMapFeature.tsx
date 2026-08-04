@@ -10,6 +10,7 @@ import { PlaceList } from './ui/PlaceList';
 import { StationList } from './ui/StationList';
 import { TimetableFeature } from '../timetable/TimetableFeature';
 import { Card } from '../../shared/ui/Card';
+import { Button } from '../../shared/ui/Button';
 
 type MapScreenProps = {
   selected: Station;
@@ -52,9 +53,9 @@ export function StationMapFeature({ selected, onSelectStation }: MapScreenProps)
         </div>
 
         <div className="relative min-h-0 flex-1 lg:order-1 lg:h-full lg:flex-1">
-          <Card className="pointer-events-auto absolute bottom-0 left-0 top-0 flex w-full min-h-0 flex-col overflow-hidden rounded-none bg-surface/95 backdrop-blur-sm sm:bottom-0 sm:left-0 sm:top-0 sm:w-[22rem] lg:left-0 lg:w-[23rem]">
-            <header className="flex shrink-0 items-center gap-sm border-b border-outline-variant p-md">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary text-on-primary">
+          <Card className="pointer-events-auto absolute bottom-0 left-0 top-0 flex w-full min-h-0 flex-col overflow-hidden rounded-none border-y-0 border-l-0 bg-surface/95 shadow-xl backdrop-blur-xl sm:bottom-0 sm:left-0 sm:top-0 sm:w-[22rem] lg:left-0 lg:w-[23rem]">
+            <header className="flex shrink-0 items-center gap-sm border-b border-outline-variant/70 bg-surface-bright/75 p-md">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-container text-primary">
                 <Icon name="subway" />
               </span>
               <div className="min-w-0">
@@ -62,16 +63,18 @@ export function StationMapFeature({ selected, onSelectStation }: MapScreenProps)
                 <h1 className="truncate text-headline-sm text-on-surface">{selected.name}</h1>
                 <p className="text-body-md text-on-surface-variant">{selected.line}</p>
               </div>
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                size="sm"
                 onClick={() => setTimetableOpen(true)}
                 aria-label={`${selected.name} 시간표 열기`}
                 aria-expanded={timetableOpen}
-                className="ml-auto flex shrink-0 items-center gap-xs border-b border-primary px-xs py-xs text-body-md font-bold text-primary hover:text-on-surface"
+                className="ml-auto text-primary"
               >
                 <Icon name="schedule" className="text-[18px]" />
                 시간표
-              </button>
+              </Button>
             </header>
 
             <PlaceList

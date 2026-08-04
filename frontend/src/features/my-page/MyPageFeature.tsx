@@ -1,5 +1,7 @@
 import { Icon } from '../../shared/ui/Icon';
 import { PreviewFrame } from '../../shared/ui/PreviewFrame';
+import { Card } from '../../shared/ui/Card';
+import { Badge } from '../../shared/ui/Badge';
 
 /** 화면 구성을 보여주기 위한 가짜 계정이다. 실제 회원 데이터가 아니다. */
 const EXAMPLE_USER = {
@@ -48,8 +50,8 @@ export function MyPageFeature({ onLogout }: { onLogout: () => void }) {
       notice="정보를 불러올 수 없습니다."
     >
       {/* 프로필 */}
-      <section className="flex items-center gap-md border-t border-outline-variant py-md">
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-primary-container text-headline-sm font-bold text-on-primary-container">
+      <Card className="flex items-center gap-md p-md">
+        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary-container text-headline-sm font-bold text-on-primary-container">
           {EXAMPLE_USER.initial}
         </span>
         <div className="min-w-0 flex-1">
@@ -60,18 +62,18 @@ export function MyPageFeature({ onLogout }: { onLogout: () => void }) {
             {EXAMPLE_USER.email}
           </p>
         </div>
-        <span className="hidden shrink-0 items-center gap-xs border-b border-outline-variant px-sm py-sm text-body-md text-on-surface-variant sm:flex">
+        <span className="hidden shrink-0 items-center gap-xs rounded-lg bg-surface-container-low px-sm py-sm text-body-md text-on-surface-variant sm:flex">
           <Icon name="edit" className="text-[18px]" />
           프로필 수정
         </span>
-      </section>
+      </Card>
 
       {/* 요약 숫자 */}
-      <section className="grid grid-cols-3 border-y border-outline-variant">
+      <Card className="grid grid-cols-3 overflow-hidden">
         {EXAMPLE_STATS.map((stat) => (
           <div
             key={stat.label}
-            className="flex flex-col items-center gap-xs border-r border-outline-variant p-md last:border-r-0"
+            className="flex flex-col items-center gap-xs border-r border-outline-variant/70 p-md last:border-r-0"
           >
             <Icon name={stat.icon} className="text-[20px] text-primary" />
             <span className="text-headline-sm font-bold text-on-surface">
@@ -82,36 +84,33 @@ export function MyPageFeature({ onLogout }: { onLogout: () => void }) {
             </span>
           </div>
         ))}
-      </section>
+      </Card>
 
       {/* 즐겨찾기한 역 */}
-      <section className="border-t border-outline-variant pt-md">
+      <Card className="p-md">
         <h3 className="text-label-caps uppercase tracking-widest text-on-surface-variant">
           즐겨찾기한 역
         </h3>
         <div className="mt-sm flex flex-wrap gap-xs">
           {EXAMPLE_FAVORITES.map((name) => (
-            <span
-              key={name}
-              className="flex items-center gap-xs border-b border-outline-variant px-sm py-xs text-body-md text-on-surface"
-            >
+            <Badge key={name} className="gap-xs bg-surface-container text-on-surface">
               <Icon name="star" className="text-[16px] text-primary" />
               {name}
-            </span>
+            </Badge>
           ))}
         </div>
-      </section>
+      </Card>
 
       {/* 작성한 후기 */}
-      <section className="border-t border-outline-variant">
-        <h3 className="border-b border-outline-variant px-md py-sm text-label-caps uppercase tracking-widest text-on-surface-variant">
+      <Card className="overflow-hidden">
+        <h3 className="border-b border-outline-variant/70 px-md py-md text-label-caps uppercase tracking-widest text-on-surface-variant">
           작성한 후기
         </h3>
         <ul>
           {EXAMPLE_REVIEWS.map((review) => (
             <li
               key={`${review.from}-${review.to}`}
-              className="flex flex-col gap-xs border-b border-outline-variant p-md last:border-b-0"
+              className="flex flex-col gap-xs border-b border-outline-variant/70 p-md transition hover:bg-surface-container-low last:border-b-0"
             >
               <div className="flex flex-wrap items-center gap-xs">
                 <span className="text-body-md font-bold text-on-surface">
@@ -138,16 +137,16 @@ export function MyPageFeature({ onLogout }: { onLogout: () => void }) {
             </li>
           ))}
         </ul>
-      </section>
+      </Card>
 
       {/* 계정 관리 */}
-      <section className="border-t border-outline-variant">
+      <Card className="overflow-hidden">
         {ACCOUNT_MENU.map((menu) => (
           <button
             key={menu.label}
             type="button"
             onClick={menu.icon === 'logout' ? onLogout : undefined}
-            className="flex items-center gap-sm border-b border-outline-variant px-md py-sm text-body-lg text-on-surface last:border-b-0"
+            className="flex w-full items-center gap-sm border-b border-outline-variant/70 px-md py-md text-body-lg text-on-surface transition hover:bg-surface-container-low last:border-b-0"
           >
             <Icon name={menu.icon} className="text-[20px] text-on-surface-variant" />
             {menu.label}
@@ -157,7 +156,7 @@ export function MyPageFeature({ onLogout }: { onLogout: () => void }) {
             />
           </button>
         ))}
-      </section>
+      </Card>
 
       <p className="pb-md text-center text-body-md text-error/70">회원 탈퇴</p>
     </PreviewFrame>

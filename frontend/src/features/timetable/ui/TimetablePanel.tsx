@@ -14,13 +14,13 @@ export function TimetablePanel({
 }: TimetablePanelProps) {
   return (
     <div
-      className="absolute inset-0 z-50 flex items-end justify-center bg-black/25 p-sm sm:p-md lg:items-stretch lg:justify-end lg:p-0"
+      className="absolute inset-0 z-50 flex items-end justify-center bg-black/30 p-sm backdrop-blur-[2px] sm:p-md lg:items-stretch lg:justify-end lg:p-0"
       role="presentation"
       onClick={onClose}
     >
       <section
         ref={dialogRef}
-        className="flex max-h-[82dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-outline-variant bg-surface-container-lowest shadow-2xl lg:h-full lg:max-h-none lg:w-[390px] lg:max-w-none lg:rounded-none lg:border-y-0 lg:border-r-0"
+        className="flex max-h-[82dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-outline-variant bg-surface-bright shadow-2xl lg:h-full lg:max-h-none lg:w-[390px] lg:max-w-none lg:rounded-none lg:border-y-0 lg:border-r-0"
         role="dialog"
         aria-modal="true"
         aria-labelledby="timetable-title"
@@ -47,21 +47,18 @@ export function TimetablePanel({
         </header>
 
         <div className="border-b border-outline-variant p-sm">
-          <div className="grid grid-cols-2 gap-xs rounded-lg bg-surface-container p-xs">
+          <div className="grid grid-cols-2 gap-xs rounded-xl bg-surface-container-low p-xs">
             {(Object.keys(DIRECTION_LABELS) as Array<'up' | 'down'>).map((value) => (
-              <button
+              <Button
                 key={value}
                 type="button"
                 aria-pressed={direction === value}
                 onClick={() => onDirectionChange(value)}
-                className={`rounded-md px-md py-sm text-body-md font-bold transition-colors ${
-                  direction === value
-                    ? 'bg-primary text-on-primary shadow-sm'
-                    : 'text-on-surface-variant hover:bg-surface-container-high'
-                }`}
+                variant={direction === value ? 'default' : 'ghost'}
+                className="w-full"
               >
                 {DIRECTION_LABELS[value]}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -75,11 +72,11 @@ export function TimetablePanel({
             </p>
           </div>
         ) : (
-          <ul className="min-h-0 overflow-y-auto">
+          <ul className="min-h-0 space-y-xs overflow-y-auto p-sm">
             {rows.map((row) => (
               <li
                 key={`${direction}-${row.hour}`}
-                className="flex items-center gap-md border-b border-outline-variant px-md py-sm last:border-b-0"
+                className="flex items-center gap-md rounded-xl bg-surface-container-low px-md py-sm transition hover:bg-surface-container"
               >
                 <span className="w-10 shrink-0 text-mono-table text-on-surface-variant">
                   {row.hour}시
