@@ -48,7 +48,7 @@ export function StationMapFeature({ selected, onSelectStation }: MapScreenProps)
       </section>
 
       <div className="pointer-events-none relative z-40 flex h-full min-h-0 flex-col justify-between lg:flex-row">
-        <div className="pointer-events-auto shrink-0 lg:order-2 lg:w-auto">
+        <div className="pointer-events-auto shrink-0 lg:order-2 lg:w-auto lg:self-start">
           <StationList selected={selected} onSelect={onSelectStation} {...stationState} />
         </div>
 
