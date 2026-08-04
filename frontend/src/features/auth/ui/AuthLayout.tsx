@@ -1,45 +1,92 @@
 import type { ReactNode } from 'react';
 import { getAuthPath, getPath, navigate, type AuthPage } from '../../../app/route';
+import { asset } from '../../../shared/lib/asset';
+import { cn } from '../../../shared/lib/cn';
 import { Button } from '../../../shared/ui/Button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../../shared/ui/Dialog';
+import { Dialog, DialogContent } from '../../../shared/ui/Dialog';
 
 type AuthLayoutProps = {
-  title: string;
-  description: string;
   page: AuthPage;
   children: ReactNode;
 };
 
-export function AuthLayout({ title, description, page, children }: AuthLayoutProps) {
+type AuthStandaloneLayoutProps = AuthLayoutProps & {
+  title: string;
+  description: string;
+  showHeader?: boolean;
+};
+
+export function AuthBrand() {
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      className="h-auto w-full justify-center p-0 hover:bg-transparent"
+      onClick={() => navigate(getPath('line'))}
+      aria-label="MetroTrip 로그인으로 이동"
+    >
+      <img src={asset('logo.png')} alt="MetroTrip" className="h-12 w-auto object-contain" />
+    </Button>
+  );
+}
+
+export function AuthLayout({ page, children }: AuthLayoutProps) {
   return (
     <Dialog open onOpenChange={(open) => !open && navigate(getPath('map'))}>
-      <DialogContent className="overflow-hidden border-primary/20 p-0">
-        <div className="h-2 bg-primary" aria-hidden="true" />
-        <div className="p-lg">
-        <Button
-          type="button"
-          variant="ghost"
-          className="mb-lg h-auto justify-start px-0 text-headline-sm font-heading font-bold text-primary hover:bg-transparent"
-          onClick={() => navigate(getAuthPath('login'))}
-        >
-          MetroTrip
-        </Button>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
-        <div className="mt-lg">{children}</div>
-        <nav className="mt-lg flex flex-wrap justify-center gap-xs border-t border-outline-variant/70 pt-md">
-          {page !== 'login' && <AuthLink page="login">로그인</AuthLink>}
-          {page !== 'signup' && <AuthLink page="signup">회원가입</AuthLink>}
-          {page !== 'password-reset' && <AuthLink page="password-reset">비밀번호 찾기</AuthLink>}
-        </nav>
+      <DialogContent className="max-w-[26rem] border-outline-variant/60 p-lg sm:p-xl">
+        <div className="auth-dialog-motion flex flex-col gap-xl">
+          <AuthBrand />
+          {children}
+          <AuthNavigation page={page} />
         </div>
       </DialogContent>
     </Dialog>
   );
 }
 
+export function AuthStandaloneLayout({ page, title, description, showHeader = true, children }: AuthStandaloneLayoutProps) {
+  return (
+    <main className="auth-page-shell min-h-dvh overflow-y-auto bg-background px-md py-xl sm:px-lg">
+      <div className={cn(
+        'mx-auto flex w-full max-w-[28rem] flex-col',
+        page === 'signup' ? 'py-md sm:py-xl' : 'min-h-[calc(100dvh-5rem)] justify-center',
+      )}>
+        <section className="flex flex-col gap-xl rounded-2xl bg-surface-bright px-lg py-xl shadow-card sm:px-xl" aria-labelledby="auth-page-title">
+          <AuthBrand />
+          {showHeader && (
+            <header className="space-y-xs text-center">
+              <h1 id="auth-page-title" className="text-headline-md font-heading text-on-surface">{title}</h1>
+              <p className="text-body-md leading-relaxed text-on-surface-variant">{description}</p>
+            </header>
+          )}
+          {children}
+          <AuthNavigation page={page} />
+        </section>
+      </div>
+    </main>
+  );
+}
+
+function AuthNavigation({ page }: { page: AuthPage }) {
+  return (
+    <nav className="flex flex-wrap justify-center gap-xs border-t border-outline-variant/70 pt-md" aria-label="인증 페이지 이동">
+      {page !== 'login' && <AuthLink page="login">로그인</AuthLink>}
+      {page !== 'signup' && <AuthLink page="signup">회원가입</AuthLink>}
+      {page !== 'password-reset' && <AuthLink page="password-reset">비밀번호 찾기</AuthLink>}
+    </nav>
+  );
+}
+
 function AuthLink({ page, children }: { page: AuthPage; children: ReactNode }) {
-  return <Button type="button" variant="ghost" size="sm" onClick={() => navigate(getAuthPath(page))}>{children}</Button>;
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      className="text-on-surface-variant transition-transform duration-200 hover:-translate-y-0.5 hover:text-primary"
+      onClick={() => navigate(getAuthPath(page))}
+    >
+      {children}
+    </Button>
+  );
 }

@@ -123,6 +123,8 @@ export async function searchStations(keyword: string): Promise<Station[]>;
 
 프론트 인증 연결은 `frontend/src/features/auth/api/auth.ts`에서 담당합니다. 개발 환경의 이메일 발송 모드가 `console`이면 인증 코드는 백엔드 실행 터미널에 표시됩니다.
 
+LAN에서 프론트를 공유할 때는 `backend/.env`의 `METROTRIP_CORS_ORIGINS`에 프론트 접속 주소를 추가해야 합니다. 예를 들어 프론트가 `http://192.168.0.108:5173`에서 열리면 해당 주소를 CORS 목록에 포함합니다.
+
 ### 응답 형식
 
 성공 시 단건 API는 리소스를 직접 반환하고, 목록 API는 `items`와 페이지 정보를 반환합니다.

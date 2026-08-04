@@ -12,7 +12,15 @@ async function request<T>(path: string, init: RequestInit): Promise<T> {
   const body = (await response.json().catch(() => null)) as T | ApiError | null;
   if (!response.ok) {
     const error = body as ApiError | null;
-    throw new Error(error?.message ?? '요청을 처리하지 못했습니다.');
+    const validationMessages = error?.details?.errors
+      ?.map((item) => {
+        const field = item.loc?.filter((part) => part !== 'body').join('.') ?? '';
+        return field && item.msg ? `${field}: ${item.msg}` : item.msg;
+      })
+      .filter(Boolean)
+      .join(' / ');
+    const message = [error?.message, validationMessages].filter(Boolean).join(' ');
+    throw new Error(message || '요청을 처리하지 못했습니다.');
   }
   return body as T;
 }

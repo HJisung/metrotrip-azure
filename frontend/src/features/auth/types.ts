@@ -16,4 +16,10 @@ export type RegisteredUser = {
 export type ApiError = {
   code?: string;
   message?: string;
+  details?: {
+    errors?: Array<{
+      loc?: Array<string | number>;
+      msg?: string;
+    }>;
+  } | null;
 };

@@ -5,6 +5,7 @@ import { AppRouter } from './router';
 import { getAuthPath, getPath, navigate, readRoute, type AppRoute } from './route';
 import { TopNav } from './ui/TopNav';
 import type { ViewId } from './view';
+import { cn } from '../shared/lib/cn';
 
 const INITIAL_STATION: Station = {
   name: '탕정역',
@@ -82,7 +83,10 @@ function App() {
             })
           }
       />
-      <main className="relative min-h-0 flex-1 overflow-hidden lg:ml-20 lg:h-dvh">
+      <main className={cn(
+        'relative min-h-0 flex-1 lg:ml-20 lg:h-dvh',
+        route.authPage && route.authPage !== 'login' ? 'overflow-y-auto' : 'overflow-hidden',
+      )}>
         <AppRouter
           route={route}
           selected={selected}

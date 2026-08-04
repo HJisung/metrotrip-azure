@@ -54,7 +54,8 @@ frontend/src/
 - 인증 경로: `/login`, `/signup`, `/password-reset`
 - API 연결: `frontend/src/features/auth/api/auth.ts`
 - 로그인 토큰: `localStorage`의 `metrotrip-access-token`, `metrotrip-refresh-token`
-- 인증 화면은 Radix Dialog 기반 중앙 모달로 표시합니다.
+- 로그인만 Radix Dialog 기반 중앙 모달로 표시하고, 회원가입·비밀번호 찾기는 독립 페이지로 표시합니다.
+- 회원가입은 약관 동의 → 닉네임 → 이메일 인증 → 비밀번호 → 비밀번호 확인의 단계형 플로우입니다.
 - 공용 UI는 `frontend/src/shared/ui/`에 두며 `Button`, `Input`, `Card`, `Dialog`, `Badge`, `SectionHeader`를 우선 재사용합니다.
 - className 결합은 `frontend/src/shared/lib/cn.ts`의 `cn()`을 사용합니다.
 - 디자인은 기존 색상 토큰을 유지하면서 지도 중심 Wanderlog 스타일의 카드·pill·여백 체계를 적용합니다.
@@ -119,10 +120,18 @@ cp .env.example .env
 
 ```
 VITE_KAKAO_MAP_KEY=여기에_JavaScript_키
+VITE_API_BASE_URL=http://localhost:8000/api/v1
 ```
 
 키는 [카카오 개발자 콘솔](https://developers.kakao.com/) → 내 애플리케이션 → **위치확인앱**(ID 1402576) → 앱 키 → **JavaScript 키**에서 다시 복사할 수 있습니다.
 **REST API 키가 아닙니다.** 가운데 있는 JavaScript 키입니다.
+
+회원가입·로그인·이메일 인증을 사용할 때는 `VITE_API_BASE_URL`을 백엔드 주소로 설정합니다.
+같은 PC에서 실행하면 `http://localhost:8000/api/v1`을 사용하고,
+같은 네트워크의 다른 PC에서 접속하면 백엔드 PC의 LAN IP를 사용합니다.
+
+백엔드 환경변수는 `backend/.env.example`을 복사해 `backend/.env`를 만들고,
+`METROTRIP_CORS_ORIGINS`에 프론트 주소(`http://192.168.0.108:5173` 등)를 추가합니다.
 
 ### ⑤ 실행
 

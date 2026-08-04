@@ -15,9 +15,13 @@ type AppRouterProps = {
 
 /** URL 경로에 맞는 얇은 페이지 컴포넌트만 선택합니다. */
 export function AppRouter({ route, selected, onSelectStation, onLogout }: AppRouterProps) {
+  if (route.authPage && route.authPage !== 'login') {
+    return <AuthPage page={route.authPage} />;
+  }
+
   let page = <MyPage onLogout={onLogout} />;
   if (route.view === 'line') page = <LineMapPage selected={selected} />;
   if (route.view === 'map') page = <MapPage selected={selected} onSelectStation={onSelectStation} />;
   if (route.view === 'route') page = <RoutePage />;
-  return <>{page}{route.authPage && <AuthPage page={route.authPage} />}</>;
+  return <>{page}{route.authPage === 'login' && <AuthPage page={route.authPage} />}</>;
 }

@@ -60,7 +60,12 @@ npm run dev
 
 ```
 VITE_KAKAO_MAP_KEY=발급받은_JavaScript_키
+VITE_API_BASE_URL=http://localhost:8000/api/v1
 ```
+
+같은 네트워크의 다른 PC에서 프론트에 접속할 때는 `VITE_API_BASE_URL`을
+백엔드 PC의 LAN 주소로 변경합니다. 예: `http://192.168.0.108:8000/api/v1`
+백엔드 `backend/.env`의 `METROTRIP_CORS_ORIGINS`에도 프론트 주소를 추가해야 합니다.
 
 > `frontend/.env`는 `.gitignore`에 포함되어 있습니다. **절대 커밋하지 마세요.**
 > 키가 커밋되면 즉시 팀에 알리고 카카오 콘솔에서 키를 재발급해야 합니다.

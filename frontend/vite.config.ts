@@ -16,7 +16,9 @@ export default defineConfig(({ command }) => ({
     // strictPort를 켜지 않으면 5173이 사용 중일 때 Vite가 5174 등으로 옮겨가고,
     // 그러면 도메인이 달라져 지도가 403으로 막힌다. (원인 찾기가 매우 어렵다)
     // 포트 충돌 시 조용히 바꾸는 대신 에러를 내도록 한다.
+    host: true,
     port: 5173,
     strictPort: true,
+
   },
 }))
