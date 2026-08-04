@@ -51,10 +51,37 @@ export async function searchStations(keyword: string): Promise<Station[]>;
 | `stations.json` 정적 로드 | `GET /api/v1/stations` | `frontend/src/shared/lib/stations.ts` |
 | 카카오 로컬 API 프론트 직접 호출 | 백엔드 프록시 경유 (키 은닉 + 캐싱) | `frontend/src/features/station-map/api/places.ts` |
 | 없음 | 인증 토큰 처리 | `frontend/src/shared/lib/apiClient.ts` (신규) |
+| 프론트에서 그래프 탐색으로 경로 계산 | `GET /api/v1/routes` (**계약에 없음 — 신설 필요**) | `frontend/src/features/route-plan/api/routes.ts` |
+| 역당 2분 + 환승 5분 근사치 | `train_timetables` 기반 실제 소요시간 | 같은 파일 |
 
 ### 카카오 API를 백엔드로 옮겨야 하는 이유
 지금은 JavaScript 키가 브라우저에 노출됩니다. MVP에서는 **도메인 제한**으로 막지만,
 운영 단계에서는 백엔드가 REST 키로 호출하고 프론트는 백엔드만 부르는 구조가 맞습니다.
+
+### 경로 탐색 API — 백엔드(윤홍규)에게 요청
+
+`docs/SPEC.md` 2-2로 경로 기능이 범위에 들어왔는데,
+**현재 계약에 경로 탐색 엔드포인트가 없습니다.** 아래 형태로 신설이 필요합니다.
+
+```
+GET /api/v1/routes?from_station_id={id}&to_station_id={id}
+```
+
+응답에 필요한 것:
+
+| 필요한 것 | 화면에서의 용도 |
+|---|---|
+| 두 가지 안 (최단거리 / 최소환승) | 나란히 비교하는 카드 |
+| 안별 경유역 목록 (순서 포함) | 세로 타임라인 렌더 |
+| 안별 환승 지점 (역·이전 노선·다음 노선) | 타임라인에 환승 표시 |
+| 안별 예상 소요시간 | 비교 카드의 요약 |
+
+- 프론트 타입은 `frontend/src/features/route-plan/types.ts`에 있고,
+  DB의 `stations` / `line_stations` 구조에 맞춰 잡아 뒀습니다.
+- 그전까지는 프론트가 정적 데이터로 직접 그래프 탐색을 합니다.
+  API가 생기면 `features/route-plan/api/routes.ts` **내부만** 교체합니다.
+- **소요시간**은 `train_timetables`가 채워지기 전까지 정확히 계산할 수 없습니다.
+  그전까지 프론트는 `역당 2분 + 환승 5분` 근사치를 쓰고 화면에 "예상"이라고 표기합니다.
 
 ## 4. 현재 백엔드 API 계약
 
@@ -123,8 +150,6 @@ export async function searchStations(keyword: string): Promise<Station[]>;
 
 프론트 인증 연결은 `frontend/src/features/auth/api/auth.ts`에서 담당합니다. 개발 환경의 이메일 발송 모드가 `console`이면 인증 코드는 백엔드 실행 터미널에 표시됩니다.
 
-LAN에서 프론트를 공유할 때는 `backend/.env`의 `METROTRIP_CORS_ORIGINS`에 프론트 접속 주소를 추가해야 합니다. 예를 들어 프론트가 `http://192.168.0.108:5173`에서 열리면 해당 주소를 CORS 목록에 포함합니다.
-
 ### 응답 형식
 
 성공 시 단건 API는 리소스를 직접 반환하고, 목록 API는 `items`와 페이지 정보를 반환합니다.
@@ -153,3 +178,24 @@ LAN에서 프론트를 공유할 때는 `backend/.env`의 `METROTRIP_CORS_ORIGIN
 
 - 환승역은 `stations`에 한 건으로 두고 `line_stations`에서 여러 노선과 연결합니다.
 - 좌표 정밀도는 소수점 6자리 이상 권장
+
+### 노선·역 데이터 (2026-08-04 협의)
+
+경로 기능은 **노선이 2개 이상**이어야 최단거리·최소환승 비교가 성립합니다.
+현재 프론트 `stations.json`은 1호선 천안·아산 11개 역뿐이라 환승이 발생하지 않습니다.
+
+**DB 담당이 전체 노선·역 데이터를 API로 제공하기로 했습니다.**
+프론트는 그때까지 현재 데이터로 동작하는 껍데기로 진행합니다.
+
+경로 탐색에 반드시 필요한 것:
+
+| 필요한 것 | 대응 컬럼 | 비고 |
+|---|---|---|
+| 노선 내 역 순서 | `line_stations.station_order` | **인접 관계 계산의 핵심.** 없으면 경로 탐색 자체가 불가능 |
+| 역 좌표 | `stations.latitude` / `longitude` | 경유역 반경 1km 장소 추천에 사용 |
+| 환승역 | 한 역이 `line_stations`에서 여러 노선에 연결된 것 | 별도 컬럼 불필요 |
+
+- 1호선처럼 **지선이 있는 노선**(경인선·장항선 등)은 `station_order` 하나만으로
+  분기를 표현하기 어렵습니다. 처리 방식을 정해서 알려주세요.
+- 공개 데이터셋(jhj0517 gist)을 검토했으나 **천안·아산 구간이 통째로 누락**되어 있고,
+  파일 자체에 좌표 부정확 경고가 붙어 있어 쓰지 않기로 했습니다.
