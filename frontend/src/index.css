@@ -74,6 +74,12 @@
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
   --shadow-card: 0 8px 24px rgb(29 37 44 / 8%);
+  --animate-dropdown-in: dropdown-in 180ms ease-out;
+}
+
+@keyframes dropdown-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /*
@@ -101,6 +107,14 @@
   --auth-title-size: clamp(1.25rem, 3vw, 1.5rem);
   --auth-label-size: clamp(0.8125rem, 1.5vw, 0.875rem);
   --auth-logo-height: clamp(3rem, 8vw, 5rem);
+  --review-editor-min-height: clamp(20rem, 42dvh, 34rem);
+  --review-editor-content-min-height: clamp(18rem, 36dvh, 30rem);
+  --review-grid-gap: clamp(0.75rem, 1vw, 1.25rem);
+  --review-card-padding: clamp(0.75rem, 0.9vw, 1rem);
+  --review-detail-width: 52rem;
+  --review-detail-gutter: clamp(1rem, 1.5vw, 1.5rem);
+  --review-detail-gap: clamp(1.25rem, 2vw, 2rem);
+  --review-detail-title-size: clamp(1.75rem, 2.6vw, 2.75rem);
 }
 
 :root.dark {

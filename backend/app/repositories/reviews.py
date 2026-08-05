@@ -25,6 +25,7 @@ class ReviewRepository:
     def list_reviews(
         self,
         *,
+        user_id: int | None = None,
         keyword: str | None,
         station_id: int | None,
         tag: str | None,
@@ -33,6 +34,8 @@ class ReviewRepository:
     ) -> tuple[list[Review], int]:
         """검색 조건에 맞는 후기를 페이지 단위로 조회하고 전체 건수를 반환한다."""
         statement = select(Review)
+        if user_id is not None:
+            statement = statement.where(Review.user_id == user_id)
         if keyword:
             pattern = f"%{keyword}%"
             statement = statement.where(
@@ -121,7 +124,9 @@ class ReviewRepository:
         if not review_ids:
             return result
         rows = self.session.scalars(
-            select(ReviewMedia).where(ReviewMedia.review_id.in_(review_ids))
+            select(ReviewMedia)
+            .where(ReviewMedia.review_id.in_(review_ids))
+            .order_by(ReviewMedia.media_id.asc())
         )
         for media in rows:
             result[media.review_id].append(media)

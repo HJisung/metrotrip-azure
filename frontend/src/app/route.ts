@@ -4,7 +4,14 @@ export type AppRoute = {
   view: ViewId;
   stationName: string | null;
   authPage: AuthPage | null;
+  reviewPage: ReviewPage | null;
 };
+
+export type ReviewPage =
+  | { kind: 'list' }
+  | { kind: 'create' }
+  | { kind: 'detail'; reviewId: number }
+  | { kind: 'edit'; reviewId: number };
 
 export type AuthPage = 'login' | 'signup' | 'password-reset';
 
@@ -38,7 +45,17 @@ export function readRoute(location: Location = window.location): AppRoute {
   const authPage = AUTH_PAGE_BY_PATH[normalizedPath] ?? null;
   const view = VIEW_BY_PATH[normalizedPath] ?? 'line';
   const stationName = new URLSearchParams(location.search).get('station');
-  return { view, stationName, authPage };
+  let reviewPage: ReviewPage | null = null;
+  if (normalizedPath === '/reviews') reviewPage = { kind: 'list' };
+  if (normalizedPath === '/reviews/new') reviewPage = { kind: 'create' };
+  const reviewMatch = normalizedPath.match(/^\/reviews\/(\d+)(\/edit)?$/);
+  if (reviewMatch) {
+    reviewPage = {
+      kind: reviewMatch[2] ? 'edit' : 'detail',
+      reviewId: Number(reviewMatch[1]),
+    };
+  }
+  return { view, stationName, authPage, reviewPage };
 }
 
 export function getPath(view: ViewId, stationName?: string): string {
@@ -49,6 +66,12 @@ export function getPath(view: ViewId, stationName?: string): string {
 
 export function getAuthPath(page: AuthPage): string {
   return `${BASE_PATH}/${page}`;
+}
+
+export function getReviewPath(page: ReviewPage): string {
+  if (page.kind === 'list') return `${BASE_PATH}/reviews`;
+  if (page.kind === 'create') return `${BASE_PATH}/reviews/new`;
+  return `${BASE_PATH}/reviews/${page.reviewId}${page.kind === 'edit' ? '/edit' : ''}`;
 }
 
 export function navigate(path: string) {

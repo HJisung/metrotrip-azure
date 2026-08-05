@@ -5,6 +5,7 @@ import { MyPage } from '../pages/MyPage';
 import { RoutePage } from '../pages/RoutePage';
 import { AuthPage } from '../pages/AuthPage';
 import type { AppRoute } from './route';
+import { ReviewsFeature } from '../features/reviews/ReviewsFeature';
 
 type AppRouterProps = {
   route: AppRoute;
@@ -18,6 +19,8 @@ export function AppRouter({ route, selected, onSelectStation, onLogout }: AppRou
   if (route.authPage && route.authPage !== 'login') {
     return <AuthPage page={route.authPage} />;
   }
+
+  if (route.reviewPage) return <ReviewsFeature page={route.reviewPage} />;
 
   let page = <MyPage onLogout={onLogout} />;
   if (route.view === 'line') page = <LineMapPage selected={selected} />;

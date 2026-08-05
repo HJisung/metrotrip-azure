@@ -6,7 +6,7 @@ import { Icon } from './Icon';
 type PreviewFrameProps = {
   title: string;
   description: string;
-  notice: string;
+  notice?: string;
   wide?: boolean;
   children: ReactNode;
 };
@@ -23,10 +23,10 @@ export function PreviewFrame({ title, description, notice, wide = false, childre
           </div>
         </header>
 
-        <Card className="responsive-frame-notice flex items-start gap-sm border-tertiary/25 bg-tertiary-container/10 p-md shadow-none">
+        {notice && <Card className="responsive-frame-notice flex items-start gap-sm border-tertiary/25 bg-tertiary-container/10 p-md shadow-none">
           <Icon name="info" className="mt-[2px] shrink-0 text-[19px] text-tertiary" />
           <p className="text-body-md text-on-surface-variant">{notice}</p>
-        </Card>
+        </Card>}
 
         {children}
       </div>

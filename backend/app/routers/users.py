@@ -1,9 +1,19 @@
 """Current user and favorite API contracts."""
 
-from fastapi import APIRouter, status
-from fastapi.responses import JSONResponse
+from typing import Annotated
 
-from app.routers.contract import AUTH_REQUIRED, ERROR_RESPONSES, not_implemented
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
+
+from app.database import get_db
+from app.repositories.auth import AuthRepository
+from app.routers.contract import (
+    AUTH_REQUIRED,
+    ERROR_RESPONSES,
+    CurrentUserId,
+    not_implemented,
+)
 from app.schemas.common import MessageResponse
 from app.schemas.reviews import ReviewListResponse
 from app.schemas.users import (
@@ -13,12 +23,14 @@ from app.schemas.users import (
     UserProfileUpdateRequest,
     WithdrawRequest,
 )
+from app.services import reviews as review_service
 
 router = APIRouter(
     prefix="/users/me",
     tags=["사용자"],
     dependencies=AUTH_REQUIRED,
 )
+DatabaseSession = Annotated[Session, Depends(get_db)]
 
 
 @router.get(
@@ -27,8 +39,16 @@ router = APIRouter(
     summary="내 회원 정보 조회",
     responses=ERROR_RESPONSES,
 )
-def get_my_profile() -> JSONResponse:
-    return not_implemented()
+def get_my_profile(user_id: CurrentUserId, db: DatabaseSession) -> UserProfileResponse:
+    """Access Token의 사용자가 현재도 존재하는지 확인하고 프로필을 반환한다."""
+    user = AuthRepository(db).find_user_by_id(user_id)
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="사용자를 찾을 수 없습니다.",
+            headers={"X-Error-Code": "USER_NOT_FOUND"},
+        )
+    return UserProfileResponse.model_validate(user)
 
 
 @router.patch(
@@ -88,5 +108,19 @@ def delete_favorite(station_id: int) -> JSONResponse:
     summary="내가 작성한 후기 목록 조회",
     responses=ERROR_RESPONSES,
 )
-def list_my_reviews() -> JSONResponse:
-    return not_implemented()
+def list_my_reviews(
+    user_id: CurrentUserId,
+    db: DatabaseSession,
+    page: int = 1,
+    size: int = 20,
+) -> ReviewListResponse:
+    """현재 로그인한 사용자가 작성한 후기 목록을 반환한다."""
+    return review_service.list_reviews(
+        db,
+        user_id=user_id,
+        keyword=None,
+        station_id=None,
+        tag=None,
+        page=page,
+        size=size,
+    )
