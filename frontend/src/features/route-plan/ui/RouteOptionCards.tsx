@@ -1,6 +1,7 @@
 import { cn } from '../../../shared/lib/cn';
 import { Icon } from '../../../shared/ui/Icon';
 import { SectionHeader } from '../../../shared/ui/SectionHeader';
+import { toClock, toMinutes } from '../lib/routeSchedule';
 import type { RouteOption, RouteOptionKind } from '../types';
 
 /**
@@ -24,14 +25,19 @@ type RouteOptionCardsProps = {
   options: RouteOption[];
   selectedKind: RouteOptionKind | null;
   onSelect: (kind: RouteOptionKind) => void;
+  /** 출발 시각 "HH:MM". 안마다 도착 시각을 계산해 비교에 쓴다. */
+  departureAt: string;
 };
 
 export function RouteOptionCards({
   options,
   selectedKind,
   onSelect,
+  departureAt,
 }: RouteOptionCardsProps) {
   if (options.length === 0) return null;
+
+  const departureMinutes = toMinutes(departureAt);
 
   return (
     <section className="flex flex-col gap-sm">
@@ -78,6 +84,24 @@ export function RouteOptionCards({
                 {DESCRIPTION[option.kind]}
               </p>
 
+              {/* 비교 기준 — 목적지에 몇 시에 닿는지를 가장 크게 보여준다 */}
+              {departureMinutes !== null && (
+                <p className="flex items-baseline gap-xs">
+                  <span className="text-body-md text-on-surface-variant">
+                    도착
+                  </span>
+                  <span className="font-mono text-headline-sm font-bold text-primary">
+                    {toClock(departureMinutes + option.estimatedMinutes).text}
+                  </span>
+                  {toClock(departureMinutes + option.estimatedMinutes)
+                    .nextDay && (
+                    <span className="text-body-md text-on-surface-variant">
+                      다음날
+                    </span>
+                  )}
+                </p>
+              )}
+
               <dl className="flex flex-wrap gap-md text-body-md text-on-surface">
                 <div className="flex items-center gap-xs">
                   <dt className="text-on-surface-variant">정차</dt>
@@ -88,7 +112,7 @@ export function RouteOptionCards({
                   <dd className="font-semibold">{option.transferCount}회</dd>
                 </div>
                 <div className="flex items-center gap-xs">
-                  <dt className="text-on-surface-variant">예상</dt>
+                  <dt className="text-on-surface-variant">소요</dt>
                   <dd className="font-semibold">{option.estimatedMinutes}분</dd>
                 </div>
               </dl>

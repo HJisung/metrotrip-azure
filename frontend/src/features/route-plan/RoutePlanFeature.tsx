@@ -107,6 +107,7 @@ export function RoutePlanFeature() {
                 options={result.options}
                 selectedKind={selectedKind}
                 onSelect={setSelectedKind}
+                departureAt={departureAt}
               />
               {selectedOption && (
                 <RouteTimeline
