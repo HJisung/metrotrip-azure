@@ -1,6 +1,6 @@
 import type { DayType, Timetable } from '../api/timetables';
 import type { RouteOption } from '../types';
-import type { LineOrder } from './findRoutes';
+import { MINUTES_PER_TRANSFER, type LineOrder } from './findRoutes';
 import { toMinutes } from './routeSchedule';
 
 /**
@@ -146,7 +146,9 @@ export function resolveSchedule(
     });
 
     trainNos.push(train.trainNo);
-    current = train.alight;
+    // 내리자마자 바로 탈 수는 없다. 갈아타는 도보 시간을 두고
+    // 그 이후에 오는 열차를 찾는다.
+    current = train.alight + MINUTES_PER_TRANSFER;
   }
 
   const arrivals = option.stations.map(
