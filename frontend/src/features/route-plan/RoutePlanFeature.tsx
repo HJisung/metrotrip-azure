@@ -32,7 +32,8 @@ export function RoutePlanFeature() {
     routeStationNames,
     departureAt,
     setDepartureAt,
-    hasTimetable,
+    schedules,
+    selectedSchedule,
   } = useRoutePlan();
 
   const hasNoRoute = result !== null && result.options.length === 0;
@@ -44,6 +45,7 @@ export function RoutePlanFeature() {
           fromName={fromName}
           toName={toName}
           option={selectedOption}
+          schedule={selectedSchedule}
         />
 
         <Card className="flex items-start gap-sm border-tertiary/25 bg-tertiary-container/10 p-md shadow-none">
@@ -52,12 +54,22 @@ export function RoutePlanFeature() {
             className="mt-[2px] shrink-0 text-[19px] text-tertiary"
           />
           <p className="text-body-md text-on-surface-variant">
-            소요시간은 열차 시간표가 아직 없어{' '}
-            <strong className="text-on-surface">
-              역당 2분 · 환승 5분으로 계산한 예상값
-            </strong>
-            입니다. 지금은 1호선 천안·아산 구간만 들어 있어 환승이 발생하지
-            않습니다.
+            {selectedSchedule?.fromTimetable ? (
+              <>
+                도착 시각은{' '}
+                <strong className="text-on-surface">실제 열차 시간표</strong>로
+                계산했습니다. 지금 시드에는 <strong>평일</strong> 시간표만 있어,
+                주말·공휴일에는 예상값으로 표시됩니다.
+              </>
+            ) : (
+              <>
+                이 구간은 시간표가 없어{' '}
+                <strong className="text-on-surface">
+                  역당 2분 · 환승 5분으로 계산한 예상값
+                </strong>
+                입니다. 평일 시간표가 있는 구간은 실제 시각으로 표시됩니다.
+              </>
+            )}
           </p>
         </Card>
 
@@ -74,8 +86,7 @@ export function RoutePlanFeature() {
         <RouteDepartureTime
           value={departureAt}
           onChange={setDepartureAt}
-          totalMinutes={selectedOption?.estimatedMinutes ?? null}
-          hasTimetable={hasTimetable}
+          schedule={selectedSchedule}
         />
 
         {status === 'error' ? (
@@ -107,12 +118,12 @@ export function RoutePlanFeature() {
                 options={result.options}
                 selectedKind={selectedKind}
                 onSelect={setSelectedKind}
-                departureAt={departureAt}
+                schedules={schedules}
               />
               {selectedOption && (
                 <RouteTimeline
                   option={selectedOption}
-                  departureAt={departureAt}
+                  schedule={selectedSchedule}
                 />
               )}
             </>

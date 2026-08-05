@@ -5,7 +5,7 @@ import { Icon } from '../../../shared/ui/Icon';
 import { SectionHeader } from '../../../shared/ui/SectionHeader';
 import { getPlacesByStation } from '../../station-map/api/places';
 import type { Place, PlaceLoadStatus } from '../../station-map/types';
-import { getArrivalOffsets, toClock, toMinutes } from '../lib/routeSchedule';
+import { toClock, type RouteSchedule } from '../lib/routeSchedule';
 import type { RouteOption } from '../types';
 
 /**
@@ -27,11 +27,11 @@ const CATEGORY_ICON: Record<Place['category'], string> = {
 
 type RouteTimelineProps = {
   option: RouteOption;
-  /** 출발 시각 "HH:MM". 역마다 도착 예정 시각을 계산하는 기준. */
-  departureAt: string;
+  /** 역별 도착 시각. 시간표로 계산했는지 여부도 담겨 있다. */
+  schedule: RouteSchedule | null;
 };
 
-export function RouteTimeline({ option, departureAt }: RouteTimelineProps) {
+export function RouteTimeline({ option, schedule }: RouteTimelineProps) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [places, setPlaces] = useState<Place[]>([]);
   const [status, setStatus] = useState<PlaceLoadStatus>('success');
@@ -62,9 +62,7 @@ export function RouteTimeline({ option, departureAt }: RouteTimelineProps) {
     };
   }, [expanded]);
 
-  // 출발 시각을 못 읽으면 시각 표시만 생략한다 (경로 자체는 그대로 보여준다).
-  const departureMinutes = toMinutes(departureAt);
-  const offsets = getArrivalOffsets(option);
+  const departure = schedule?.arrivals[0] ?? null;
 
   // 노선이 바뀌는 지점 = 환승역. 구간(leg)의 첫 역이 환승역이다.
   const transferAt = new Map<string, { from: string; to: string }>();
@@ -147,14 +145,24 @@ export function RouteTimeline({ option, departureAt }: RouteTimelineProps) {
                     </span>
                   </span>
 
-                  {departureMinutes !== null && (
+                  {schedule && departure !== null && (
                     <span className="shrink-0 text-right">
-                      <span className="block font-mono text-body-md font-semibold text-on-surface">
-                        {toClock(departureMinutes + offsets[index]).text}
+                      <span
+                        className="block font-mono text-body-md font-semibold text-on-surface"
+                        title={
+                          schedule.interpolated[index]
+                            ? '이 역은 시간표에 없어 앞뒤 역에서 추정한 시각입니다'
+                            : undefined
+                        }
+                      >
+                        {schedule.interpolated[index] && (
+                          <span className="text-on-surface-variant">약 </span>
+                        )}
+                        {toClock(schedule.arrivals[index]).text}
                       </span>
                       {index > 0 && (
                         <span className="block text-body-md text-on-surface-variant">
-                          +{offsets[index]}분
+                          +{schedule.arrivals[index] - departure}분
                         </span>
                       )}
                     </span>

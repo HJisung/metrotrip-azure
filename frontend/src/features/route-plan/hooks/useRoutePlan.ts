@@ -2,9 +2,18 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getStations } from '../../../shared/lib/stations';
 import type { Station } from '../../../shared/types/station';
 import { getLineOrder, searchRoutes } from '../api/routes';
-import { hasTimetableData } from '../api/timetables';
+import {
+  getTimetables,
+  getTodayDayType,
+  type Timetable,
+} from '../api/timetables';
 import type { LineOrder } from '../lib/findRoutes';
-import { currentClock } from '../lib/routeSchedule';
+import {
+  buildSchedule,
+  currentClock,
+  toMinutes,
+  type RouteSchedule,
+} from '../lib/routeSchedule';
 import type {
   RouteOptionKind,
   RouteSearchResult,
@@ -31,8 +40,8 @@ export function useRoutePlan() {
   const [selectedKind, setSelectedKind] = useState<RouteOptionKind | null>(null);
   /** 출발 시각 "HH:MM". 기본값은 지금 시각. */
   const [departureAt, setDepartureAt] = useState(currentClock);
-  /** 열차 시간표 데이터가 준비됐는지. 화면 문구를 나누는 데 쓴다. */
-  const [hasTimetable, setHasTimetable] = useState(false);
+  const [timetables, setTimetables] = useState<Timetable[]>([]);
+  const dayType = getTodayDayType();
 
   useEffect(() => {
     let alive = true;
@@ -42,13 +51,13 @@ export function useRoutePlan() {
     getLineOrder().then((loaded) => {
       if (alive) setLineOrder(loaded);
     });
-    hasTimetableData().then((ready) => {
-      if (alive) setHasTimetable(ready);
+    getTimetables(dayType).then((loaded) => {
+      if (alive) setTimetables(loaded);
     });
     return () => {
       alive = false;
     };
-  }, []);
+  }, [dayType]);
 
   useEffect(() => {
     let alive = true;
@@ -107,6 +116,36 @@ export function useRoutePlan() {
     [selectedOption],
   );
 
+  /**
+   * 안별 도착 시각.
+   *
+   * 시간표가 있으면 실제 시각, 없으면 근사치로 계산한다.
+   * 비교 카드가 "언제 도착하는지"로 두 안을 견주므로 안마다 따로 계산한다.
+   */
+  const schedules = useMemo(() => {
+    const departureMinutes = toMinutes(departureAt);
+    const byKind = new Map<RouteOptionKind, RouteSchedule>();
+    if (departureMinutes === null || !result) return byKind;
+
+    for (const option of result.options) {
+      byKind.set(
+        option.kind,
+        buildSchedule(
+          option,
+          departureMinutes,
+          timetables,
+          dayType,
+          lineOrder,
+        ),
+      );
+    }
+    return byKind;
+  }, [result, departureAt, timetables, dayType, lineOrder]);
+
+  const selectedSchedule = selectedKind
+    ? (schedules.get(selectedKind) ?? null)
+    : null;
+
   return {
     stations,
     lineOrder,
@@ -122,6 +161,7 @@ export function useRoutePlan() {
     routeStationNames,
     departureAt,
     setDepartureAt,
-    hasTimetable,
+    schedules,
+    selectedSchedule,
   };
 }

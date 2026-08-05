@@ -1,5 +1,6 @@
 import { asset } from '../../../shared/lib/asset';
 import { Icon } from '../../../shared/ui/Icon';
+import { toClock, type RouteSchedule } from '../lib/routeSchedule';
 import type { RouteOption } from '../types';
 
 /**
@@ -17,12 +18,15 @@ type RouteCoverHeaderProps = {
   toName: string;
   /** 확정된 경로. 아직 없으면 요약 줄을 숨긴다. */
   option: RouteOption | null;
+  /** 확정된 경로의 도착 시각 */
+  schedule: RouteSchedule | null;
 };
 
 export function RouteCoverHeader({
   fromName,
   toName,
   option,
+  schedule,
 }: RouteCoverHeaderProps) {
   return (
     <section className="relative overflow-hidden rounded-xl border border-outline-variant shadow-card">
@@ -58,7 +62,9 @@ export function RouteCoverHeader({
             </span>
             <span className="flex items-center gap-xs">
               <Icon name="schedule" className="text-[18px]" />
-              예상 {option.estimatedMinutes}분
+              {schedule
+                ? `${toClock(schedule.arrivals.at(-1)!).text} 도착 · ${schedule.totalMinutes}분`
+                : `예상 ${option.estimatedMinutes}분`}
             </span>
           </div>
         )}

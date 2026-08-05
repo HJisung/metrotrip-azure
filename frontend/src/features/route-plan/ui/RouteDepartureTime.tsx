@@ -1,7 +1,7 @@
 import { Card } from '../../../shared/ui/Card';
 import { Icon } from '../../../shared/ui/Icon';
 import { Input } from '../../../shared/ui/Input';
-import { toClock, toMinutes } from '../lib/routeSchedule';
+import { toClock, type RouteSchedule } from '../lib/routeSchedule';
 
 /**
  * 출발 시각 입력과 도착 예정 시각 (docs/SPEC.md 2-2).
@@ -13,23 +13,16 @@ import { toClock, toMinutes } from '../lib/routeSchedule';
 type RouteDepartureTimeProps = {
   value: string;
   onChange: (value: string) => void;
-  /** 총 소요 시간(분). 경로가 없으면 null. */
-  totalMinutes: number | null;
-  /** 열차 시간표 데이터가 준비됐는지 */
-  hasTimetable: boolean;
+  /** 확정한 경로의 도착 시각. 경로가 없으면 null. */
+  schedule: RouteSchedule | null;
 };
 
 export function RouteDepartureTime({
   value,
   onChange,
-  totalMinutes,
-  hasTimetable,
+  schedule,
 }: RouteDepartureTimeProps) {
-  const departure = toMinutes(value);
-  const arrival =
-    departure !== null && totalMinutes !== null
-      ? toClock(departure + totalMinutes)
-      : null;
+  const arrival = schedule ? toClock(schedule.arrivals.at(-1)!) : null;
 
   return (
     <Card className="flex flex-wrap items-center justify-between gap-md p-md">
@@ -51,10 +44,10 @@ export function RouteDepartureTime({
         </span>
       </label>
 
-      {arrival && (
+      {arrival && schedule && (
         <div className="text-right">
           <span className="block text-label-caps text-on-surface-variant">
-            {hasTimetable ? '도착' : '도착 예상'}
+            {schedule.fromTimetable ? '시간표 기준 도착' : '도착 예상'}
           </span>
           <span className="mt-xs block text-headline-sm font-heading text-on-surface">
             {arrival.text}

@@ -1,5 +1,7 @@
-import { MINUTES_PER_HOP, MINUTES_PER_TRANSFER } from './findRoutes';
+import type { DayType, Timetable } from '../api/timetables';
 import type { RouteOption } from '../types';
+import { MINUTES_PER_HOP, MINUTES_PER_TRANSFER, type LineOrder } from './findRoutes';
+import { resolveSchedule } from './resolveSchedule';
 
 /**
  * 경로의 역별 도착 시각 계산 (docs/SPEC.md 2-2).
@@ -55,4 +57,54 @@ export function getArrivalOffsets(option: RouteOption): number[] {
     if (transferNames.has(station.name)) minutes += MINUTES_PER_TRANSFER;
     return minutes;
   });
+}
+
+/** 경로의 역별 도착 시각. 시간표로 계산했는지 여부를 함께 담는다. */
+export type RouteSchedule = {
+  /** `option.stations` 와 같은 순서의 도착 시각(자정 기준 분) */
+  arrivals: number[];
+  /** 출발부터 도착까지 걸리는 시간(분) */
+  totalMinutes: number;
+  /** true 면 실제 시간표, false 면 `역당 2분 + 환승 5분` 근사치 */
+  fromTimetable: boolean;
+  /** 시간표에 그 역이 없어 앞뒤에서 추정한 자리 */
+  interpolated: boolean[];
+  /** 구간별로 타는 열차 번호. 근사치일 때는 빈 배열. */
+  trainNos: string[];
+};
+
+/**
+ * 도착 시각을 계산한다.
+ *
+ * 시간표로 계산할 수 있으면 그 값을 쓰고, 안 되면 근사치로 되돌아간다.
+ * 되돌아가는 경우는 주말·공휴일(시드에 평일만 있음)이나
+ * 시간표에 없는 구간이다.
+ */
+export function buildSchedule(
+  option: RouteOption,
+  departureMinutes: number,
+  timetables: Timetable[],
+  dayType: DayType,
+  lineOrder: LineOrder,
+): RouteSchedule {
+  const resolved = resolveSchedule(
+    option,
+    departureMinutes,
+    timetables,
+    dayType,
+    lineOrder,
+  );
+
+  if (resolved) {
+    return { ...resolved, fromTimetable: true };
+  }
+
+  const offsets = getArrivalOffsets(option);
+  return {
+    arrivals: offsets.map((offset) => departureMinutes + offset),
+    totalMinutes: offsets.at(-1) ?? 0,
+    fromTimetable: false,
+    interpolated: offsets.map(() => false),
+    trainNos: [],
+  };
 }
