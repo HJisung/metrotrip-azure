@@ -34,6 +34,7 @@ export function RoutePlanFeature() {
     setDepartureAt,
     schedules,
     selectedSchedule,
+    stats,
   } = useRoutePlan();
 
   const hasNoRoute = result !== null && result.options.length === 0;
@@ -57,17 +58,20 @@ export function RoutePlanFeature() {
             {selectedSchedule?.fromTimetable ? (
               <>
                 도착 시각은{' '}
-                <strong className="text-on-surface">실제 열차 시간표</strong>로
-                계산했습니다. 지금 시드에는 <strong>평일</strong> 시간표만 있어,
-                주말·공휴일에는 예상값으로 표시됩니다.
+                <strong className="text-on-surface">실제 열차 시간표</strong>를
+                따라 계산했습니다. 타는 열차가 각 역에 서는 시각 그대로입니다.
               </>
             ) : (
               <>
                 이 구간은 시간표가 없어{' '}
                 <strong className="text-on-surface">
-                  역당 2분 · 환승 5분으로 계산한 예상값
+                  역간 {stats.minutesPerHop}분 · 열차 대기 {stats.averageWait}분
                 </strong>
-                입니다. 평일 시간표가 있는 구간은 실제 시각으로 표시됩니다.
+                으로 추정한 값입니다.
+                {stats.fromTimetable
+                  ? ' 이 수치는 실제 시간표에서 뽑았습니다.'
+                  : ''}{' '}
+                시간표가 있는 구간은 실제 시각으로 표시됩니다.
               </>
             )}
           </p>

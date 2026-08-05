@@ -1,7 +1,8 @@
 import type { DayType, Timetable } from '../api/timetables';
 import type { RouteOption } from '../types';
-import { MINUTES_PER_HOP, MINUTES_PER_TRANSFER, type LineOrder } from './findRoutes';
+import { MINUTES_PER_TRANSFER, type LineOrder } from './findRoutes';
 import { resolveSchedule } from './resolveSchedule';
+import type { TimetableStats } from './timetableStats';
 
 /**
  * 경로의 역별 도착 시각 계산 (docs/SPEC.md 2-2).
@@ -40,22 +41,34 @@ export function currentClock(): string {
 }
 
 /**
- * 경유역마다 출발 시각으로부터 몇 분 뒤에 도착하는지 계산한다.
+ * 경유역마다 출발 시각으로부터 몇 분 뒤에 도착하는지 추정한다.
  *
- * `option.stations` 와 같은 순서·길이로 돌아온다.
- * 마지막 값은 `option.estimatedMinutes` 와 같다.
+ * 시간표가 없는 구간에서만 쓴다. 역간 소요와 대기 시간은
+ * `computeTimetableStats` 가 **실제 시간표에서 뽑은 값**이다.
+ *
+ * 첫 값이 0 이 아니라 대기 시간인 것에 주의. 역에 도착하자마자 열차를 타는 게
+ * 아니라 다음 열차를 기다려야 한다. 이걸 빼먹으면 도착 시각이 실제보다
+ * 30~40분씩 빨라진다.
  */
-export function getArrivalOffsets(option: RouteOption): number[] {
+export function getArrivalOffsets(
+  option: RouteOption,
+  stats: TimetableStats,
+): number[] {
   // 구간이 바뀌는 지점 = 환승역. 여기서 환승 시간을 더한다.
   const transferNames = new Set(
     option.legs.slice(1).map((leg) => leg.stations[0].name),
   );
 
-  let minutes = 0;
+  // 처음 타는 열차도 기다려야 한다.
+  let minutes = stats.averageWait;
+
   return option.stations.map((station, index) => {
-    if (index > 0) minutes += MINUTES_PER_HOP;
-    if (transferNames.has(station.name)) minutes += MINUTES_PER_TRANSFER;
-    return minutes;
+    if (index > 0) minutes += stats.minutesPerHop;
+    // 환승은 갈아타는 도보 시간에 다음 열차 대기가 더해진다.
+    if (transferNames.has(station.name)) {
+      minutes += MINUTES_PER_TRANSFER + stats.averageWait;
+    }
+    return Math.round(minutes);
   });
 }
 
@@ -65,7 +78,7 @@ export type RouteSchedule = {
   arrivals: number[];
   /** 출발부터 도착까지 걸리는 시간(분) */
   totalMinutes: number;
-  /** true 면 실제 시간표, false 면 `역당 2분 + 환승 5분` 근사치 */
+  /** true 면 실제 열차를 따라간 값, false 면 시간표에서 뽑은 평균으로 추정한 값 */
   fromTimetable: boolean;
   /** 시간표에 그 역이 없어 앞뒤에서 추정한 자리 */
   interpolated: boolean[];
@@ -86,6 +99,7 @@ export function buildSchedule(
   timetables: Timetable[],
   dayType: DayType,
   lineOrder: LineOrder,
+  stats: TimetableStats,
 ): RouteSchedule {
   const resolved = resolveSchedule(
     option,
@@ -99,7 +113,7 @@ export function buildSchedule(
     return { ...resolved, fromTimetable: true };
   }
 
-  const offsets = getArrivalOffsets(option);
+  const offsets = getArrivalOffsets(option, stats);
   return {
     arrivals: offsets.map((offset) => departureMinutes + offset),
     totalMinutes: offsets.at(-1) ?? 0,
