@@ -6,6 +6,7 @@ import { Card } from '../../../shared/ui/Card';
 import { Icon } from '../../../shared/ui/Icon';
 import { useLineMapViewport } from '../../line-map/hooks/useLineMapViewport';
 import type { LineOrder } from '../lib/findRoutes';
+import { getLineColor } from '../lib/lineColors';
 import { layoutSchematic } from '../lib/schematicLayout';
 
 /**
@@ -87,6 +88,24 @@ export function RouteStationMap({
     () => new Map(layout.stations.map((station) => [station.name, station])),
     [layout],
   );
+
+  /**
+   * 환승역 — 두 노선 이상에 속한 역.
+   *
+   * 카카오·네이버 지하철처럼 환승역은 흰 속에 굵은 테두리로 다르게 그린다.
+   * 일반역과 구분해야 "여기서 노선이 바뀐다"는 걸 한눈에 알 수 있다.
+   */
+  const interchanges = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const names of Object.values(lineOrder)) {
+      for (const name of new Set(names)) {
+        counts.set(name, (counts.get(name) ?? 0) + 1);
+      }
+    }
+    return new Set(
+      [...counts.entries()].filter(([, count]) => count > 1).map(([name]) => name),
+    );
+  }, [lineOrder]);
 
   useEffect(() => {
     setOpenStation(null);
@@ -301,6 +320,10 @@ export function RouteStationMap({
           <g
             transform={`translate(${viewport.x} ${viewport.y}) scale(${viewport.scale})`}
           >
+            {/*
+              노선은 카카오·네이버와 같은 공식 색으로 그린다 (lib/lineColors.ts).
+              같은 노선(1호선)의 두 갈래는 같은 색이라 한눈에 이어져 보인다.
+            */}
             <g aria-label="노선">
               {layout.paths.map(({ line, points }) =>
                 points.length < 2 ? null : (
@@ -308,8 +331,8 @@ export function RouteStationMap({
                     key={line}
                     d={toPath(points)}
                     fill="none"
-                    stroke="var(--color-outline-variant)"
-                    strokeWidth={8}
+                    stroke={getLineColor(line)}
+                    strokeWidth={7}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
@@ -317,12 +340,14 @@ export function RouteStationMap({
               )}
             </g>
 
+            {/* 확정된 경로는 노선 색 위에 얇은 강조선을 겹쳐 "이 구간을 탄다"를 보여준다 */}
             {routePoints.length > 1 && (
               <path
                 d={toPath(routePoints)}
                 fill="none"
-                stroke="var(--color-primary)"
-                strokeWidth={8}
+                stroke="var(--color-on-surface)"
+                strokeOpacity={0.55}
+                strokeWidth={3}
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 aria-hidden="true"
@@ -334,15 +359,24 @@ export function RouteStationMap({
                 const isFrom = station.name === fromName;
                 const isTo = station.name === toName;
                 const isOnRoute = onRoute.has(station.name);
-                const radius = isFrom || isTo ? 11 : 7;
+                const isInterchange = interchanges.has(station.name);
+                const lineColor = getLineColor(station.line);
+
+                /*
+                 * 카카오·네이버처럼 일반역은 흰 속에 노선색 테두리인 작은 원,
+                 * 환승역은 더 크게 그려 "여기서 갈아탄다"가 눈에 띄게 한다.
+                 * 출발·도착은 원 안을 채워서 다른 역과 확실히 구분한다.
+                 */
+                const radius = isFrom || isTo ? 11 : isInterchange ? 9 : 6;
+                const strokeWidth = isFrom || isTo ? 3 : isInterchange ? 3.5 : 2.5;
 
                 const fill = isFrom
                   ? 'var(--color-primary)'
                   : isTo
                     ? 'var(--color-tertiary-fixed-dim)'
-                    : isOnRoute
-                      ? 'var(--color-primary-container)'
-                      : 'var(--color-surface-bright)';
+                    : 'var(--color-surface-bright)';
+
+                const stroke = isFrom || isTo ? 'var(--color-primary)' : lineColor;
 
                 return (
                   <g
@@ -376,8 +410,8 @@ export function RouteStationMap({
                       r={radius}
                       style={{
                         fill,
-                        stroke: 'var(--color-primary)',
-                        strokeWidth: 3,
+                        stroke,
+                        strokeWidth,
                         pointerEvents: 'none',
                       }}
                     />

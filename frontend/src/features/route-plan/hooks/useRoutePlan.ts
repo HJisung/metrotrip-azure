@@ -14,6 +14,7 @@ import {
   toMinutes,
   type RouteSchedule,
 } from '../lib/routeSchedule';
+import { computeTimetableStats } from '../lib/timetableStats';
 import type {
   RouteOptionKind,
   RouteSearchResult,
@@ -117,9 +118,18 @@ export function useRoutePlan() {
   );
 
   /**
+   * 역간 소요·배차 간격을 실제 시간표에서 뽑아 둔다.
+   * 시간표가 없는 구간의 시각을 추정하는 데 쓴다.
+   */
+  const stats = useMemo(
+    () => computeTimetableStats(timetables, lineOrder),
+    [timetables, lineOrder],
+  );
+
+  /**
    * 안별 도착 시각.
    *
-   * 시간표가 있으면 실제 시각, 없으면 근사치로 계산한다.
+   * 시간표가 있으면 실제 열차를 따라간 시각, 없으면 위 통계로 추정한다.
    * 비교 카드가 "언제 도착하는지"로 두 안을 견주므로 안마다 따로 계산한다.
    */
   const schedules = useMemo(() => {
@@ -136,11 +146,12 @@ export function useRoutePlan() {
           timetables,
           dayType,
           lineOrder,
+          stats,
         ),
       );
     }
     return byKind;
-  }, [result, departureAt, timetables, dayType, lineOrder]);
+  }, [result, departureAt, timetables, dayType, lineOrder, stats]);
 
   const selectedSchedule = selectedKind
     ? (schedules.get(selectedKind) ?? null)
@@ -163,5 +174,6 @@ export function useRoutePlan() {
     setDepartureAt,
     schedules,
     selectedSchedule,
+    stats,
   };
 }
