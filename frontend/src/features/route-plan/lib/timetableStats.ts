@@ -1,6 +1,6 @@
 import type { Timetable } from '../api/timetables';
+import { toMinutes } from './clock';
 import type { LineOrder } from './findRoutes';
-import { toMinutes } from './routeSchedule';
 
 /**
  * 시간표에서 "역간 소요"와 "배차 간격"을 뽑는다 (docs/SPEC.md 2-2).

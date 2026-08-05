@@ -23,6 +23,8 @@ const CATEGORY_ICON: Record<Place['category'], string> = {
   CE7: 'local_cafe',
   AT4: 'park',
   SW8: 'subway',
+  SHOPPING: 'storefront',
+  ETC: 'place',
 };
 
 type RouteTimelineProps = {

@@ -1,7 +1,7 @@
 import type { DayType, Timetable } from '../api/timetables';
 import type { RouteOption } from '../types';
+import { toMinutes } from './clock';
 import { MINUTES_PER_TRANSFER, type LineOrder } from './findRoutes';
-import { toMinutes } from './routeSchedule';
 
 /**
  * 열차 시간표로 실제 도착 시각을 계산한다 (docs/SPEC.md 2-2).
