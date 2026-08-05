@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import type { Station } from '../../../shared/types/station';
 import { Button } from '../../../shared/ui/Button';
@@ -57,9 +57,9 @@ export function RouteStationMap({
 }: RouteStationMapProps) {
   const {
     svgRef,
+    svgNode,
     viewport,
     dragging,
-    onWheel,
     onPointerDown,
     onPointerMove,
     onPointerUp,
@@ -95,7 +95,7 @@ export function RouteStationMap({
   useEffect(() => {
     // ResizeObserver 를 <svg> 에 직접 붙이면 브라우저에 따라 크기 변화를
     // 알려주지 않는다(replaced element). 감싸는 div 를 대신 관측한다.
-    const element = svgRef.current;
+    const element = svgNode;
     const container = element?.parentElement;
     if (!element || !container) return;
 
@@ -110,18 +110,22 @@ export function RouteStationMap({
     const observer = new ResizeObserver(measure);
     observer.observe(container);
     return () => observer.disconnect();
-  }, [svgRef]);
+  }, [svgNode]);
 
-  // 고른 역이 바뀌면 그 역으로 시선을 옮긴다. 지도가 화면보다 넓기 때문이다.
+  /**
+   * 처음 열 때 한 번만 출발역으로 시선을 옮긴다.
+   *
+   * 역을 고를 때마다 옮기면 안 된다. 누른 역은 이미 화면에 있는데 지도가
+   * 튀어버려서, 두 번째 역을 고르려면 다시 찾아 끌어야 한다.
+   */
+  const centeredRef = useRef(false);
   useEffect(() => {
+    if (centeredRef.current) return;
     const station = positionByName.get(fromName);
-    if (station) centerOn(station);
+    if (!station) return;
+    centerOn(station);
+    centeredRef.current = true;
   }, [fromName, positionByName, centerOn]);
-
-  useEffect(() => {
-    const station = positionByName.get(toName);
-    if (station) centerOn(station);
-  }, [toName, positionByName, centerOn]);
 
   const onRoute = new Set(routeStationNames);
   const opened = openStation ? positionByName.get(openStation) : undefined;
@@ -211,7 +215,15 @@ export function RouteStationMap({
     setOpenStation((current) => (current === stationName ? null : stationName));
   };
 
-  const bubbleY = opened ? opened.y - BUBBLE.height - BUBBLE.gap : 0;
+  // 역이 보이는 영역 위쪽에 있으면 말풍선이 잘리므로 아래로 뒤집는다.
+  const bubbleAbove = opened
+    ? opened.y * viewport.scale + viewport.y > BUBBLE.height + BUBBLE.gap
+    : true;
+  const bubbleY = opened
+    ? bubbleAbove
+      ? opened.y - BUBBLE.height - BUBBLE.gap
+      : opened.y + BUBBLE.gap
+    : 0;
   const bubbleX = opened ? opened.x - BUBBLE.width / 2 : 0;
   const center = { x: viewSize.width / 2, y: viewSize.height / 2 };
 
@@ -274,7 +286,6 @@ export function RouteStationMap({
           role="group"
           aria-label="출발·도착역을 고르는 지하철 노선도"
           style={{ touchAction: 'none', cursor: dragging ? 'grabbing' : 'grab' }}
-          onWheel={onWheel}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
@@ -399,6 +410,7 @@ export function RouteStationMap({
             {/* 역을 누르면 뜨는 말풍선 — 출발/도착 지정 */}
             {opened && (
               <g
+                data-map-control="bubble"
                 onClick={(event) => event.stopPropagation()}
                 aria-label={`${opened.name} 지정`}
               >
@@ -416,7 +428,11 @@ export function RouteStationMap({
                   }}
                 />
                 <path
-                  d={`M ${opened.x - 7} ${bubbleY + BUBBLE.height} L ${opened.x} ${bubbleY + BUBBLE.height + 9} L ${opened.x + 7} ${bubbleY + BUBBLE.height} Z`}
+                  d={
+                    bubbleAbove
+                      ? `M ${opened.x - 7} ${bubbleY + BUBBLE.height} L ${opened.x} ${bubbleY + BUBBLE.height + 9} L ${opened.x + 7} ${bubbleY + BUBBLE.height} Z`
+                      : `M ${opened.x - 7} ${bubbleY} L ${opened.x} ${bubbleY - 9} L ${opened.x + 7} ${bubbleY} Z`
+                  }
                   style={{ fill: 'var(--color-surface-bright)' }}
                 />
 
