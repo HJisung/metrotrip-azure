@@ -35,12 +35,12 @@ export function RouteCoverHeader({
         <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/80 to-primary/40" />
       </div>
 
-      <div className="relative flex flex-col gap-sm p-md sm:p-xl">
+      <div className="relative flex flex-col gap-sm p-[var(--layout-gutter)]">
         <span className="w-fit rounded-full bg-on-primary/20 px-sm py-xs text-label-caps text-on-primary">
           METROTRIP 경로
         </span>
 
-        <h2 className="flex flex-wrap items-center gap-xs text-display-lg font-heading text-on-primary">
+        <h2 className="flex flex-wrap items-center gap-xs text-[var(--content-title-size)] leading-tight font-heading font-bold text-on-primary">
           {fromName}
           <Icon name="arrow_forward" className="text-[28px] opacity-80" />
           {toName}

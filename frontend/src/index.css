@@ -93,6 +93,8 @@
   --timetable-panel-width: clamp(22rem, 22vw, 26rem);
   --timetable-panel-height: min(88dvh, 42rem);
   --line-map-height: clamp(18rem, 62dvh, 38.75rem);
+  /* 경로 화면의 역 선택 지도. 아래에 경로 카드·타임라인이 이어지므로 노선도보다 낮게 잡는다 */
+  --route-map-height: clamp(18rem, 54dvh, 34rem);
   --auth-width: clamp(20rem, 90vw, 28rem);
   --auth-dialog-width: clamp(20rem, 90vw, 26rem);
   --auth-gutter: clamp(1rem, 4vw, 2.5rem);

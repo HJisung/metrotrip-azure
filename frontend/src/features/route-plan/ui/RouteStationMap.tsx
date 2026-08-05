@@ -85,8 +85,11 @@ export function RouteStationMap({
   const { stations: positioned, viewBox } = projectStations(stations);
 
   useEffect(() => {
+    // ResizeObserver 를 <svg> 에 직접 붙이면 브라우저에 따라 크기 변화를
+    // 알려주지 않는다(replaced element). 감싸는 div 를 대신 관측한다.
     const element = svgRef.current;
-    if (!element) return;
+    const container = element?.parentElement;
+    if (!element || !container) return;
 
     const measure = () => {
       const rect = element.getBoundingClientRect();
@@ -99,7 +102,7 @@ export function RouteStationMap({
 
     measure();
     const observer = new ResizeObserver(measure);
-    observer.observe(element);
+    observer.observe(container);
     return () => observer.disconnect();
   }, [svgRef, viewBox.width, viewBox.height]);
 
@@ -220,7 +223,7 @@ export function RouteStationMap({
         <svg
           ref={svgRef}
           viewBox={`0 0 ${viewBox.width} ${viewBox.height}`}
-          className="block h-[min(68vh,640px)] min-h-[380px] w-full select-none"
+          className="block h-[var(--route-map-height)] min-h-0 w-full select-none"
           role="group"
           aria-label="출발·도착역을 고르는 지하철 지도"
           style={{ touchAction: 'none', cursor: dragging ? 'grabbing' : 'grab' }}

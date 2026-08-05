@@ -35,7 +35,7 @@ export function RoutePlanFeature() {
 
   return (
     <div className="h-full overflow-y-auto bg-background">
-      <div className="mx-auto flex max-w-4xl flex-col gap-lg p-md sm:p-xl">
+      <div className="responsive-frame-content mx-auto flex max-w-4xl flex-col gap-[var(--layout-gap)] p-[var(--layout-gutter)]">
         <RouteCoverHeader
           fromName={fromName}
           toName={toName}
