@@ -3,7 +3,7 @@ import { Icon } from '../../shared/ui/Icon';
 import { useRoutePlan } from './hooks/useRoutePlan';
 import { RouteCoverHeader } from './ui/RouteCoverHeader';
 import { RouteOptionCards } from './ui/RouteOptionCards';
-import { RouteStationPicker } from './ui/RouteStationPicker';
+import { RouteStationMap } from './ui/RouteStationMap';
 import { RouteTimeline } from './ui/RouteTimeline';
 
 /**
@@ -18,16 +18,17 @@ import { RouteTimeline } from './ui/RouteTimeline';
 export function RoutePlanFeature() {
   const {
     stations,
+    lineOrder,
     fromName,
     toName,
-    setFromName,
-    setToName,
+    pickStation,
     swap,
     status,
     result,
     selectedKind,
     setSelectedKind,
     selectedOption,
+    routeStationNames,
   } = useRoutePlan();
 
   const hasNoRoute = result !== null && result.options.length === 0;
@@ -56,12 +57,13 @@ export function RoutePlanFeature() {
           </p>
         </Card>
 
-        <RouteStationPicker
+        <RouteStationMap
           stations={stations}
+          lineOrder={lineOrder}
           fromName={fromName}
           toName={toName}
-          onFromChange={setFromName}
-          onToChange={setToName}
+          routeStationNames={routeStationNames}
+          onPick={pickStation}
           onSwap={swap}
         />
 

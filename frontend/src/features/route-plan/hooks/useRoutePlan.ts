@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getStations } from '../../../shared/lib/stations';
 import type { Station } from '../../../shared/types/station';
-import { searchRoutes } from '../api/routes';
+import { getLineOrder, searchRoutes } from '../api/routes';
+import type { LineOrder } from '../lib/findRoutes';
 import type {
   RouteOptionKind,
   RouteSearchResult,
@@ -20,6 +21,7 @@ const DEFAULT_TO = '온양온천역';
 
 export function useRoutePlan() {
   const [stations, setStations] = useState<Station[]>([]);
+  const [lineOrder, setLineOrder] = useState<LineOrder>({});
   const [fromName, setFromName] = useState(DEFAULT_FROM);
   const [toName, setToName] = useState(DEFAULT_TO);
   const [result, setResult] = useState<RouteSearchResult | null>(null);
@@ -30,6 +32,9 @@ export function useRoutePlan() {
     let alive = true;
     getStations().then((loaded) => {
       if (alive) setStations(loaded);
+    });
+    getLineOrder().then((loaded) => {
+      if (alive) setLineOrder(loaded);
     });
     return () => {
       alive = false;
@@ -62,23 +67,49 @@ export function useRoutePlan() {
     setToName(fromName);
   }, [fromName, toName]);
 
+  /**
+   * 지도에서 역을 골랐을 때 출발·도착에 반영한다.
+   *
+   * 이미 반대쪽으로 지정된 역을 다시 고르면 두 역을 맞바꾼다.
+   * (출발=도착이 되어 "경로 없음"으로 빠지는 것을 막는다)
+   */
+  const pickStation = useCallback(
+    (stationName: string, kind: 'from' | 'to') => {
+      if (kind === 'from') {
+        if (stationName === toName) setToName(fromName);
+        setFromName(stationName);
+        return;
+      }
+      if (stationName === fromName) setFromName(toName);
+      setToName(stationName);
+    },
+    [fromName, toName],
+  );
+
   const selectedOption = useMemo(
     () =>
       result?.options.find((option) => option.kind === selectedKind) ?? null,
     [result, selectedKind],
   );
 
+  /** 지도에서 굵게 강조할 경유역 이름 */
+  const routeStationNames = useMemo(
+    () => selectedOption?.stations.map((station) => station.name) ?? [],
+    [selectedOption],
+  );
+
   return {
     stations,
+    lineOrder,
     fromName,
     toName,
-    setFromName,
-    setToName,
+    pickStation,
     swap,
     status,
     result,
     selectedKind,
     setSelectedKind,
     selectedOption,
+    routeStationNames,
   };
 }
