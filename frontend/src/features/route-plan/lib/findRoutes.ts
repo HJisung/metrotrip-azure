@@ -74,14 +74,25 @@ function buildGraph(stations: Station[], lineOrder: LineOrder): LineGraph {
   return { linesByStation, neighbors };
 }
 
+/** 지금까지 걸린 시간(분). 시간표가 없어 근사치다. */
+function minutesOf(state: SearchState): number {
+  return (
+    state.hops * MINUTES_PER_HOP + state.transfers * MINUTES_PER_TRANSFER
+  );
+}
+
 /**
  * 비교 기준을 [1순위, 2순위] 로 돌려준다.
- * 최단거리는 정차역 수를 먼저 보고, 최소환승은 환승 횟수를 먼저 본다.
+ *
+ * 최소 시간은 걸리는 시간을 먼저 보고, 최소 환승은 환승 횟수를 먼저 본다.
+ * 정차역 수가 아니라 **시간**으로 비교하므로, 역 사이 소요 시간이 구간마다
+ * 다른 실제 시간표가 들어와도 기준이 그대로 유지된다.
  */
 function costOf(state: SearchState, kind: RouteOptionKind): [number, number] {
-  return kind === 'shortest'
-    ? [state.hops, state.transfers]
-    : [state.transfers, state.hops];
+  const minutes = minutesOf(state);
+  return kind === 'fastest'
+    ? [minutes, state.transfers]
+    : [state.transfers, minutes];
 }
 
 function isCheaper(a: [number, number], b: [number, number]): boolean {
@@ -215,7 +226,7 @@ const sameRoute = (a: RouteOption, b: RouteOption) =>
   b.stations.map((station) => station.name).join('>');
 
 /**
- * 최단거리·최소환승 두 안을 계산한다.
+ * 최소 시간·최소 환승 두 안을 계산한다.
  *
  * 두 결과가 같으면(지금처럼 단일 노선일 때) 한 개만 돌려준다.
  * 출발역과 도착역이 같거나 이어지는 경로가 없으면 빈 배열이다.
@@ -233,8 +244,8 @@ export function findRouteOptions(
     stations.map((station) => [station.name, station]),
   );
 
-  const shortest = search(graph, stationByName, fromName, toName, 'shortest');
-  if (!shortest) return [];
+  const fastest = search(graph, stationByName, fromName, toName, 'fastest');
+  if (!fastest) return [];
 
   const fewest = search(
     graph,
@@ -243,7 +254,7 @@ export function findRouteOptions(
     toName,
     'fewestTransfers',
   );
-  if (!fewest || sameRoute(shortest, fewest)) return [shortest];
+  if (!fewest || sameRoute(fastest, fewest)) return [fastest];
 
-  return [shortest, fewest];
+  return [fastest, fewest];
 }

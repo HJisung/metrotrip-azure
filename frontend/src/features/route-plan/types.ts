@@ -29,8 +29,16 @@ export type RouteLeg = {
   stations: RouteStation[];
 };
 
-/** 경로 계산 방식 */
-export type RouteOptionKind = 'shortest' | 'fewestTransfers';
+/**
+ * 경로 계산 방식.
+ *
+ * 카카오·네이버 지하철과 같이 **도착 시각이 가장 이른 경로**(fastest)와
+ * **갈아타는 횟수가 가장 적은 경로**(fewestTransfers)를 나눠 보여준다.
+ *
+ * 정차역 수가 아니라 소요 시간으로 비교한다. 역 사이 소요 시간이 구간마다
+ * 다르기 때문에, 시간표가 들어오면 정차역 수 기준과 결과가 달라진다.
+ */
+export type RouteOptionKind = 'fastest' | 'fewestTransfers';
 
 /** 경로 한 가지 안 */
 export type RouteOption = {
@@ -57,7 +65,7 @@ export type RouteSearchResult = {
   from: RouteStation;
   to: RouteStation;
   /**
-   * 최단거리·최소환승 순.
+   * 최소 시간·최소 환승 순.
    * 두 방식의 결과가 같으면 한 개만 담긴다 (지금처럼 단일 노선일 때가 그렇다).
    */
   options: RouteOption[];

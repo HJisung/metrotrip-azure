@@ -4,19 +4,19 @@ import { SectionHeader } from '../../../shared/ui/SectionHeader';
 import type { RouteOption, RouteOptionKind } from '../types';
 
 /**
- * 최단거리·최소환승 비교 (docs/SPEC.md 2-2 R2).
+ * 최소 시간·최소 환승 비교 (docs/SPEC.md 2-2 R2).
  *
  * 지금 노선 데이터가 1호선 하나뿐이라 두 방식의 결과가 같게 나온다.
  * 그때는 카드를 하나만 보여주고 이유를 함께 알린다.
  */
 
 const LABEL: Record<RouteOptionKind, string> = {
-  shortest: '최단거리',
-  fewestTransfers: '최소환승',
+  fastest: '최소 시간',
+  fewestTransfers: '최소 환승',
 };
 
 const DESCRIPTION: Record<RouteOptionKind, string> = {
-  shortest: '지나는 역이 가장 적은 경로',
+  fastest: '가장 빨리 도착하는 경로',
   fewestTransfers: '갈아타는 횟수가 가장 적은 경로',
 };
 
@@ -40,7 +40,7 @@ export function RouteOptionCards({
         title="어떤 기준으로 갈까요?"
         description={
           options.length === 1
-            ? '이 구간은 노선이 하나뿐이라 최단거리와 최소환승 결과가 같습니다.'
+            ? '이 구간은 노선이 하나뿐이라 최소 시간과 최소 환승 결과가 같습니다.'
             : '두 경로를 비교하고 하나를 고르세요.'
         }
       />

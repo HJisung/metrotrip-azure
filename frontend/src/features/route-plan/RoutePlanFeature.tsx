@@ -2,6 +2,7 @@ import { Card } from '../../shared/ui/Card';
 import { Icon } from '../../shared/ui/Icon';
 import { useRoutePlan } from './hooks/useRoutePlan';
 import { RouteCoverHeader } from './ui/RouteCoverHeader';
+import { RouteDepartureTime } from './ui/RouteDepartureTime';
 import { RouteOptionCards } from './ui/RouteOptionCards';
 import { RouteStationMap } from './ui/RouteStationMap';
 import { RouteTimeline } from './ui/RouteTimeline';
@@ -9,7 +10,7 @@ import { RouteTimeline } from './ui/RouteTimeline';
 /**
  * 경로 화면 (docs/SPEC.md 2-2).
  *
- * 출발·도착역을 고르면 최단거리·최소환승 두 안을 계산해 비교하고,
+ * 출발·도착역을 고르면 최소 시간·최소 환승 두 안을 계산해 비교하고,
  * 확정한 경로의 경유역마다 들를 만한 장소를 보여준다.
  *
  * 경로 계산은 지금 프론트가 직접 하지만, 백엔드에 `GET /api/v1/routes` 가 생기면
@@ -29,6 +30,9 @@ export function RoutePlanFeature() {
     setSelectedKind,
     selectedOption,
     routeStationNames,
+    departureAt,
+    setDepartureAt,
+    hasTimetable,
   } = useRoutePlan();
 
   const hasNoRoute = result !== null && result.options.length === 0;
@@ -67,6 +71,13 @@ export function RoutePlanFeature() {
           onSwap={swap}
         />
 
+        <RouteDepartureTime
+          value={departureAt}
+          onChange={setDepartureAt}
+          totalMinutes={selectedOption?.estimatedMinutes ?? null}
+          hasTimetable={hasTimetable}
+        />
+
         {status === 'error' ? (
           <Card
             className="flex items-start gap-sm bg-error-container/45 p-md"
@@ -97,7 +108,12 @@ export function RoutePlanFeature() {
                 selectedKind={selectedKind}
                 onSelect={setSelectedKind}
               />
-              {selectedOption && <RouteTimeline option={selectedOption} />}
+              {selectedOption && (
+                <RouteTimeline
+                  option={selectedOption}
+                  departureAt={departureAt}
+                />
+              )}
             </>
           )
         )}

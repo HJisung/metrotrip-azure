@@ -2,7 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getStations } from '../../../shared/lib/stations';
 import type { Station } from '../../../shared/types/station';
 import { getLineOrder, searchRoutes } from '../api/routes';
+import { hasTimetableData } from '../api/timetables';
 import type { LineOrder } from '../lib/findRoutes';
+import { currentClock } from '../lib/routeSchedule';
 import type {
   RouteOptionKind,
   RouteSearchResult,
@@ -27,6 +29,10 @@ export function useRoutePlan() {
   const [result, setResult] = useState<RouteSearchResult | null>(null);
   const [status, setStatus] = useState<RouteSearchStatus>('idle');
   const [selectedKind, setSelectedKind] = useState<RouteOptionKind | null>(null);
+  /** 출발 시각 "HH:MM". 기본값은 지금 시각. */
+  const [departureAt, setDepartureAt] = useState(currentClock);
+  /** 열차 시간표 데이터가 준비됐는지. 화면 문구를 나누는 데 쓴다. */
+  const [hasTimetable, setHasTimetable] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -35,6 +41,9 @@ export function useRoutePlan() {
     });
     getLineOrder().then((loaded) => {
       if (alive) setLineOrder(loaded);
+    });
+    hasTimetableData().then((ready) => {
+      if (alive) setHasTimetable(ready);
     });
     return () => {
       alive = false;
@@ -49,7 +58,7 @@ export function useRoutePlan() {
       .then((found) => {
         if (!alive) return;
         setResult(found);
-        // 계산 결과가 바뀌면 첫 번째 안(최단거리)을 기본으로 확정한다.
+        // 계산 결과가 바뀌면 첫 번째 안(최소 시간)을 기본으로 확정한다.
         setSelectedKind(found?.options[0]?.kind ?? null);
         setStatus('success');
       })
@@ -111,5 +120,8 @@ export function useRoutePlan() {
     setSelectedKind,
     selectedOption,
     routeStationNames,
+    departureAt,
+    setDepartureAt,
+    hasTimetable,
   };
 }
