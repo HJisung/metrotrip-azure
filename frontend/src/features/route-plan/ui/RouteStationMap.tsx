@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import type { Station } from '../../../shared/types/station';
 import { Button } from '../../../shared/ui/Button';
@@ -6,16 +6,18 @@ import { Card } from '../../../shared/ui/Card';
 import { Icon } from '../../../shared/ui/Icon';
 import { useLineMapViewport } from '../../line-map/hooks/useLineMapViewport';
 import type { LineOrder } from '../lib/findRoutes';
-import { projectStations, type ProjectedStation } from '../lib/projectStations';
+import { layoutSchematic } from '../lib/schematicLayout';
 
 /**
- * 출발·도착역을 고르는 지하철 지도 (docs/SPEC.md 2-2 R1).
+ * 출발·도착역을 고르는 지하철 노선도 (docs/SPEC.md 2-2 R1).
  *
  * 카카오·네이버 지하철처럼 역을 누르면 그 자리에 말풍선이 뜨고
  * 출발/도착을 고른다.
  *
- * 역 위치는 위경도를 투영해서 만들기 때문에(`lib/projectStations.ts`)
- * 노선이 늘어나도 좌표를 따로 찍지 않아도 된다.
+ * 역은 `lib/schematicLayout.ts` 가 **등간격 도식**으로 배치한다.
+ * 위경도 그대로 찍으면 역이 촘촘한 구간에서 간격이 몇 px 로 줄어 못 누른다.
+ *
+ * 좌표는 화면 픽셀 단위이고, 지도는 카드보다 넓다. 끌어서 보는 것이 전제다.
  * 드래그·확대 처리는 노선도 화면과 같은 훅을 재사용한다.
  */
 
@@ -32,11 +34,11 @@ type RouteStationMapProps = {
   onSwap: () => void;
 };
 
-/**
- * 말풍선 크기 (화면 픽셀 기준).
- * SVG 단위로 바꿔서 쓰므로 화면이 좁아져도 크기가 유지된다.
- */
-const BUBBLE_PX = { width: 148, height: 58, gap: 14 };
+/** 말풍선 크기 (픽셀) */
+const BUBBLE = { width: 148, height: 58, gap: 16 };
+
+/** 역 라벨 크기 (픽셀) */
+const LABEL_SIZE = 12;
 
 function toPath(points: { x: number; y: number }[]) {
   return points
@@ -53,7 +55,6 @@ export function RouteStationMap({
   onPick,
   onSwap,
 }: RouteStationMapProps) {
-  const viewportState = useLineMapViewport();
   const {
     svgRef,
     viewport,
@@ -63,26 +64,33 @@ export function RouteStationMap({
     onPointerMove,
     onPointerUp,
     zoomAt,
+    centerOn,
     resetViewport,
-  } = viewportState;
+  } = useLineMapViewport();
 
   const [openStation, setOpenStation] = useState<string | null>(null);
 
   /**
-   * viewBox 1단위가 화면에서 몇 픽셀인지.
+   * 보이는 영역 크기(픽셀).
    *
-   * 지도는 폭에 맞춰 축소되므로, 좁은 화면에서는 글자와 점이 같이 작아져
-   * 360px 폭에서 역 이름이 6px 까지 줄어든다.
-   * 그래서 렌더 배율을 재서 글자·점 크기를 화면 기준으로 되돌린다.
+   * viewBox 를 이 값으로 두면 SVG 1단위가 화면 1픽셀이 되어,
+   * 글자·점 크기를 배율로 환산할 필요가 없어진다.
    */
-  const [fit, setFit] = useState(1);
+  const [viewSize, setViewSize] = useState({ width: 800, height: 480 });
 
-  // 역 목록이 바뀌면(= 노선 데이터 교체) 열려 있던 말풍선을 닫는다.
+  const layout = useMemo(
+    () => layoutSchematic(stations, lineOrder),
+    [stations, lineOrder],
+  );
+
+  const positionByName = useMemo(
+    () => new Map(layout.stations.map((station) => [station.name, station])),
+    [layout],
+  );
+
   useEffect(() => {
     setOpenStation(null);
   }, [stations]);
-
-  const { stations: positioned, viewBox } = projectStations(stations);
 
   useEffect(() => {
     // ResizeObserver 를 <svg> 에 직접 붙이면 브라우저에 따라 크기 변화를
@@ -93,38 +101,85 @@ export function RouteStationMap({
 
     const measure = () => {
       const rect = element.getBoundingClientRect();
-      if (rect.width === 0 || rect.height === 0) return;
-      // preserveAspectRatio 기본값(meet)은 가로·세로 중 작은 배율을 쓴다.
-      setFit(
-        Math.min(rect.width / viewBox.width, rect.height / viewBox.height),
-      );
+      if (rect.width > 0 && rect.height > 0) {
+        setViewSize({ width: rect.width, height: rect.height });
+      }
     };
 
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(container);
     return () => observer.disconnect();
-  }, [svgRef, viewBox.width, viewBox.height]);
+  }, [svgRef]);
 
-  /** 화면 픽셀 크기를 SVG 단위로 바꾼다. */
-  const u = (px: number) => px / (fit || 1);
-  const BUBBLE = {
-    width: u(BUBBLE_PX.width),
-    height: u(BUBBLE_PX.height),
-    gap: u(BUBBLE_PX.gap),
-  };
-  const positionByName = new Map(
-    positioned.map((station) => [station.name, station]),
-  );
+  // 고른 역이 바뀌면 그 역으로 시선을 옮긴다. 지도가 화면보다 넓기 때문이다.
+  useEffect(() => {
+    const station = positionByName.get(fromName);
+    if (station) centerOn(station);
+  }, [fromName, positionByName, centerOn]);
 
-  const routePoints = routeStationNames
-    .map((name) => positionByName.get(name))
-    .filter((station): station is ProjectedStation => Boolean(station));
+  useEffect(() => {
+    const station = positionByName.get(toName);
+    if (station) centerOn(station);
+  }, [toName, positionByName, centerOn]);
 
   const onRoute = new Set(routeStationNames);
   const opened = openStation ? positionByName.get(openStation) : undefined;
+  const routePoints = routeStationNames
+    .map((name) => positionByName.get(name))
+    .filter((station) => station !== undefined);
 
-  if (positioned.length === 0) {
+  /** 확대해도 글자는 화면에서 같은 크기로 남긴다. */
+  const labelSize = LABEL_SIZE / viewport.scale;
+  const routeKey = routeStationNames.join('>');
+
+  /**
+   * 겹치지 않는 라벨만 고른다.
+   *
+   * 축소해서 많은 역이 한 화면에 들어오면 글자가 서로 겹친다.
+   * 중요한 역부터 자리를 잡고, 이미 놓인 라벨과 부딪히면 건너뛴다.
+   * 확대하면 간격이 벌어져 더 많은 라벨이 살아난다.
+   */
+  const visibleLabels = useMemo(() => {
+    const onRouteNames = new Set(routeKey ? routeKey.split('>') : []);
+    const rank = (name: string) =>
+      name === fromName || name === toName ? 0 : onRouteNames.has(name) ? 1 : 2;
+
+    const placed: { x1: number; y1: number; x2: number; y2: number }[] = [];
+    const shown = new Set<string>();
+
+    const ordered = [...layout.stations].sort(
+      (a, b) => rank(a.name) - rank(b.name),
+    );
+
+    for (const station of ordered) {
+      // 한글은 글자 하나가 대략 폰트 크기만큼 넓다.
+      const halfWidth = (station.name.length * labelSize) / 2;
+      const centerY = station.y - labelSize * 1.6;
+      const box = {
+        x1: station.x - halfWidth,
+        y1: centerY - labelSize * 0.7,
+        x2: station.x + halfWidth,
+        y2: centerY + labelSize * 0.7,
+      };
+
+      const collides = placed.some(
+        (other) =>
+          box.x1 < other.x2 &&
+          box.x2 > other.x1 &&
+          box.y1 < other.y2 &&
+          box.y2 > other.y1,
+      );
+      if (collides) continue;
+
+      placed.push(box);
+      shown.add(station.name);
+    }
+
+    return shown;
+  }, [layout, fromName, toName, routeKey, labelSize]);
+
+  if (layout.stations.length === 0) {
     return (
       <Card className="p-lg text-body-md text-on-surface-variant">
         노선 정보를 불러오는 중입니다.
@@ -156,22 +211,15 @@ export function RouteStationMap({
     setOpenStation((current) => (current === stationName ? null : stationName));
   };
 
-  // 위쪽 공간이 부족하면 말풍선을 역 아래로 뒤집는다.
-  const bubbleAbove = opened
-    ? opened.y - BUBBLE.height - BUBBLE.gap > 0
-    : true;
-  const bubbleY = opened
-    ? bubbleAbove
-      ? opened.y - BUBBLE.height - BUBBLE.gap
-      : opened.y + BUBBLE.gap
-    : 0;
+  const bubbleY = opened ? opened.y - BUBBLE.height - BUBBLE.gap : 0;
   const bubbleX = opened ? opened.x - BUBBLE.width / 2 : 0;
+  const center = { x: viewSize.width / 2, y: viewSize.height / 2 };
 
   return (
     <div className="flex flex-col gap-sm">
       <div className="flex flex-wrap items-center justify-between gap-sm">
         <p className="text-body-md text-on-surface-variant">
-          역을 눌러 출발·도착을 정하세요. 드래그로 이동, 휠·핀치로 확대됩니다.
+          역을 눌러 출발·도착을 정하세요. 좌우로 끌어서 다른 구간을 봅니다.
         </p>
         <div className="flex items-center gap-xs">
           <Button
@@ -188,12 +236,7 @@ export function RouteStationMap({
             type="button"
             variant="outline"
             size="icon"
-            onClick={() =>
-              zoomAt(viewport.scale / 1.25, {
-                x: viewBox.width / 2,
-                y: viewBox.height / 2,
-              })
-            }
+            onClick={() => zoomAt(viewport.scale / 1.25, center)}
             aria-label="지도 축소"
           >
             <Icon name="remove" className="text-[20px]" />
@@ -202,19 +245,23 @@ export function RouteStationMap({
             type="button"
             variant="outline"
             size="icon"
-            onClick={() =>
-              zoomAt(viewport.scale * 1.25, {
-                x: viewBox.width / 2,
-                y: viewBox.height / 2,
-              })
-            }
+            onClick={() => zoomAt(viewport.scale * 1.25, center)}
             aria-label="지도 확대"
           >
             <Icon name="add" className="text-[20px]" />
           </Button>
-          <Button type="button" variant="outline" size="sm" onClick={resetViewport}>
-            <Icon name="fit_screen" className="text-[18px]" />
-            초기화
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              resetViewport();
+              const station = positionByName.get(fromName);
+              if (station) centerOn(station);
+            }}
+          >
+            <Icon name="my_location" className="text-[18px]" />
+            출발역으로
           </Button>
         </div>
       </div>
@@ -222,10 +269,10 @@ export function RouteStationMap({
       <Card className="overflow-hidden border-outline-variant/70">
         <svg
           ref={svgRef}
-          viewBox={`0 0 ${viewBox.width} ${viewBox.height}`}
+          viewBox={`0 0 ${viewSize.width} ${viewSize.height}`}
           className="block h-[var(--route-map-height)] min-h-0 w-full select-none"
           role="group"
-          aria-label="출발·도착역을 고르는 지하철 지도"
+          aria-label="출발·도착역을 고르는 지하철 노선도"
           style={{ touchAction: 'none', cursor: dragging ? 'grabbing' : 'grab' }}
           onWheel={onWheel}
           onPointerDown={onPointerDown}
@@ -234,7 +281,7 @@ export function RouteStationMap({
           onPointerCancel={onPointerUp}
           onClick={() => setOpenStation(null)}
         >
-          <title>출발·도착역을 고르는 지하철 지도</title>
+          <title>출발·도착역을 고르는 지하철 노선도</title>
           <desc>
             역을 클릭하거나 포커스한 뒤 Enter 를 누르면 출발·도착으로 지정할 수
             있습니다.
@@ -243,49 +290,40 @@ export function RouteStationMap({
           <g
             transform={`translate(${viewport.x} ${viewport.y}) scale(${viewport.scale})`}
           >
-            {/* 노선 — 순서대로 이은 선 */}
             <g aria-label="노선">
-              {Object.entries(lineOrder).map(([line, names]) => {
-                const points = names
-                  .map((name) => positionByName.get(name))
-                  .filter((station): station is ProjectedStation =>
-                    Boolean(station),
-                  );
-                if (points.length < 2) return null;
-                return (
+              {layout.paths.map(({ line, points }) =>
+                points.length < 2 ? null : (
                   <path
                     key={line}
                     d={toPath(points)}
                     fill="none"
                     stroke="var(--color-outline-variant)"
-                    strokeWidth={u(6)}
+                    strokeWidth={8}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
-                );
-              })}
+                ),
+              )}
             </g>
 
-            {/* 확정된 경로 강조 */}
             {routePoints.length > 1 && (
               <path
                 d={toPath(routePoints)}
                 fill="none"
                 stroke="var(--color-primary)"
-                strokeWidth={u(6)}
+                strokeWidth={8}
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 aria-hidden="true"
               />
             )}
 
-            {/* 역 */}
             <g aria-label="역">
-              {positioned.map((station, index) => {
+              {layout.stations.map((station) => {
                 const isFrom = station.name === fromName;
                 const isTo = station.name === toName;
                 const isOnRoute = onRoute.has(station.name);
-                const radius = isFrom || isTo ? u(9) : u(6);
+                const radius = isFrom || isTo ? 11 : 7;
 
                 const fill = isFrom
                   ? 'var(--color-primary)'
@@ -314,15 +352,11 @@ export function RouteStationMap({
                     }}
                     onKeyDown={(event) => onStationKeyDown(event, station.name)}
                   >
-                    {/*
-                      역 원만으로는 손가락으로 누르기 작아서,
-                      보이지 않는 원을 겹쳐 클릭 영역만 넓힌다.
-                      너무 키우면 지도를 끄는 동작을 방해하므로 적당히 둔다.
-                    */}
+                    {/* 손가락으로도 누를 수 있도록 보이지 않는 클릭 영역을 겹친다 */}
                     <circle
                       cx={station.x}
                       cy={station.y}
-                      r={u(20)}
+                      r={20}
                       fill="transparent"
                     />
                     <circle
@@ -332,23 +366,31 @@ export function RouteStationMap({
                       style={{
                         fill,
                         stroke: 'var(--color-primary)',
-                        strokeWidth: u(2.5),
+                        strokeWidth: 3,
                         pointerEvents: 'none',
                       }}
                     />
-                    <text
-                      x={station.x}
-                      y={station.y + (index % 2 === 0 ? u(-16) : u(24))}
-                      textAnchor="middle"
-                      style={{
-                        fill: 'var(--color-on-surface)',
-                        fontSize: u(12),
-                        fontWeight: isFrom || isTo ? 800 : 600,
-                        pointerEvents: 'none',
-                      }}
-                    >
-                      {station.name}
-                    </text>
+                    {visibleLabels.has(station.name) && (
+                      <text
+                        x={station.x}
+                        y={station.y - labelSize * 1.6}
+                        textAnchor="middle"
+                        style={{
+                          fill: isOnRoute
+                            ? 'var(--color-on-surface)'
+                            : 'var(--color-on-surface-variant)',
+                          fontSize: labelSize,
+                          fontWeight: isFrom || isTo ? 800 : 600,
+                          pointerEvents: 'none',
+                          paintOrder: 'stroke',
+                          stroke: 'var(--color-surface-bright)',
+                          strokeWidth: labelSize * 0.3,
+                          strokeLinejoin: 'round',
+                        }}
+                      >
+                        {station.name}
+                      </text>
+                    )}
                   </g>
                 );
               })}
@@ -365,31 +407,26 @@ export function RouteStationMap({
                   y={bubbleY}
                   width={BUBBLE.width}
                   height={BUBBLE.height}
-                  rx={u(8)}
+                  rx={10}
                   style={{
                     fill: 'var(--color-surface-bright)',
                     stroke: 'var(--color-outline-variant)',
-                    strokeWidth: u(1),
-                    filter: `drop-shadow(0 ${u(3)}px ${u(8)}px rgb(0 0 0 / 0.18))`,
+                    strokeWidth: 1.5,
+                    filter: 'drop-shadow(0 4px 10px rgb(0 0 0 / 0.22))',
                   }}
                 />
-                {/* 역을 가리키는 꼬리 */}
                 <path
-                  d={
-                    bubbleAbove
-                      ? `M ${opened.x - u(7)} ${bubbleY + BUBBLE.height} L ${opened.x} ${bubbleY + BUBBLE.height + u(9)} L ${opened.x + u(7)} ${bubbleY + BUBBLE.height} Z`
-                      : `M ${opened.x - u(7)} ${bubbleY} L ${opened.x} ${bubbleY - u(9)} L ${opened.x + u(7)} ${bubbleY} Z`
-                  }
+                  d={`M ${opened.x - 7} ${bubbleY + BUBBLE.height} L ${opened.x} ${bubbleY + BUBBLE.height + 9} L ${opened.x + 7} ${bubbleY + BUBBLE.height} Z`}
                   style={{ fill: 'var(--color-surface-bright)' }}
                 />
 
                 <text
                   x={opened.x}
-                  y={bubbleY + u(17)}
+                  y={bubbleY + 19}
                   textAnchor="middle"
                   style={{
                     fill: 'var(--color-on-surface)',
-                    fontSize: u(13),
+                    fontSize: 13,
                     fontWeight: 700,
                   }}
                 >
@@ -398,9 +435,9 @@ export function RouteStationMap({
 
                 {(['from', 'to'] as const).map((kind, index) => {
                   const label = kind === 'from' ? '출발' : '도착';
-                  const width = u(60);
-                  const x = opened.x + (index === 0 ? -width - u(3) : u(3));
-                  const y = bubbleY + u(26);
+                  const width = 60;
+                  const x = opened.x + (index === 0 ? -width - 3 : 3);
+                  const y = bubbleY + 27;
                   return (
                     <g
                       key={kind}
@@ -415,8 +452,8 @@ export function RouteStationMap({
                         x={x}
                         y={y}
                         width={width}
-                        height={u(22)}
-                        rx={u(7)}
+                        height={22}
+                        rx={7}
                         style={{
                           fill:
                             kind === 'from'
@@ -426,14 +463,14 @@ export function RouteStationMap({
                       />
                       <text
                         x={x + width / 2}
-                        y={y + u(15)}
+                        y={y + 15}
                         textAnchor="middle"
                         style={{
                           fill:
                             kind === 'from'
                               ? 'var(--color-on-primary)'
                               : 'var(--color-on-secondary-container)',
-                          fontSize: u(11),
+                          fontSize: 11,
                           fontWeight: 700,
                           pointerEvents: 'none',
                         }}

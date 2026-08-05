@@ -111,6 +111,24 @@ export function useLineMapViewport() {
     svgRef.current?.releasePointerCapture(event.pointerId);
   }, []);
 
+  /**
+   * 지정한 지점이 보이는 영역 한가운데에 오도록 옮긴다.
+   *
+   * 지도가 화면보다 넓을 때(경로 화면의 도식 노선도) 고른 역으로
+   * 시선을 옮기는 데 쓴다.
+   */
+  const centerOn = useCallback((point: Point) => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+
+    setViewport((current) => ({
+      ...current,
+      x: rect.width / 2 - point.x * current.scale,
+      y: rect.height / 2 - point.y * current.scale,
+    }));
+  }, []);
+
   return {
     svgRef,
     viewport,
@@ -120,6 +138,7 @@ export function useLineMapViewport() {
     onPointerMove,
     onPointerUp,
     zoomAt,
+    centerOn,
     resetViewport: () => setViewport(INITIAL_VIEWPORT),
   };
 }
