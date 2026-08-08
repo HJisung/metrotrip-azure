@@ -1,16 +1,14 @@
-"""General board and recruitment API contract models."""
+"""Recruitment board API contract models.
+
+V1.10 개정으로 일반 게시판 기능이 빠지고 board_posts는 인원 모집 전용이 되었다.
+"""
 
 from datetime import date, datetime
 from enum import Enum
 
-from pydantic import Field, model_validator
+from pydantic import Field
 
 from app.schemas.common import ApiSchema, Pagination
-
-
-class PostType(str, Enum):
-    GENERAL = "GENERAL"
-    RECRUIT = "RECRUIT"
 
 
 class RecruitStatus(str, Enum):
@@ -23,6 +21,11 @@ class ParticipantStatus(str, Enum):
     ACCEPTED = "ACCEPTED"
     REJECTED = "REJECTED"
     CANCELED = "CANCELED"
+
+
+class ParticipatingPostStatus(str, Enum):
+    APPLIED = "APPLIED"
+    ACCEPTED = "ACCEPTED"
 
 
 class AuthorResponse(ApiSchema):
@@ -39,25 +42,12 @@ class RecruitmentResponse(ApiSchema):
 
 
 class PostCreateRequest(ApiSchema):
-    post_type: PostType
     title: str = Field(min_length=1, max_length=100)
     content: str = Field(min_length=1)
-    recruit_capacity: int | None = Field(default=None, ge=1)
-    recruit_deadline: date | None = None
+    recruit_capacity: int = Field(ge=1)
+    recruit_deadline: date
     meeting_date: date | None = None
     plan_id: int | None = None
-
-    @model_validator(mode="after")
-    def validate_recruitment_fields(self) -> "PostCreateRequest":
-        required = (self.recruit_capacity, self.recruit_deadline)
-        if self.post_type is PostType.RECRUIT and None in required:
-            raise ValueError("모집 글에는 정원과 마감일이 필요합니다.")
-        if self.post_type is PostType.GENERAL and any(
-            value is not None
-            for value in (*required, self.meeting_date, self.plan_id)
-        ):
-            raise ValueError("일반 글에는 모집 관련 필드를 설정할 수 없습니다.")
-        return self
 
 
 class PostUpdateRequest(ApiSchema):
@@ -72,11 +62,10 @@ class PostUpdateRequest(ApiSchema):
 
 class PostSummaryResponse(ApiSchema):
     post_id: int
-    post_type: PostType
     title: str
     author: AuthorResponse
     view_count: int
-    recruitment: RecruitmentResponse | None
+    recruitment: RecruitmentResponse
     created_at: datetime
 
 
@@ -88,6 +77,21 @@ class PostDetailResponse(PostSummaryResponse):
 
 class PostListResponse(Pagination):
     items: list[PostSummaryResponse]
+
+
+class MyParticipationResponse(ApiSchema):
+    participant_id: int
+    status: ParticipatingPostStatus
+    applied_at: datetime
+    responded_at: datetime | None
+
+
+class ParticipatingPostResponse(PostSummaryResponse):
+    participation: MyParticipationResponse
+
+
+class ParticipatingPostListResponse(Pagination):
+    items: list[ParticipatingPostResponse]
 
 
 class ParticipantResponse(ApiSchema):
