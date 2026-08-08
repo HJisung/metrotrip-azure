@@ -144,6 +144,7 @@ def _build_responses(
 def list_reviews(
     db: Session,
     *,
+    user_id: int | None = None,
     keyword: str | None,
     search_field: ReviewSearchField,
     station_id: int | None,
@@ -154,6 +155,7 @@ def list_reviews(
     """검색 조건에 맞는 후기 목록을 페이지 단위로 조회한다."""
     repository = ReviewRepository(db)
     reviews, total = repository.list_reviews(
+        user_id=user_id,
         keyword=keyword,
         search_field=search_field.value,
         station_id=station_id,
