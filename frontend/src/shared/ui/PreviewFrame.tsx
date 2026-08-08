@@ -8,13 +8,17 @@ type PreviewFrameProps = {
   description: string;
   notice?: string;
   wide?: boolean;
+  contentWidth?: 'default' | 'board';
   children: ReactNode;
 };
 
-export function PreviewFrame({ title, description, notice, wide = false, children }: PreviewFrameProps) {
+export function PreviewFrame({ title, description, notice, wide = false, contentWidth = 'default', children }: PreviewFrameProps) {
   return (
     <div className="responsive-frame h-full overflow-y-auto bg-background">
-      <div className={cn('responsive-frame-content flex flex-col gap-[var(--layout-gap)] p-[var(--layout-gutter)]', wide ? 'w-full' : 'mx-auto max-w-4xl')}>
+      <div className={cn(
+        'responsive-frame-content flex flex-col gap-[var(--layout-gap)] p-[var(--layout-gutter)]',
+        wide ? 'w-full' : contentWidth === 'board' ? 'mx-auto w-full max-w-[var(--board-content-width)]' : 'mx-auto max-w-4xl',
+      )}>
         <header className="responsive-frame-header flex flex-col gap-sm pt-xs sm:pt-sm">
           <span className="w-fit rounded-full bg-primary-container px-sm py-xs text-label-caps text-on-primary-container">METROTRIP</span>
           <div>

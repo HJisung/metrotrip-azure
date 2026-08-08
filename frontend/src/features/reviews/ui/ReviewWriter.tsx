@@ -14,13 +14,13 @@ function submitReview(reviewId: number | undefined, values: Parameters<typeof to
 }
 
 export function ReviewWriter({ title, description, initialValues, review }: { title: string; description: string; initialValues: Parameters<typeof ReviewForm>[0]['initialValues']; review?: Review }) {
-  return <PreviewFrame title={title} description={description}><Card className="p-[var(--spacing-md)] sm:p-[var(--spacing-lg)]"><ReviewForm initialValues={initialValues} review={review} onSubmitRequest={submitReview} onSaved={(saved) => navigate(getReviewPath({ kind: 'detail', reviewId: saved.reviewId }))} /></Card></PreviewFrame>;
+  return <PreviewFrame contentWidth="board" title={title} description={description}><Card className="w-full p-[var(--spacing-md)] shadow-sm sm:p-[var(--spacing-lg)]"><ReviewForm initialValues={initialValues} review={review} onSubmitRequest={submitReview} onSaved={(saved) => navigate(getReviewPath({ kind: 'detail', reviewId: saved.reviewId }))} /></Card></PreviewFrame>;
 }
 
 export function ReviewEditor({ reviewId }: { reviewId: number }) {
   const [review, setReview] = useState<Review | null>(null);
   useEffect(() => { getReview(reviewId).then(setReview); }, [reviewId]);
-  if (!review) return <PreviewFrame title="후기 수정" description="" notice="후기를 불러오는 중입니다."><p>불러오는 중...</p></PreviewFrame>;
+  if (!review) return <PreviewFrame contentWidth="board" title="후기 수정" description="" notice="후기를 불러오는 중입니다."><p>불러오는 중...</p></PreviewFrame>;
   return <ReviewWriter title="후기 수정" description="작성한 후기를 수정합니다." initialValues={createReviewFormFromReview(review)} review={review} />;
 }
 

@@ -12,6 +12,6 @@ export function ReviewsFeature({ page }: { page: ReviewPage }) {
   if (page.kind === 'list') return <ReviewList />;
   if (page.kind === 'detail') return <ReviewDetail reviewId={page.reviewId} />;
   if (page.kind === 'edit') return <ReviewEditor reviewId={page.reviewId} />;
-  if (!authenticated) return <LoginRequiredModal onConfirm={() => navigate(getAuthPath('login'))} />;
+  if (!authenticated) return <LoginRequiredModal description="후기를 작성하려면 먼저 로그인해주세요." onConfirm={() => navigate(getAuthPath('login'))} />;
   return <NewReviewWriter />;
 }

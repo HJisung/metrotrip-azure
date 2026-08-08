@@ -238,7 +238,7 @@ metrotrip-access-token
 metrotrip-refresh-token
 ```
 
-Access Token 만료 시간은 기본 30분, Refresh Token 만료 시간은 기본 14일입니다. 백엔드에는 `POST /api/v1/auth/refresh`가 구현되어 있지만 프론트의 자동 갱신과 401 재시도 로직은 아직 없습니다.
+Access Token 만료 시간은 기본 30분, Refresh Token 만료 시간은 기본 14일입니다. 프론트는 `frontend/src/shared/lib/apiClient.ts`에서 인증 요청의 401 응답을 한 번만 Refresh Token으로 갱신하고 원래 요청을 재시도합니다. 여러 요청이 동시에 만료되어도 갱신 요청은 하나만 실행하며, Refresh Token까지 만료되거나 거부된 경우에만 로컬 세션을 정리합니다.
 
 현재 프론트 로그아웃은 로컬 토큰만 제거합니다. 서버의 활성 Refresh Token까지 폐기하려면 로컬 토큰 제거 전에 `POST /api/v1/auth/logout`을 Access Token과 함께 호출해야 합니다.
 
@@ -362,13 +362,13 @@ Request Body는 없습니다. 성공 후 프론트는 로컬 토큰을 모두 �
 
 ### 5-7. 프론트 구현 권장 순서
 
-1. 인증 헤더와 공통 오류 처리를 담당하는 `apiClient.ts`를 추가합니다.
+1. 인증 헤더와 공통 오류 처리를 담당하는 `apiClient.ts`를 유지·확장합니다.
 2. `getMyProfile`, `reauthenticate`, `updateProfile`, `changePassword`, `withdraw` API 함수를 추가합니다.
 3. 마이페이지 진입 시 `GET /users/me`로 실제 회원 정보를 불러옵니다.
 4. 계정 관리 진입 전에 목적을 선택해 재인증합니다.
 5. 재인증 토큰은 화면 메모리에만 보관하고 만료 시 비밀번호 입력 단계로 되돌립니다.
 6. 비밀번호 변경·탈퇴 성공 시 로컬 토큰을 제거하고 로그인 화면으로 이동합니다.
-7. Access Token 만료에 대비해 Refresh Token 갱신과 요청 재시도를 공통 API 클라이언트에 연결합니다.
+7. Access Token 만료 시 Refresh Token 갱신과 원래 요청 재시도를 공통 API 클라이언트에서 처리합니다.
 
 ### 5-8. 역 즐겨찾기
 

@@ -8,8 +8,10 @@ import type { ViewId } from './view';
 import { cn } from '../shared/lib/cn';
 import { clearAuthSession, getAccessToken, useIsAuthenticated } from '../shared/auth/session';
 import { getCurrentUser, SessionValidationError } from '../shared/auth/api';
+import { logoutAccount } from '../features/auth/api/auth';
 
 const INITIAL_STATION: Station = {
+  id: 97,
   name: '탕정역',
   lat: 36.78825,
   lng: 127.084417,
@@ -115,9 +117,15 @@ function App() {
           route={route}
           selected={selected}
           onSelectStation={selectStation}
-          onLogout={() => {
-            clearAuthSession();
-            navigate(getAuthPath('login'));
+          onLogout={async () => {
+            try {
+              await logoutAccount();
+            } catch {
+              // 네트워크 오류나 만료된 토큰이어도 이 기기의 인증 정보는 반드시 정리한다.
+            } finally {
+              clearAuthSession();
+              navigate(getAuthPath('login'));
+            }
           }}
         />
       </main>

@@ -1,4 +1,4 @@
-import { getAccessToken } from './session';
+import { apiRequest, ApiRequestError } from '../lib/apiClient';
 
 export type CurrentUser = {
   userId: number;
@@ -7,8 +7,6 @@ export type CurrentUser = {
   nickname: string;
   role: 'USER' | 'ADMIN';
 };
-
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api/v1').replace(/\/$/, '');
 
 export class SessionValidationError extends Error {
   status: number;
@@ -20,9 +18,10 @@ export class SessionValidationError extends Error {
 }
 
 export async function getCurrentUser(): Promise<CurrentUser> {
-  const response = await fetch(`${API_BASE_URL}/users/me`, {
-    headers: { Authorization: `Bearer ${getAccessToken() ?? ''}` },
-  });
-  if (!response.ok) throw new SessionValidationError(response.status);
-  return response.json() as Promise<CurrentUser>;
+  try {
+    return await apiRequest<CurrentUser>('/users/me');
+  } catch (error) {
+    if (error instanceof ApiRequestError) throw new SessionValidationError(error.status);
+    throw error;
+  }
 }
