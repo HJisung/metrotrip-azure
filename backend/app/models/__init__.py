@@ -8,6 +8,7 @@ from app.models.auth import (
     UserAgreement,
 )
 from app.models.community import BoardPost, PostParticipant
+from app.models.notices import Notice
 from app.models.reviews import Review, ReviewMedia, ReviewTag
 from app.models.transit import (
     LineStation,
@@ -25,6 +26,18 @@ __all__ = [
     "AuthToken",
     "BoardPost",
     "EmailVerification",
+    "LineViewLog",
+    "LineStation",
+    "Place",
+    "PlaceImage",
+    "PlaceStation",
+    "Notice",
+    "LineViewLog",
+    "LineStation",
+    "Place",
+    "PlaceImage",
+    "PlaceStation",
+    "Notice",
     "LineViewLog",
     "LineStation",
     "Place",
