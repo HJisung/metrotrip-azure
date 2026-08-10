@@ -1,53 +1,64 @@
 # 프론트엔드 API 연동 현황
 
-최종 갱신: 2026-08-09
+최종 갱신: 2026-08-10
+작업 브랜치: `feat/fe-codex-ui-port`
 
-## 완료된 연동
+## 구조
 
-- 인증 세션: 401 응답 시 Refresh Token으로 한 번만 갱신하고 원래 요청을 재시도한다. 로그아웃은 `POST /api/v1/auth/logout` 호출 뒤 로컬 Access/Refresh Token을 모두 정리한다. 서버가 이미 발급된 Access Token을 즉시 폐기하지 않으므로 로컬 토큰 정리는 반드시 수행한다.
-- 회원 관리: 마이페이지에서 `GET/PATCH /api/v1/users/me`, 목적별 재인증, `PATCH /users/me/password`, `DELETE /users/me`를 사용한다. 재인증 토큰은 화면 메모리에만 두고 `X-Reauthentication-Token` 헤더로 전송한다.
-- 즐겨찾기 역: `GET/POST/DELETE /api/v1/users/me/favorites`를 사용한다. 정적 역 데이터에는 DB `station_id`를 포함해 추가 요청에 사용한다.
-- 후기: 목록·상세·작성·수정·삭제·미디어 업로드와 내가 작성한 후기 조회가 연동되어 있다. 후기 목록은 `tag` 쿼리로 태그 필터를 지원한다.
-- 모집 게시판: `/api/v1/posts`의 목록·상세·작성·수정·삭제와 참여 신청·취소, 작성자의 신청자 승인·거절을 지원한다. 마이페이지에는 내가 작성한 모집글과 신청/확정 모집글을 표시한다.
+`experiment/codex-implementation`의 Next.js UI를 루트 `frontend/`로 이식했다. 새 UI가 기대하는 계약과 현재 FastAPI 계약이 다르므로 다음 두 파일에서 연결한다.
 
-## 백엔드 구현 완료·프론트 연동 대기
+- `frontend/src/lib/api.ts`: OpenAPI 클라이언트, Access Token 헤더
+- `frontend/src/lib/legacyApiAdapter.ts`: 경로·요청·응답 변환
+- `frontend/src/lib/legacyMappers.ts`: 역·장소·후기·모집·일정 등의 응답 모델 변환
+- `frontend/src/contracts/schema.d.ts`: Codex UI가 사용하는 화면 계약
 
-- `GET /api/v1/lines`, `/lines/suggestions`, `POST /lines/{line_id}/views`
-- `GET /api/v1/stations`, `/stations/{station_id}`
-- `GET /api/v1/stations/{station_id}/timetables`, `/stations/{station_id}/places`
-- `GET/POST /api/v1/plans`, `GET/PATCH/DELETE /api/v1/plans/{plan_id}`
-- `POST /api/v1/plans/{plan_id}/share-links`, `GET /api/v1/shared-plans/{share_token}`
+Next.js 서버 컴포넌트인 홈과 후기 목록/상세는 현재 FastAPI를 직접 호출한 뒤 `legacyMappers.ts`로 변환한다.
 
-공개 transit API는 DB V1.10 기준으로 구현되었고 Swagger 검증을 마쳤다. 프론트는 연동 전까지 기존 정적 데이터를 유지하며, 연동 시 각 Feature의 데이터 접근 함수 내부만 API 호출로 교체한다. 역 목록 응답에는 지도 표시에 필요한 위도·경도와 소속 노선이 포함된다.
+## 현재 FastAPI에 연결된 기능
 
-### 여행 계획·공유 연동 규칙
+- 인증: 이메일 인증 회원가입, 로그인, Refresh Token 회전, 로그아웃, 비밀번호 재설정
+- 회원: 프로필 조회, 현재 비밀번호 재인증 후 닉네임 수정·회원 탈퇴
+- 역/노선: 목록, 검색, 상세, 시간표
+- 장소: 역 기준 반경 1km 장소 목록과 캐시된 장소 상세 표시
+- 일정: 목록, 상세, 작성, 수정, 삭제
+- 모집: 목록, 상세, 작성, 수정, 삭제, 신청·취소·승인·거절·마감
+- 후기: 목록, 상세, 작성, 수정, 삭제, 로컬 미디어 업로드
+- 홈: 공지, 이벤트, 진행 중 모집, 천안역 주변 장소를 기존 API에서 조합
+- 공유 일정: 읽기 전용 조회
 
-- 여행 계획 관리 API는 Bearer Access Token이 필요하며 본인이 작성한 계획만 조회·수정·삭제할 수 있다.
-- 요청과 응답 필드는 `camelCase`다. 작성 시 일정 항목에는 `placeId`, 선택적인 `stationId`, `visitTime`, `memo`를 보낸다.
-- 수정 요청의 `items`는 전체 일정 스냅샷이다. 기존 항목은 응답에서 받은 `planItemId`를 다시 보내고, 새 항목은 `planItemId`를 생략한다. 배열에서 빠진 기존 항목은 삭제되며 `items: []`는 전체 일정 삭제, `items` 생략은 일정 유지다.
-- 공유 버튼은 `POST /api/v1/plans/{plan_id}/share-links`를 호출한다. 응답의 `shareToken`은 URL-safe 22자 원문 토큰이고 `shareUrl`은 프론트 공개 경로다. SHA-256 64자 해시는 DB 저장용이므로 프론트에 전달되지 않는다.
-- 공유 계획 화면은 토큰 입력창을 두지 않고 `/shared-plans/{shareToken}` 라우트에서 경로 토큰을 읽어 `GET /api/v1/shared-plans/{share_token}`을 호출한다. 이 조회에는 인증 헤더를 붙이지 않는다.
-- 공유 링크는 기본 7일 동안 유효하며 읽기 전용이다. 변조·만료·폐기된 토큰은 모두 `404 SHARED_PLAN_NOT_FOUND`로 처리한다.
+## 계약 차이로 제한되는 기능
 
-## 관리자 API
+| 새 UI 기능 | 현재 처리 | 필요한 백엔드 |
+|---|---|---|
+| 좌표/지도 경계 장소 검색 | 가장 가까운 역을 골라 역 기준 API 사용, 최대 1km | 좌표·bounds·복수 카테고리 검색 API |
+| 장소 단건 상세 | 같은 세션에서 불러온 장소 캐시 사용 | `GET /places/{id}` |
+| 장소 즐겨찾기 | 브라우저 `localStorage` 전용 | 사용자별 장소 즐겨찾기 CRUD |
+| 도보 경로 | 직선거리와 분당 67m 로컬 추정 | 보행 경로 제공자 연동 API |
+| 일정 날짜/설명/상태 | 브라우저 메타데이터 보조 저장 | 일정 스키마 확장 |
+| 삭제 일정 복원 | 501 미지원 | soft delete·복원 API |
+| 후기 좋아요·신고 | 501 미지원 | 좋아요·신고 API |
+| 모집 질문 댓글·신고 | 501 미지원 | 댓글·신고 API |
+| 모집 연결 일정 조회 | 501 미지원 | 공개 가능한 일정 스냅샷 API |
+| 공유 일정 복제 | 501 미지원 | 복제 API |
+| 관리자 신고·감사·동기화 | 빈 목록 또는 501 | 관리자 운영 API |
 
-관리자 장소 등록·수정·삭제 API는 Bearer Access Token과 `ADMIN` 권한이 필요하다. 생성·수정 응답에는 전체 장소 정보와 `stationIds`가 포함된다. 수정 요청에서 `stationIds`와 `imageUrls`를 생략하면 기존 값을 유지하고, 전달하면 전체 목록을 교체한다. 장소 삭제 시 해당 장소를 참조하던 여행 계획 항목도 함께 삭제된다.
+미지원 기능은 성공처럼 꾸미지 않고 `NOT_SUPPORTED_BY_CURRENT_BACKEND` 오류를 반환한다.
 
-관리자는 `DELETE /api/v1/admin/reviews/{review_id}`와 `DELETE /api/v1/admin/posts/{post_id}`로 작성자와 관계없이 후기와 모집 게시글을 삭제할 수 있다. 일반 회원 토큰은 `403 ADMIN_ONLY`로 거부된다.
+## 환경변수
 
-관리자 전용 장소 목록·상세 조회 API는 아직 없다. 공개 장소 조회는 역 기준이고 전체
-`stationIds`를 제공하지 않으므로, 전체 장소 목록에서 수정 화면으로 진입하는 관리자 UI를
-완성하려면 `GET /api/v1/admin/places`와 `GET /api/v1/admin/places/{place_id}`가 먼저
-필요하다. 후기 삭제 후에는 목록에서 항목을 제거하되, 물리 미디어 파일 정리는 백엔드 후속
-과제로 남아 있다.
+권장 이름:
+
+```text
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api/v1
+NEXT_PUBLIC_KAKAO_JS_KEY=카카오_JavaScript_키
+```
+
+이전 PC의 `.env`를 그대로 쓸 수 있도록 `VITE_API_BASE_URL`, `VITE_KAKAO_MAP_KEY`도 `next.config.ts`에서 호환한다. `.env*`는 커밋하지 않는다.
 
 ## 검증 기록
 
-- 프론트: `npm.cmd run lint`, `npm.cmd run build` 통과
-- 백엔드: `backend/.venv/Scripts/python.exe -m pytest` — 105개 통과
-- 관리자 API: 권한 거부, 장소 등록·부분 수정·삭제, 최소 한 역 검증, `stationIds` 응답,
-  계획 항목 선삭제, 후기·모집 게시글 CASCADE 삭제를 자동화 테스트로 확인했다. 실제 MySQL
-  서버의 통합 검증은 배포 전에 별도로 수행해야 한다.
-- 여행 계획·공유: HTTP CRUD 전 과정과 공유 링크 발급·비회원 조회·변조 토큰 차단을 자동화 테스트로 확인했다. 실제 운영 MySQL의 공유 링크 테이블 존재 여부는 배포 전에 별도로 확인해야 한다.
-- transit: 노선 목록·상위 3개 추천·회원/비회원 조회 기록, 역 목록·이름/노선 검색·상세·시간표·주변 장소를 Swagger에서 확인했다.
-- 브라우저: 로컬 계정으로 프로필 수정, 즐겨찾기 추가/삭제, 모집글 CRUD, 참여 신청/취소, 작성자 승인, 마이페이지 목록, 비밀번호 변경 후 재로그인, 회원 탈퇴를 확인했다. 검증용 게시글과 계정은 모두 삭제했다.
+- `npm.cmd run typecheck`: 통과
+- `npm.cmd run lint`: 통과
+- `npm.cmd run build`: 통과
+- 브라우저: 홈, `/discover`, `/reviews` 서버 렌더링과 오류 상태 확인
+- 실제 DB API 통합: Codex 샌드박스가 `backend/.env`를 읽지 못해 일반 PowerShell에서 백엔드를 실행한 뒤 추가 확인 필요
