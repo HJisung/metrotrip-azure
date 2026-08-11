@@ -5,7 +5,7 @@
 
 **배포 주소: https://lellon0403.github.io/MetroTrip/** (`main` 푸시 시 자동 배포)
 
-> 현재 단계: **프론트엔드 MVP + 백엔드 기본 골격 구성**
+> 현재 단계: **Codex Next.js UI를 루트 `frontend/`로 이식하고 기존 FastAPI 호환 연결 중**
 > 대상 노선: **1호선 천안·아산 구간** 우선 (전체 노선은 최종 목표)
 > 만들 범위는 [docs/SPEC.md](docs/SPEC.md)에 정의되어 있습니다. 여기 없는 기능은 지금 만들지 않습니다.
 
@@ -29,7 +29,7 @@
 
 ## 기술 스택
 
-- React + Vite + TypeScript
+- Next.js 16 App Router + React 19 + TypeScript
 - 카카오맵 JavaScript SDK + 카카오 로컬(Places) API
 - FastAPI + SQLAlchemy + MySQL (백엔드 기본 골격)
 
@@ -59,17 +59,23 @@ npm run dev
 4. `frontend/.env.example`을 복사해 `frontend/.env` 파일을 만든 후 아래 내용 작성
 
 ```
-VITE_KAKAO_MAP_KEY=발급받은_JavaScript_키
-VITE_API_BASE_URL=http://localhost:8000/api/v1
+NEXT_PUBLIC_KAKAO_JS_KEY=발급받은_JavaScript_키
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api/v1
 ```
 
-같은 네트워크의 다른 PC에서 프론트에 접속할 때는 `VITE_API_BASE_URL`을
+같은 네트워크의 다른 PC에서 프론트에 접속할 때는 `NEXT_PUBLIC_API_BASE_URL`을
 백엔드 PC의 LAN 주소로 변경합니다. 예: `http://192.168.0.108:8000/api/v1`
 백엔드 `backend/.env`의 `METROTRIP_CORS_ORIGINS`에도 프론트 주소를 추가해야 합니다.
 
 > `frontend/.env`는 `.gitignore`에 포함되어 있습니다. **절대 커밋하지 마세요.**
 > 키가 커밋되면 즉시 팀에 알리고 카카오 콘솔에서 키를 재발급해야 합니다.
 
+## 2026-08-10 프론트 구조
+
+- 실행 경로는 계속 `frontend/`, 개발 주소는 `http://localhost:5173`입니다.
+- API 진입점은 `frontend/src/lib/api.ts`, 기존 FastAPI 계약 변환은 `frontend/src/lib/legacyApiAdapter.ts`가 담당합니다.
+- 이전 `VITE_KAKAO_MAP_KEY`, `VITE_API_BASE_URL` 이름도 `next.config.ts`에서 호환하지만 새 PC는 `NEXT_PUBLIC_KAKAO_JS_KEY`, `NEXT_PUBLIC_API_BASE_URL`을 사용합니다.
+- 장소 즐겨찾기는 현재 백엔드 계약에 없어 브라우저 로컬 저장만 사용하며, 후기 좋아요·신고·질문 댓글·삭제 일정 복원은 UI에서 서버 미지원 오류를 표시합니다.
 ## 팀
 
 | 역할 | 담당 |

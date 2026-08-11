@@ -3,9 +3,33 @@
 > 데스크톱에서 작업하던 내용을 **노트북 등 다른 PC에서 그대로 이어받기 위한 문서**입니다.
 > 이 문서만 읽으면 지금까지의 맥락 없이도 이어서 작업할 수 있습니다.
 >
-> 마지막 갱신: 2026-08-06 / 기준 브랜치: `develop`
+> 마지막 갱신: 2026-08-10 / 작업 브랜치: `fix/fe-codex-ui-validation`
 
 ---
+
+## 0. 2026-08-10 프론트 교체 우선 안내
+
+이 문서 아래쪽의 Vite/Feature-based 구조 설명은 이전 구현 기록입니다. 현재 작업 브랜치에서는 `experiment/codex-implementation`의 Next.js 16 UI를 `frontend/` 루트로 이식했습니다.
+
+- 실행: `cd frontend && npm install && npm run dev` (5173)
+- 라우트: `frontend/app/`
+- 화면 컴포넌트: `frontend/src/components/`
+- API 클라이언트: `frontend/src/lib/api.ts`
+- 기존 FastAPI 변환: `frontend/src/lib/legacyApiAdapter.ts`, `legacyMappers.ts`
+- 타입 계약: `frontend/src/contracts/schema.d.ts`
+- 디자인 토큰: `frontend/src/styles/tokens.css`
+- 카카오 키: `NEXT_PUBLIC_KAKAO_JS_KEY` 권장. 기존 `VITE_KAKAO_MAP_KEY`도 호환.
+- API 주소: `NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api/v1` 권장. 기존 `VITE_API_BASE_URL`도 호환.
+
+현재 백엔드로 실제 연결되는 영역은 인증/재인증, 역·시간표·역 주변 장소, 일정 CRUD, 모집 CRUD·신청, 후기 CRUD·미디어, 공지입니다. 백엔드 계약에 없는 장소 즐겨찾기는 브라우저 로컬 전용이며 후기 좋아요·신고, 모집 질문·신고, 삭제 일정 복원, 일부 관리자 기능은 미지원 응답을 표시합니다.
+
+### 0-1. 2026-08-10 런타임 검증 결과
+
+- `GET /api/v1/stations` 호환 응답을 `{ items, nextCursor }`로 맞춰 역 목록 무한 로딩을 해결했습니다.
+- 역 조회 한도를 100개로 올려 기본 역 `천안`이 포함되도록 했습니다.
+- 다중 카테고리 쿼리의 콤마 구분값을 분리하고 빈 위도·경도는 선택 역 좌표로 대체해 천안역 맛집 4건과 지도 마커가 정상 표시됩니다.
+- 홈, 로그인, 맵, 후기 목록·상세·작성 권한, 모집 목록·상세, 일정·삭제 일정, 마이페이지, 관리자 권한 가드를 실제 브라우저에서 확인했으며 콘솔 오류는 0건입니다.
+- `npm run lint`, `npm run typecheck`, `npm run build`가 통과했습니다. Codex 샌드박스에서는 `.env` 읽기 경고가 발생하지만 일반 사용자로 실행 중인 개발 서버에서는 Kakao 지도가 정상 로드됩니다.
 
 ## 1. 지금 상태 요약
 

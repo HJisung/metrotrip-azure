@@ -73,30 +73,26 @@ docs: MVP 범위에서 다크모드 제외 명시
 >
 > 작업 시작 전 [WORKLOG.md](WORKLOG.md)에 **어떤 파일을 만질지** 적어두면 충돌을 미리 피할 수 있습니다.
 
+> 2026-08-10 이후 프론트는 Next.js App Router 구조입니다.
+
 | 영역 | 파일/폴더 | 주의사항 |
 |---|---|---|
-| 지도·역 선택·장소 | `frontend/src/features/station-map/*` | 카카오 SDK·장소 조회·역 검색 포함 |
-| 노선도 | `frontend/src/features/line-map/*` | 노선 데이터·viewport 훅·UI 포함 |
-| 시간표 | `frontend/src/features/timetable/*` | 시간표 데이터·다이얼로그 훅·UI 포함 |
-| 인증 | `frontend/src/features/auth/*` | 회원가입·로그인·비밀번호 재설정 API와 UI 포함 |
-| 공용 UI | `frontend/src/shared/ui/*` | shadcn 기반 컴포넌트. 기능 내부에서 동일 패턴을 새로 만들기 전에 재사용 여부 확인 |
-| 역 데이터 | `frontend/src/shared/data/stations.json` | **수정 전 공지** — 여러 기능이 참조 |
-| 공통 타입 | `frontend/src/shared/types/*` | **단독 수정 금지**, PR 필수 |
-| 전역 스타일 | `frontend/src/index.css` | 수정 전 공지 |
+| 화면·라우트 | `frontend/app/*` | Next.js 페이지와 페이지 전용 컴포넌트 |
+| 공용 UI | `frontend/src/components/*` | 여러 화면에서 재사용하는 컴포넌트 |
+| API·세션 | `frontend/src/lib/*` | API 클라이언트, FastAPI 호환 변환, 인증 세션 |
+| API 타입 | `frontend/src/contracts/*` | **단독 수정 금지**, UI와 어댑터가 함께 참조 |
+| 전역 스타일 | `frontend/app/globals.css`, `frontend/src/styles/tokens.css` | 디자인 토큰 변경 시 모든 화면 확인 |
 
-> `frontend/src/shared/types/*` 와 `frontend/src/shared/data/stations.json`은 **여러 기능이 참조하는 공용 파일**입니다.
-> 여기를 바꾸면 남의 코드가 깨집니다. 바꾸기 전에 반드시 알리세요.
+> `frontend/src/contracts/*`와 `frontend/src/styles/tokens.css`는 여러 화면이 참조합니다. 바꾸기 전에 반드시 알리세요.
 
 ### 프론트엔드 구조 원칙
 
-- `app/`은 앱 진입점·라우팅·전역 내비게이션만 담당합니다.
-- `pages/`는 라우팅된 화면과 Feature를 조립하는 얇은 컴포넌트입니다.
-- `features/`는 기능별 Container, Headless Hook, API·데이터·UI를 함께 둡니다.
-- `shared/`에는 실제로 여러 기능에서 재사용되는 타입·데이터·UI·유틸리티만 둡니다.
-- 버튼·입력·카드·모달·배지는 `shared/ui`의 `Button`, `Input`, `Card`, `Dialog`, `Badge`를 우선 사용합니다.
-- 조건부 className은 `shared/lib/cn.ts`의 `cn()`으로 결합합니다.
-- Hook은 JSX를 반환하지 않고, UI 컴포넌트는 API를 직접 호출하지 않습니다.
-
+- `frontend/app/`은 App Router 페이지와 페이지 전용 클라이언트 컴포넌트를 둡니다.
+- `frontend/src/components/`에는 실제로 여러 화면에서 재사용하는 UI만 둡니다.
+- API 호출은 `frontend/src/lib/api.ts`를 거치며, 현재 FastAPI와의 계약 차이는 `legacyApiAdapter.ts`에서만 변환합니다.
+- 서버 컴포넌트에서 기존 FastAPI를 직접 호출할 때는 `legacyMappers.ts`의 동일 변환 함수를 재사용합니다.
+- 고정 폭·색상·간격은 `frontend/src/styles/tokens.css`의 토큰으로 관리합니다.
+- 새 백엔드 계약이 Codex UI 계약과 일치하면 호환 변환을 제거하고 직접 연결합니다.
 ## 6. 문서화 규칙
 
 - 문서는 전부 `docs/` 아래 마크다운으로.

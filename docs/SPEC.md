@@ -3,7 +3,7 @@
 > 이 문서가 **MVP 개발의 유일한 기준(Single Source of Truth)** 입니다.
 > 여기 없는 기능은 발표 전까지 만들지 않습니다. 범위 변경은 반드시 이 문서를 먼저 수정하고 PR에 링크합니다.
 
-- 최종 수정: 2026-08-04 (경로를 프리뷰에서 실제 동작 기능으로 확장)
+- 최종 수정: 2026-08-10 (Codex Next Web UI로 프론트 교체 결정)
 - 상태: 확정 (v1.3)
 - 담당: 프론트엔드 (우진, 황지성)
 
@@ -228,7 +228,7 @@ MetroTrip은 반대로 **이동 경로가 먼저 있고 → 그 경로 위에서
 
 ## 4. 기술 스택
 
-- React + Vite + TypeScript
+- Next.js 16 App Router + React 19 + TypeScript
 - Tailwind CSS v4 + shadcn 패턴 공용 UI + Radix UI Dialog
 - 카카오맵 JavaScript SDK + 카카오 로컬(Places) 검색
 - 백엔드 없음 — 프론트에서 카카오 API 직접 호출
@@ -302,14 +302,14 @@ Stitch 디자인 적용 후 구조 (2026-07-26 갱신):
 
 ## 8. API 키 관리
 
-- 카카오 JavaScript 키는 `frontend/.env`에 `VITE_KAKAO_MAP_KEY`로 넣고 코드에서 참조
+- 카카오 JavaScript 키는 `frontend/.env`에 `NEXT_PUBLIC_KAKAO_JS_KEY`로 넣는다. 기존 `VITE_KAKAO_MAP_KEY`도 호환한다
 - `frontend/.env`는 `.gitignore`에 포함 (**절대 커밋 금지**)
 - 저장소에는 `frontend/.env.example`만 커밋
 - 키 발급 방법과 설정법은 루트 [README.md](../README.md)에 기재
 
 ## 9. 구현 순서
 
-1. Vite + React + TypeScript 프로젝트 세팅
+1. Next.js 16 + React 19 + TypeScript 프로젝트 세팅
 2. 카카오맵 SDK 로드 + 지도 표시 (탕정역 좌표 기준 초기 렌더)
 3. `stations.json` 작성 + 역 목록 UI
 4. 역 클릭 → 지도 중심 이동
@@ -320,3 +320,25 @@ Stitch 디자인 적용 후 구조 (2026-07-26 갱신):
 9. 경로 기능 (2-2) — 타입·데이터 계층 → 탐색 로직 → 화면 순서로 진행
 
 > 각 단계가 끝나면 **실제 브라우저에서 동작 확인 후** 다음 단계로 넘어갑니다.
+
+---
+
+## 4. 2026-08-10 프론트 교체 결정
+
+사용자 결정에 따라 기존 `frontend/`의 Vite UI는 `experiment/codex-implementation` 브랜치의 `codex_version/apps/web` Next.js UI로 교체한다.
+
+- 배포·실행 기준 프론트 경로는 계속 `frontend/`다.
+- 프론트 기술 스택은 Vite에서 Next.js 16 App Router로 변경한다.
+- 백엔드는 `codex_version/services/api`가 아니라 현재 `develop`의 `backend/` FastAPI를 유지한다.
+- 새 UI가 기대하는 API와 기존 FastAPI 계약 차이는 `frontend/src/lib/api.ts`의 호환 어댑터에서 변환한다.
+- 기존 `frontend/.env*`는 삭제하거나 커밋하지 않는다.
+- 카카오 JavaScript 키와 API 주소는 기존 변수명을 Next 공개 변수로 연결할 수 있게 설정한다.
+- 기존 프론트 소스는 Git 이력에서 복구할 수 있으므로 새 브랜치 `feat/fe-codex-ui-port`에서만 교체한다.
+
+완료 기준:
+
+1. 홈·맵·내 일정·후기·모집·로그인·마이페이지가 Next Web에서 렌더링된다.
+2. 로그인과 Refresh Token 회전이 기존 FastAPI 인증 계약으로 동작한다.
+3. 가능한 기능은 실제 기존 API에 연결하고, 기존 API에 없는 기능은 화면에서 명시적으로 비활성/대체 처리한다.
+4. lint, typecheck, production build가 통과한다.
+5. 로컬 FastAPI와 함께 핵심 사용자 흐름을 실제 브라우저에서 확인한다.
