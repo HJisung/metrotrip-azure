@@ -56,7 +56,8 @@ export default function AdminPage() {
 
   async function createNotice(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const { data, error: apiError } = await api.POST("/api/v1/admin/notices", { body: {
       title: String(form.get("title")), body: String(form.get("body")),
       status: String(form.get("status")) as "DRAFT" | "PUBLISHED",
@@ -66,7 +67,7 @@ export default function AdminPage() {
       endsAt: form.get("endsAt") ? new Date(String(form.get("endsAt"))).toISOString() : null,
     } });
     if (!data) return setError(message(apiError));
-    event.currentTarget.reset();
+    formElement.reset();
     setNotice("공지를 저장했습니다.");
     await load();
   }

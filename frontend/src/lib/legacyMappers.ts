@@ -164,7 +164,7 @@ export function mapLegacyRecruitment(post: LegacyJson) {
     capacity: toNumber(recruitment.capacity, 1),
     acceptedCount: toNumber(recruitment.acceptedCount),
     deadline: dateTime(recruitment.deadline, true),
-    meetingAt: dateTime(recruitment.meetingDate ?? recruitment.deadline),
+    meetingAt: recruitment.meetingDate ? dateTime(recruitment.meetingDate) : "",
     status: String(recruitment.status) === "RECRUITING" ? "OPEN" : "CLOSED",
     version: Math.max(1, Date.parse(String(post.updatedAt ?? post.createdAt ?? nowIso())) || 1),
     createdAt: String(post.createdAt ?? nowIso()),

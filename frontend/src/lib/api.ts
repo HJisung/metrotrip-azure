@@ -16,6 +16,22 @@ export function getAccessToken() {
   return accessToken;
 }
 
+export async function applyToRecruitment(recruitmentId: string) {
+  const base = apiBaseUrl || "";
+  const response = await globalThis.fetch(
+    `${base}/api/v1/posts/${encodeURIComponent(recruitmentId)}/participants`,
+    {
+      method: "POST",
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    },
+  );
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    throw new Error(String(data?.message ?? data?.detail ?? "참여 신청을 처리하지 못했습니다."));
+  }
+  return data;
+}
+
 function validationMessage(data: unknown): string | null {
   if (!data || typeof data !== "object") return null;
   const payload = data as {
