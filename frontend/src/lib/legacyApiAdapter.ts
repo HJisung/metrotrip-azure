@@ -184,7 +184,7 @@ async function handleStations(path: string, url: URL, request: Request): Promise
     const lineId = station?.lines?.[0]?.lineId;
     if (!lineId) return json({ stationId: departures[1], items: [], lastImportedAt: null, realtime: false });
     const day = new Date().getDay();
-    const dayType = day === 0 ? "HOLIDAY" : day === 6 ? "SATURDAY" : "WEEKDAY";
+    const dayType = day === 0 || day === 6 ? "WEEKEND" : "WEEKDAY";
     const results = await Promise.all(["UP", "DOWN"].map((direction) => forward(`/api/v1/stations/${departures[1]}/timetables${encodeQuery({ line_id: lineId, day_type: dayType, direction })}`, request)));
     const serviceDate = new Date().toISOString().slice(0, 10);
     const items = results.flatMap((result, directionIndex) => (result.data?.items ?? []).slice(0, 8).map((item: Json, index: number) => ({
@@ -338,9 +338,30 @@ async function handleMe(path: string, request: Request, body: Json): Promise<Res
   return null;
 }
 
-type PlanMetadata = Record<string, { description?: string | null; startDate?: string; endDate?: string; status?: string }>;
+type PlanMetadata = Record<string, { description?: string | null; startDate?: string; endDate?: string; status?: string; items?: Json[] }>;
 function planMetadata() { return storageJson<PlanMetadata>(PLAN_METADATA_KEY, {}); }
 function savePlanMetadata(value: PlanMetadata) { storageSet(PLAN_METADATA_KEY, JSON.stringify(value)); }
+function planMetadataEntry(body: Json) {
+  const items = Array.isArray(body.days)
+    ? body.days.flatMap((day: Json) => Array.isArray(day.items) ? day.items : [])
+      .map((item: Json) => ({
+        itemType: item.itemType,
+        stationId: item.stationId ?? null,
+        placeId: item.placeId ?? null,
+        routeSnapshot: item.routeSnapshot ?? null,
+        note: item.note ?? null,
+        scheduledTime: item.scheduledTime ?? null,
+        durationMinutes: item.durationMinutes ?? null,
+      }))
+    : [];
+  return {
+    description: body.description ?? null,
+    startDate: body.startDate,
+    endDate: body.endDate,
+    status: body.status,
+    items,
+  };
+}
 function legacyPlanWrite(body: Json) {
   const allItems = Array.isArray(body.days) ? body.days.flatMap((day: Json) => day.items ?? []) : [];
   const stationItems = allItems.filter((item: Json) => item.itemType === "STATION" && item.stationId);
@@ -370,7 +391,7 @@ async function handlePlans(path: string, url: URL, request: Request, body: Json)
   if (path === "/api/v1/plans" && request.method === "POST") {
     const result = await forward("/api/v1/plans", request, { method: "POST", body: JSON.stringify(legacyPlanWrite(body)) });
     if (!result.response.ok) return passthrough(result);
-    metadata[String(result.data.planId)] = { description: body.description ?? null, startDate: body.startDate, endDate: body.endDate, status: body.status };
+    metadata[String(result.data.planId)] = planMetadataEntry(body);
     savePlanMetadata(metadata);
     return json(mapLegacyPlan(result.data, metadata[String(result.data.planId)]), 201);
   }
@@ -385,7 +406,7 @@ async function handlePlans(path: string, url: URL, request: Request, body: Json)
   if (detail && request.method === "PUT") {
     const result = await forward(`/api/v1/plans/${detail[1]}`, request, { method: "PATCH", body: JSON.stringify(legacyPlanWrite(body)) });
     if (!result.response.ok) return passthrough(result);
-    metadata[detail[1]] = { description: body.description ?? null, startDate: body.startDate, endDate: body.endDate, status: body.status };
+    metadata[detail[1]] = planMetadataEntry(body);
     savePlanMetadata(metadata);
     return json(mapLegacyPlan(result.data, metadata[detail[1]]));
   }

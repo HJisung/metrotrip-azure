@@ -228,6 +228,7 @@ type PlanMetadata = {
   startDate?: string;
   endDate?: string;
   status?: string;
+  items?: LegacyJson[];
 };
 
 export function mapLegacyPlan(plan: LegacyJson, metadata: PlanMetadata = {}) {
@@ -236,8 +237,9 @@ export function mapLegacyPlan(plan: LegacyJson, metadata: PlanMetadata = {}) {
   const dayDate = metadata.startDate ?? dateOnly(createdAt);
   const startId = toId(plan.startStationId);
   const endId = toId(plan.endStationId);
-  const placeItems = Array.isArray(plan.items)
-    ? plan.items.map((item: LegacyJson, index: number) => ({
+  const responsePlaceItems = Array.isArray(plan.items) ? plan.items : [];
+  const placeItems = responsePlaceItems
+    .map((item: LegacyJson, index: number) => ({
         id: toId(item.planItemId),
         itemType: "PLACE",
         stationId: item.stationId == null ? null : toId(item.stationId),
@@ -247,31 +249,59 @@ export function mapLegacyPlan(plan: LegacyJson, metadata: PlanMetadata = {}) {
         scheduledTime: item.visitTime == null ? null : String(item.visitTime),
         durationMinutes: null,
         position: index + 2,
-      }))
-    : [];
-  const items: LegacyJson[] = [{
-    id: "start-" + toId(plan.planId),
-    itemType: "STATION",
-    stationId: startId,
-    placeId: null,
-    routeSnapshot: null,
-    note: null,
-    scheduledTime: null,
-    durationMinutes: null,
-    position: 1,
-  }, ...placeItems];
-  if (endId && endId !== startId) {
-    items.push({
-      id: "end-" + toId(plan.planId),
+      }));
+  let items: LegacyJson[];
+  if (metadata.items?.length) {
+    const placeQueues = new Map<string, LegacyJson[]>();
+    for (const item of responsePlaceItems) {
+      const placeId = toId(item.placeId);
+      placeQueues.set(placeId, [...(placeQueues.get(placeId) ?? []), item]);
+    }
+    items = metadata.items.map((savedItem, index) => {
+      const itemType = String(savedItem.itemType ?? "NOTE");
+      const placeId = savedItem.placeId == null ? null : toId(savedItem.placeId);
+      const serverPlace = placeId ? placeQueues.get(placeId)?.shift() : undefined;
+      return {
+        id: serverPlace?.planItemId == null
+          ? `${itemType.toLowerCase()}-${toId(plan.planId)}-${index}`
+          : toId(serverPlace.planItemId),
+        itemType,
+        stationId: savedItem.stationId == null
+          ? serverPlace?.stationId == null ? null : toId(serverPlace.stationId)
+          : toId(savedItem.stationId),
+        placeId,
+        routeSnapshot: savedItem.routeSnapshot ?? null,
+        note: savedItem.note ?? (serverPlace?.memo == null ? null : String(serverPlace.memo)),
+        scheduledTime: savedItem.scheduledTime ?? (serverPlace?.visitTime == null ? null : String(serverPlace.visitTime)),
+        durationMinutes: savedItem.durationMinutes ?? null,
+        position: index + 1,
+      };
+    });
+  } else {
+    items = [{
+      id: "start-" + toId(plan.planId),
       itemType: "STATION",
-      stationId: endId,
+      stationId: startId,
       placeId: null,
       routeSnapshot: null,
       note: null,
       scheduledTime: null,
       durationMinutes: null,
-      position: items.length + 1,
-    });
+      position: 1,
+    }, ...placeItems];
+    if (endId && endId !== startId) {
+      items.push({
+        id: "end-" + toId(plan.planId),
+        itemType: "STATION",
+        stationId: endId,
+        placeId: null,
+        routeSnapshot: null,
+        note: null,
+        scheduledTime: null,
+        durationMinutes: null,
+        position: items.length + 1,
+      });
+    }
   }
   return {
     id: toId(plan.planId),
