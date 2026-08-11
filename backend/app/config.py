@@ -29,7 +29,7 @@ class Settings(BaseSettings):
         default=None,
         validation_alias="SSL_CA_PATH",
     )
-    cors_origins: list[str] = ["http://localhost:5173"]
+    cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173", "http://192.168.0.108:5173"]
     jwt_secret: str = "local-only-change-this-secret"
     access_token_expire_minutes: int = 30
     refresh_token_expire_days: int = 14
