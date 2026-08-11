@@ -13,6 +13,7 @@ import {
   mapLegacyStation,
   mapLegacyStationDetail,
   mapLegacyUser,
+  normalizeMediaUrl,
   toLegacyCategory,
 } from "./legacyMappers";
 
@@ -71,11 +72,20 @@ async function forward(path: string, request: Request, init: RequestInit = {}): 
   try { data = await response.clone().json(); } catch { data = null; }
   return { response, data };
 }
-function passthrough(result: ForwardResult) {
+function oldPassthrough(result: ForwardResult) {
   if (result.response.ok) return json(result.data, result.response.status);
   const detail = result.data?.detail;
   const message = typeof detail === "string" ? detail : "백엔드 요청을 처리하지 못했습니다.";
   return json(errorEnvelope(message, result.response.headers.get("X-Error-Code") ?? "LEGACY_API_ERROR"), result.response.status);
+}
+function backendError(result: ForwardResult) {
+  const code = String(result.data?.code ?? result.data?.error?.code ?? result.response.headers.get("X-Error-Code") ?? `HTTP_${result.response.status}`);
+  const message = String(result.data?.message ?? result.data?.error?.message ?? result.data?.detail ?? `백엔드 요청이 실패했습니다. (${code})`);
+  return { code, message, details: result.data?.details ?? result.data?.error?.details ?? null };
+}
+function passthrough(result: ForwardResult) {
+  if (result.response.ok) return json(result.data, result.response.status);
+  return json({ error: backendError(result) }, result.response.status);
 }
 function page(items: any[], source?: Json) {
   return { items, nextCursor: null, total: Number(source?.totalElements ?? source?.total ?? items.length) };
@@ -482,12 +492,25 @@ async function handleRecruitments(path: string, url: URL, request: Request, body
 }
 
 function reviewContent(body: Json) {
-  return (body.blocks ?? []).filter((block: Json) => block.kind === "PARAGRAPH").map((block: Json) => String(block.text ?? "")).join("\n\n").trim();
+  return (body.blocks ?? []).map((block: Json) => {
+    if (block.kind === "PARAGRAPH") return String(block.text ?? "");
+    if (block.kind === "IMAGE" && block.mediaId) {
+      const media = mediaClaims.get(String(block.mediaId));
+      return media ? `[[METROTRIP_IMAGE:${media.mediaUrl}]]` : "";
+    }
+    return "";
+  }).filter(Boolean).join("\n\n").trim();
 }
 function reviewMedia(body: Json) {
   const ids = new Set<string>((body.blocks ?? []).filter((block: Json) => block.kind === "IMAGE" && block.mediaId).map((block: Json) => String(block.mediaId)));
   if (body.coverMediaId) ids.add(String(body.coverMediaId));
   return [...ids].map((id) => mediaClaims.get(id)).filter(Boolean).map((item) => ({ mediaUrl: item!.mediaUrl, mediaType: item!.mimeType.startsWith("video/") ? "VIDEO" : "IMAGE" }));
+}
+function cacheReviewMedia(review: Json) {
+  for (const item of Array.isArray(review.media) ? review.media : []) {
+    if (!item.mediaId || !item.mediaUrl) continue;
+    mediaClaims.set(String(item.mediaId), { uploadUrl: "", mediaUrl: normalizeMediaUrl(item.mediaUrl), mimeType: String(item.mediaType) === "VIDEO" ? "video/mp4" : "image/jpeg" });
+  }
 }
 function legacyReviewWrite(body: Json) {
   const origin = numeric(body.originStationId);
@@ -516,7 +539,9 @@ async function handleReviews(path: string, url: URL, request: Request, body: Jso
   const detail = path.match(/^\/api\/v1\/reviews\/([^/]+)$/);
   if (detail && request.method === "GET") {
     const result = await forward(`/api/v1/reviews/${detail[1]}`, request);
-    return result.response.ok ? json(mapLegacyReview(result.data, true)) : passthrough(result);
+    if (!result.response.ok) return passthrough(result);
+    cacheReviewMedia(result.data);
+    return json(mapLegacyReview(result.data, true));
   }
   if (detail && request.method === "PUT") {
     const result = await forward(`/api/v1/reviews/${detail[1]}`, request, { method: "PATCH", body: JSON.stringify(legacyReviewWrite(body)) });
@@ -533,8 +558,10 @@ async function handleReviews(path: string, url: URL, request: Request, body: Jso
     const result = await forward("/api/v1/review-media", request, { method: "POST", body: JSON.stringify({ fileName: body.filename, contentType: body.mimeType }) });
     if (!result.response.ok) return passthrough(result);
     const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    mediaClaims.set(id, { uploadUrl: String(result.data.uploadUrl), mediaUrl: String(result.data.mediaUrl), mimeType: String(body.mimeType) });
-    return json({ id, uploadUrl: result.data.uploadUrl, uploadHeaders: { "Content-Type": body.mimeType }, expiresAt: new Date(Date.now() + numeric(result.data.expiresIn, 900) * 1000).toISOString() }, 201);
+    const uploadUrl = normalizeMediaUrl(result.data.uploadUrl);
+    const mediaUrl = normalizeMediaUrl(result.data.mediaUrl);
+    mediaClaims.set(id, { uploadUrl, mediaUrl, mimeType: String(body.mimeType) });
+    return json({ id, uploadUrl, uploadHeaders: { "Content-Type": body.mimeType }, expiresAt: new Date(Date.now() + numeric(result.data.expiresIn, 900) * 1000).toISOString() }, 201);
   }
   const complete = path.match(/^\/api\/v1\/media\/claims\/([^/]+)\/complete$/);
   if (complete && request.method === "POST") {

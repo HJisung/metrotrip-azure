@@ -8,6 +8,7 @@ import { CalendarClock, CalendarPlus, ChevronRight, Clock3, GripVertical, Map as
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { KakaoMap } from "@/components/KakaoMap";
+import { ClearableInput } from "@/components/ClearableInput";
 import { SubwayRouteBoard } from "@/components/SubwayRouteBoard";
 import { api } from "@/lib/api";
 import { dateInSeoul } from "@/lib/date";
@@ -790,7 +791,7 @@ export default function DiscoverPage() {
       <section className="stationStrip" aria-label="역 선택">
         <div className="stationStripInner">
           <span className="lineBadge">1</span>
-          <label className="stationSearch"><span className="srOnly">역 검색</span><input value={stationQuery} onChange={(event) => setStationQuery(event.target.value)} placeholder="역 이름 검색" /></label>
+          <label className="stationSearch"><span className="srOnly">역 검색</span><ClearableInput value={stationQuery} onChange={(event) => setStationQuery(event.target.value)} placeholder="역 이름 검색" /></label>
           {loadingStations ? <span className="muted">역 목록을 불러오는 중…</span> : stations.map((station) => (
             <button type="button" key={station.id} aria-pressed={station.id === selectedStationId} onClick={() => selectStation(station.id)}>
               {station.name}
@@ -811,7 +812,7 @@ export default function DiscoverPage() {
               <button type="button" onClick={() => { setInspectorMode("timetable"); setTimeTargetItemId(null); }}><Clock3 size={14} aria-hidden /> 시간표</button>
             </div>
           </header>
-          <div className="placeSearch"><label className="srOnly" htmlFor="place-query">장소 검색</label><input id="place-query" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="장소 이름으로 검색" /></div>
+          <div className="placeSearch"><label className="srOnly" htmlFor="place-query">장소 검색</label><ClearableInput id="place-query" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="장소 이름으로 검색" /></div>
           <div className="categoryTabs multi" aria-label="장소 카테고리">
             {categoryOptions.map((item) => <button type="button" key={item.value} aria-pressed={categories.includes(item.value)} onClick={() => toggleCategory(item.value)}>{item.label}</button>)}
           </div>
@@ -877,7 +878,7 @@ export default function DiscoverPage() {
 
         {rightPanel === "planner" ? <aside className="rightDrawer plannerDrawer"><header><div><p className="eyebrow">MAP PLANNER</p><h2>내 일정</h2></div><div className="plannerHeaderActions">{plannerPlan && !plannerReadOnly ? <button type="button" aria-label="일정 삭제" onClick={() => void deleteCurrentPlan()}><Trash2 size={18} aria-hidden /></button> : null}<button type="button" onClick={() => setRightPanel(null)} aria-label="일정 닫기"><X size={20} aria-hidden /></button></div></header>
           {!plannerPlan ? <div className="plannerStart"><p>새 일정은 현재 선택한 역을 시작점으로 만듭니다.</p><button type="button" className="primaryButton" onClick={() => void createPlanWithSelectedPlace()} disabled={plannerPending}><Plus size={16} aria-hidden /> 새 일정 만들기</button></div> : <>
-            <div className="plannerTitle"><input value={plannerPlan.title} aria-label="일정 제목" disabled={plannerReadOnly} onChange={(event) => { setPlannerPlan({ ...plannerPlan, title: event.target.value }); setPlannerDirty(true); }} /><span>{plannerReadOnly ? "모집 참여자 조회용 일정" : plannerPending ? "저장 중…" : plannerDirty ? "변경됨" : "자동 저장됨"}</span></div>
+            <div className="plannerTitle"><ClearableInput value={plannerPlan.title} aria-label="일정 제목" disabled={plannerReadOnly} onChange={(event) => { setPlannerPlan({ ...plannerPlan, title: event.target.value }); setPlannerDirty(true); }} /><span>{plannerReadOnly ? "모집 참여자 조회용 일정" : plannerPending ? "저장 중…" : plannerDirty ? "변경됨" : "자동 저장됨"}</span></div>
             <div className="plannerToolbar"><button type="button" aria-pressed={focusMode} onClick={() => setFocusMode((value) => !value)}><MapPinned size={14} aria-hidden /> 일정 순서 보기</button>{!plannerReadOnly ? <><button type="button" onClick={() => void addSelectedStationToPlan()}><Plus size={14} aria-hidden /> 현재 역 추가</button>{selectedPlace ? <button type="button" onClick={() => void addSelectedPlaceToPlan()}><Plus size={14} aria-hidden /> {selectedPlace.name}</button> : null}</> : null}</div>
             <DndContext collisionDetection={closestCenter} onDragEnd={reorderPlanItems}><SortableContext items={plannerPlan.days[0]?.items.map((item) => item.id) ?? []} strategy={verticalListSortingStrategy}><ol className="mapTimeline">{plannerPlan.days[0]?.items.map((item, index, items) => {
               const station = item.stationId ? stations.find((candidate) => candidate.id === item.stationId) : null;

@@ -5,6 +5,7 @@ import { ArrowLeft, CalendarDays, CalendarClock, Flag, MapPinned, MessageCircle,
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, use, useCallback, useEffect, useState } from "react";
+import { ClearableInput } from "@/components/ClearableInput";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
 
@@ -127,7 +128,7 @@ export default function RecruitmentDetailPage({ params }: { params: Promise<{ re
 
       <div className="storyLayout">
         <article className="storyArticle">
-          {editing ? <form className="recruitmentComposer detailEditor" onSubmit={update}><label>제목<input name="title" defaultValue={item.title} minLength={2} required /></label><label>소개<textarea name="body" defaultValue={item.body} minLength={10} rows={6} required /></label><div><label>정원<input name="capacity" type="number" min={item.acceptedCount || 1} max="50" defaultValue={item.capacity} required /></label><label>신청 마감<input name="deadline" type="datetime-local" defaultValue={localDateTime(item.deadline)} required /></label><label>만남 시각<input name="meetingAt" type="datetime-local" defaultValue={localDateTime(item.meetingAt)} required /></label></div><button className="primaryButton" type="submit">수정 저장</button></form> : <section className="storyIntroduction"><span className="storyEyebrow">TRIP NOTE</span><h2>이런 여행이에요</h2><p>{item.body}</p></section>}
+          {editing ? <form className="recruitmentComposer detailEditor" onSubmit={update}><label>제목<ClearableInput name="title" defaultValue={item.title} minLength={2} required /></label><label>소개<textarea name="body" defaultValue={item.body} minLength={10} rows={6} required /></label><div><label>정원<ClearableInput name="capacity" type="number" min={item.acceptedCount || 1} max="50" defaultValue={item.capacity} required /></label><label>신청 마감<input name="deadline" type="datetime-local" defaultValue={localDateTime(item.deadline)} required /></label><label>만남 시각<input name="meetingAt" type="datetime-local" defaultValue={localDateTime(item.meetingAt)} required /></label></div><button className="primaryButton" type="submit">수정 저장</button></form> : <section className="storyIntroduction"><span className="storyEyebrow">TRIP NOTE</span><h2>이런 여행이에요</h2><p>{item.body}</p></section>}
 
           <section className="discussionPanel storyDiscussion">
             <div className="storySectionHeading"><div><span className="storyEyebrow">CONVERSATION</span><h2>여행에 대해 이야기해요 <em>{comments.length}</em></h2></div><MessageCircle size={22} aria-hidden /></div>

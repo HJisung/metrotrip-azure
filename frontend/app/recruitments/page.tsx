@@ -4,6 +4,7 @@ import type { components } from "@metrotrip/contracts";
 import { CalendarDays, ChevronRight, Eye, MessageCircle, Search, UserPlus, Users } from "lucide-react";
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useState } from "react";
+import { ClearableInput } from "@/components/ClearableInput";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
 
@@ -108,7 +109,7 @@ export default function RecruitmentsPage() {
         <label className="feedSearch">
           <Search size={17} aria-hidden />
           <span className="srOnly">모집 검색</span>
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="여행지, 제목, 내용 검색" />
+          <ClearableInput value={query} onChange={(event) => setQuery(event.target.value)} placeholder="여행지, 제목, 내용 검색" />
         </label>
         <div className="feedTabs" aria-label="모집 상태">
           {[["", "전체"], ["OPEN", "모집 중"], ["CLOSED", "마감"]].map(([value, label]) => (
@@ -126,10 +127,10 @@ export default function RecruitmentsPage() {
         <form className="recruitmentComposer feedComposer" onSubmit={create}>
           <h2>새 모집글</h2>
           <label>연결 일정<select name="plan" required defaultValue=""><option value="" disabled>일정 선택</option>{plans.map((plan) => <option key={plan.id} value={plan.id}>{plan.title}</option>)}</select></label>
-          <label>제목<input name="title" minLength={2} required /></label>
+          <label>제목<ClearableInput name="title" minLength={2} required /></label>
           <label>소개<textarea name="body" minLength={10} rows={5} required /></label>
           <div>
-            <label>정원<input name="capacity" type="number" min="1" max="50" defaultValue="2" required /></label>
+            <label>정원<ClearableInput name="capacity" type="number" min="1" max="50" defaultValue="2" required /></label>
             <label>신청 마감<input name="deadline" type="datetime-local" required /></label>
             <label>만남 시각<input name="meetingAt" type="datetime-local" required /></label>
           </div>

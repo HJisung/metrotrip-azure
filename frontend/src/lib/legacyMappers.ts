@@ -17,6 +17,23 @@ export function toNumber(value: unknown, fallback = 0) {
   return Number.isFinite(number) ? number : fallback;
 }
 
+export function normalizeMediaUrl(value: unknown) {
+  const raw = String(value ?? "");
+  if (!raw) return raw;
+  try {
+    const url = new URL(raw);
+    if (!/^localhost$|^127(?:\.\d{1,3}){3}$/.test(url.hostname)) return raw;
+    const configured = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+    const configuredUrl = new URL(configured.replace(/\/api\/v1\/?$/, ""));
+    const host = typeof window !== "undefined" ? window.location.hostname : configuredUrl.hostname;
+    url.hostname = host;
+    url.port = configuredUrl.port || url.port || "8000";
+    return url.toString();
+  } catch {
+    return raw;
+  }
+}
+
 export function mapLegacyLine(line: LegacyJson | undefined) {
   const id = toId(line?.lineId ?? 0);
   return {
@@ -179,7 +196,7 @@ export function mapLegacyReview(review: LegacyJson, detail = false) {
   const media = Array.isArray(review.media)
     ? review.media.map((item: LegacyJson, index: number) => ({
         id: toId(item.mediaId),
-        url: String(item.mediaUrl ?? ""),
+        url: normalizeMediaUrl(item.mediaUrl),
         mimeType: String(item.mediaType) === "VIDEO" ? "video/mp4" : "image/jpeg",
         width: null,
         height: null,
@@ -188,6 +205,22 @@ export function mapLegacyReview(review: LegacyJson, detail = false) {
       }))
     : [];
   const content = String(review.content ?? "");
+  const imageBlocks: Array<{ kind: "PARAGRAPH" | "IMAGE"; text?: string; mediaId: string | null; altText: string | null }> = [];
+  const imageToken = /\[\[METROTRIP_IMAGE:([^\]]+)\]\]/g;
+  let cursor = 0;
+  let match: RegExpExecArray | null;
+  while ((match = imageToken.exec(content))) {
+    const paragraph = content.slice(cursor, match.index).trim();
+    if (paragraph) imageBlocks.push({ kind: "PARAGRAPH", text: paragraph, mediaId: null, altText: null });
+    const matchedMedia = media.find((item: { url: string }) => item.url === match?.[1]);
+    if (matchedMedia) imageBlocks.push({ kind: "IMAGE", mediaId: matchedMedia.id, altText: matchedMedia.altText });
+    cursor = imageToken.lastIndex;
+  }
+  const trailingParagraph = content.slice(cursor).trim();
+  if (trailingParagraph) imageBlocks.push({ kind: "PARAGRAPH", text: trailingParagraph, mediaId: null, altText: null });
+  if (!imageBlocks.some((block) => block.kind === "IMAGE") && media.length) {
+    for (const item of media) imageBlocks.push({ kind: "IMAGE", mediaId: item.id, altText: item.altText });
+  }
   const common = {
     id: toId(review.reviewId),
     authorId: toId(review.userId),
@@ -215,7 +248,7 @@ export function mapLegacyReview(review: LegacyJson, detail = false) {
   if (!detail) return common;
   return {
     ...common,
-    blocks: content ? [{ kind: "PARAGRAPH", text: content, mediaId: null, altText: null }] : [],
+    blocks: imageBlocks,
     media,
     updatedAt: String(review.updatedAt ?? review.createdAt ?? nowIso()),
     likedByMe: false,
