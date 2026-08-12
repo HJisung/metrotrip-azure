@@ -181,7 +181,7 @@ ruff check .
 데이터베이스를 생성하므로 데이터베이스명을 별도로 지정하지 않습니다.
 
 ```powershell
-Get-Content .\db\schema\mysql\schema_mysql_V1.11.sql -Raw |
+Get-Content .\db\schema\mysql\schema_mysql_V1.12.sql -Raw |
   mysql -u 사용자명 -p
 ```
 

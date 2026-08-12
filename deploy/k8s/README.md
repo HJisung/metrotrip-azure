@@ -7,7 +7,7 @@ Ingress Controller와 cert-manager가 클러스터에 이미 설치되어 있다
 ## 구성
 
 - `frontend`와 `api`는 클러스터 내부 `ClusterIP` Service만 사용한다.
-- Traefik이 `metrotrip.kro.kr` 요청을 `frontend` Service로 전달한다.
+- Traefik이 배포 환경의 도메인 요청을 `frontend` Service로 전달한다.
 - 프론트 이미지는 `/api/v1` 요청을 `http://api:8000`으로 전달한다.
 - cert-manager가 `metrotrip-tls` Secret을 생성하고 인증서를 갱신한다.
 - 백엔드는 내장 Oracle 동기화 스케줄러의 중복 실행을 막기 위해 replica 1과

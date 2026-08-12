@@ -1,5 +1,11 @@
 # CI/CD 구성
 
+> **Azure 실습 저장소 갱신(2026-08-13):** 현재 운영 기준은 `.github/workflows/cd-main.yml`의
+> `Azure deploy`입니다. `main` push 또는 수동 실행 시 백엔드·프론트·DB 검증 후 Bicep으로
+> Azure 기반 리소스를 갱신하고, ACR 이미지 빌드, Container Apps 배포, DB 초기화와 HTTP
+> health 확인까지 수행합니다. 아래 Docker Hub/NCP 내용은 원본 저장소의 이전 배포 기록입니다.
+> 실제 설정 목록과 비용 주의사항은 `deploy/azure/README.md`를 우선합니다.
+
 > GitHub Actions로 백엔드·프론트엔드를 검증하고, Docker 이미지를 빌드해 배포하는 파이프라인 문서입니다.
 >
 > 마지막 갱신: 2026-08-11

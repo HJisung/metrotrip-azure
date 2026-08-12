@@ -25,7 +25,7 @@ spec:
         runAsGroup: 1000
       containers:
         - name: frontend
-          image: jeonseho00/metrotrip-frontend:main
+          image: metrotrip-frontend:latest
           imagePullPolicy: Always
           ports:
             - name: http
