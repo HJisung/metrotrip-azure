@@ -2,6 +2,9 @@
 
 ## 2026-08-13 Azure 배포 준비
 
+- `mysql:8.0`이 8.0.46으로 갱신된 뒤 source 방식으로 실행되는 `infra/init-db.sh`의 `set -u`가
+  공식 entrypoint에 누출되어 `MYSQL_ONETIME_PASSWORD: unbound variable`이 발생했다. SQL 오류 즉시
+  종료를 위한 `set -e`만 유지해 fresh init 호환성을 복구했다.
 - Next.js standalone runtime 이미지에 `frontend/public/`을 별도로 복사해 배포 후
   `/logo-transparent.png` 등 public 정적 파일이 404가 되지 않도록 수정했다.
 - Azure 첫 실제 배포에서 frontend의 `/api/v1/health/db`가 이미지 빌드 시 `http://api:8000`으로

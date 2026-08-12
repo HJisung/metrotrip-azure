@@ -1,5 +1,5 @@
 #!/bin/sh
-set -eu
+set -e
 
 # MySQL 클라이언트가 UTF-8 SQL을 latin1로 오해하지 않도록 문자셋을 명시한다.
 export MYSQL_PWD="${MYSQL_ROOT_PASSWORD}"
