@@ -26,7 +26,7 @@ jobs:
           station_count="$(docker exec metrotrip-db mysql -uroot -pmetrotrip-root --batch --skip-column-names --database=metrotrip --execute="SELECT COUNT(*) FROM stations")"
           timetable_count="$(docker exec metrotrip-db mysql -uroot -pmetrotrip-root --batch --skip-column-names --database=metrotrip --execute="SELECT COUNT(*) FROM train_timetables")"
           test "$table_count" -eq 23
-          test "$station_count" -eq 100
+          test "$station_count" -eq 193
           test "$timetable_count" -eq 1690
       - if: failure()
         run: docker compose --env-file infra/.env -f infra/compose.yaml logs db
