@@ -315,6 +315,28 @@ def list_station_places(
         size=size,
     )
 
+    images_by_place: dict[int, list[PlaceImage]] = {
+        place.place_id: [] for place in places
+    }
+    for image in repository.list_place_images(
+        [place.place_id for place in places]
+    ):
+        images_by_place[image.place_id].append(image)
+
+    return PlaceListResponse(
+        items=[
+            _build_place_response(
+                place,
+                images_by_place[place.place_id],
+            )
+            for place in places
+        ],
+        page=page,
+        size=size,
+        total_elements=total,
+        total_pages=math.ceil(total / size) if total else 0,
+    )
+
 
 def list_admin_places_by_station(
     db: Session,
@@ -334,28 +356,6 @@ def list_admin_places_by_station(
     )
     return PlaceAdminListResponse(
         items=[_build_place_admin_response(repository, place) for place in places],
-        page=page,
-        size=size,
-        total_elements=total,
-        total_pages=math.ceil(total / size) if total else 0,
-    )
-
-    images_by_place: dict[int, list[PlaceImage]] = {
-        place.place_id: [] for place in places
-    }
-    for image in repository.list_place_images(
-        [place.place_id for place in places]
-    ):
-        images_by_place[image.place_id].append(image)
-
-    return PlaceListResponse(
-        items=[
-            _build_place_response(
-                place,
-                images_by_place[place.place_id],
-            )
-            for place in places
-        ],
         page=page,
         size=size,
         total_elements=total,
