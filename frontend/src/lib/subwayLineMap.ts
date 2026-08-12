@@ -1,5 +1,3 @@
-type Point = { x: number; y: number };
-
 type ApiLineStation = {
   stationId: number;
   stationName: string;
@@ -22,7 +20,7 @@ export const REAL_LINE_META: Record<RealLineId, { label: string; color: string }
   line4: { label: "4호선", color: "#00a5de" },
 };
 
-const LINE_ID_TO_REAL: Record<number, RealLineId> = {
+export const LINE_ID_TO_REAL: Record<number, RealLineId> = {
   1: "line1",
   2: "line1",
   3: "line4",
@@ -34,10 +32,17 @@ const LINE_ID_TO_REAL: Record<number, RealLineId> = {
 export type LineMapStation = {
   stationId: string;
   name: string;
-  x: number;
-  y: number;
+  latitude: number;
+  longitude: number;
   /** 이 역이 속한 실제 노선들 (2개 이상이면 환승역) */
   lines: RealLineId[];
+  /**
+   * 이 역이 속한 DB 원본 line_id 목록 (1~6).
+   * 시간표 API(`/stations/{id}/timetables?line_id=`)는 이 원본 line_id를 그대로 받는다.
+   * 실제 노선(line1/line2/line4) 하나가 원본 line_id 여러 개로 이루어져 있어서
+   * (예: 1호선 = 1·2, 2호선 = 4·5·6) 환승 경로를 계산할 때 필요하다.
+   */
+  rawLineIds: number[];
 };
 
 export type LineMapEdge = {
@@ -49,7 +54,6 @@ export type LineMapEdge = {
 export type LineMapData = {
   stations: Map<string, LineMapStation>;
   edges: LineMapEdge[];
-  bounds: { minX: number; maxX: number; minY: number; maxY: number };
 };
 
 function apiBaseUrl() {
@@ -64,41 +68,27 @@ async function fetchLineStations(lineId: number): Promise<ApiLineStation[]> {
   return data.items;
 }
 
-/**
- * 위경도를 화면 좌표로 바꾼다 (정거장식 도식이 아니라 실제 지리 좌표 기반).
- *
- * 손으로 그린 방향·구간 조합은 노선끼리 만나는 환승역 위치를 서로 다르게
- * 계산해서 억지로 맞추려 하면 도심 구간이 뒤엉켰다. 반면 API가 이미 모든 역의
- * 실제 위경도를 주므로, 그걸 그대로 투영하면 환승역은 같은 역이라 좌표가
- * 자동으로 일치하고 굴곡도 실제 노선과 같아진다.
- *
- * 경도는 위도에 비례해 지구 둘레가 줄어드므로 cos(기준위도)를 곱해 보정한다
- * (한국 위도대에서 동서 방향이 눌려 보이는 것을 막는다).
- */
-const ORIGIN = { lat: 37.5665, lng: 126.978 }; // 서울시청 부근
-const SCALE = 800; // 위경도 1도당 픽셀 수 느낌의 배율 (도 단위 좌표를 다루기 좋은 크기로)
-
-function project(lat: number, lng: number): Point {
-  const latRad = (ORIGIN.lat * Math.PI) / 180;
-  return {
-    x: (lng - ORIGIN.lng) * Math.cos(latRad) * SCALE,
-    y: -(lat - ORIGIN.lat) * SCALE,
-  };
-}
-
 function addStation(
   target: Map<string, LineMapStation>,
   station: ApiLineStation,
   line: RealLineId,
+  rawLineId: number,
 ) {
   const id = String(station.stationId);
   const existing = target.get(id);
   if (existing) {
     if (!existing.lines.includes(line)) existing.lines.push(line);
+    if (!existing.rawLineIds.includes(rawLineId)) existing.rawLineIds.push(rawLineId);
     return;
   }
-  const point = project(station.latitude, station.longitude);
-  target.set(id, { stationId: id, name: station.stationName, x: point.x, y: point.y, lines: [line] });
+  target.set(id, {
+    stationId: id,
+    name: station.stationName,
+    latitude: station.latitude,
+    longitude: station.longitude,
+    lines: [line],
+    rawLineIds: [rawLineId],
+  });
 }
 
 function addEdges(edges: LineMapEdge[], stations: ApiLineStation[], line: RealLineId) {
@@ -108,7 +98,12 @@ function addEdges(edges: LineMapEdge[], stations: ApiLineStation[], line: RealLi
 }
 
 /**
- * 6개 line_id 를 실제 위경도로 투영해 3개 노선(1·2·4호선) 지도를 만든다.
+ * 6개 line_id 를 실제 위경도 기반 3개 노선(1·2·4호선) 지도로 합친다.
+ *
+ * 좌표는 역의 실제 위경도를 그대로 쓴다 — 화면에는 Kakao 지도 위에 실제
+ * kakao.maps.LatLng 로 그리므로, 같은 역은 어느 노선에서 봐도 같은 위치에
+ * 자동으로 겹친다(환승역을 억지로 맞출 필요가 없다).
+ *
  * 2호선은 순환선이라 마지막 역에서 첫 역으로 돌아가는 edge를 하나 더 넣는다.
  */
 export async function loadSubwayLineMap(): Promise<LineMapData> {
@@ -130,7 +125,7 @@ export async function loadSubwayLineMap(): Promise<LineMapData> {
 
   for (const [list, lineId] of groups) {
     const realLine = LINE_ID_TO_REAL[lineId];
-    list.forEach((station) => addStation(stations, station, realLine));
+    list.forEach((station) => addStation(stations, station, realLine, lineId));
     addEdges(edges, list, realLine);
   }
 
@@ -139,14 +134,5 @@ export async function loadSubwayLineMap(): Promise<LineMapData> {
     edges.push({ from: String(line4[line4.length - 1].stationId), to: String(line4[0].stationId), line: "line2" });
   }
 
-  const xs = [...stations.values()].map((s) => s.x);
-  const ys = [...stations.values()].map((s) => s.y);
-  const bounds = {
-    minX: Math.min(...xs, 0),
-    maxX: Math.max(...xs, 0),
-    minY: Math.min(...ys, 0),
-    maxY: Math.max(...ys, 0),
-  };
-
-  return { stations, edges, bounds };
+  return { stations, edges };
 }

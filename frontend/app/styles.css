@@ -268,31 +268,38 @@ h2 { margin: 0; max-width: 620px; font-size: clamp(34px, 4vw, 54px); letter-spac
 .subwaySelectedRoute li > span, .timelineStationRole { padding: 4px 7px; border-radius: 999px; color: white; background: #102a5e; font-size: 9px; font-weight: 850; }
 .subwaySelectedRoute li.경유 > span, .timelineStationRole.via { color: #175cd3; background: #dbeafe; }
 .subwaySelectedRoute li.도착 > span { background: var(--mt-color-brand); }
+.subwaySelectedRoute li.환승 > span { color: #b54708; background: #fef0c7; }
 .subwaySelectedRoute li strong { font-size: 11px; }
 .subwaySelectedRoute li time { color: var(--mt-color-brand); font-size: 10px; font-weight: 850; }
 .subwaySelectedRoute li button { width: 23px; height: 23px; display: grid; place-items: center; border: 0; border-radius: 50%; color: #98a2b3; background: transparent; cursor: pointer; }
 .subwaySelectedRoute li button:hover { color: #b42318; background: #fef3f2; }
+.subwaySelectedRoute li .subwayTransferBadge { width: 23px; height: 23px; display: grid; place-items: center; color: #98a2b3; }
 .subwayRouteEmpty, .subwayScheduleState, .subwayScheduleError { margin: 10px 0 0; color: #667085; font-size: 11px; }
 .subwayScheduleError { color: #b42318; }
 .subwayScheduleSummary { display: grid; grid-template-columns: auto auto minmax(20px, 1fr) auto; align-items: center; gap: 8px; margin-top: 12px; padding-top: 11px; border-top: 1px solid #e6ecf4; color: #475467; font-size: 11px; }
 .subwayScheduleSummary svg, .subwayScheduleSummary strong { color: var(--mt-color-brand); }
 .subwayScheduleSummary i { height: 1px; background: #b2ccff; }
 .subwayScheduleSummary small { grid-column: 2 / -1; color: #667085; font-size: 10px; }
+.subwayScheduleSummary.pathOnly svg, .subwayScheduleSummary.pathOnly strong { color: #b54708; }
+.subwayScheduleSummary.pathOnly i { background: #fec84b; }
 .subwayRailViewport { position: relative; z-index: 1; min-width: 0; height: min(52vh, 460px); margin-top: 12px; border-radius: 16px; background: #f7f9fc; overflow: hidden; }
 .subwayStationEmpty { min-height: 150px; height: 100%; display: grid; place-items: center; align-content: center; gap: 7px; color: #667085; text-align: center; }
 .subwayStationEmpty svg { color: var(--mt-color-brand); }
 .subwayStationEmpty strong { color: #344054; font-size: 14px; }
 .subwayStationEmpty p { margin: 0; font-size: 11px; }
 .subwayStationEmpty button { margin-top: 3px; padding: 8px 13px; border: 1px solid #b9cbe4; border-radius: 10px; color: var(--mt-color-brand); background: #fff; font-size: 11px; font-weight: 800; cursor: pointer; }
-.subwayLineMapSvg { width: 100%; height: 100%; touch-action: none; cursor: grab; }
-.subwayLineMapSvg:active { cursor: grabbing; }
-.subwayMapStation { cursor: pointer; }
-.subwayMapControls { position: absolute; right: 12px; bottom: 12px; z-index: 2; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--mt-color-line); border-radius: 10px; background: white; box-shadow: 0 6px 18px rgb(16 24 40 / 10%); }
-.subwayMapControls button { width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-bottom: 1px solid var(--mt-color-line); background: transparent; color: #475467; cursor: pointer; }
-.subwayMapControls button:last-child { border-bottom: 0; }
-.subwayMapControls button:hover { background: #f5f8ff; color: var(--mt-color-brand); }
+.subwayLineMapCanvas { position: absolute; inset: 0; }
+.subwayMapStation { display: inline-flex; align-items: center; gap: 3px; padding: 0; border: 0; background: transparent; cursor: pointer; white-space: nowrap; transition: opacity .15s ease; }
+.subwayMapDot { width: 7px; height: 7px; border-radius: 50%; box-shadow: 0 0 0 2px white; }
+.subwayMapDot.transfer { width: 10px; height: 10px; background: white; border: 2px solid; box-shadow: 0 0 0 2px white; }
+.subwayMapDot.selected { outline: 2px solid #102a5e; outline-offset: 2px; }
+.subwayMapDot.onRoute { width: 15px; height: 15px; display: grid; place-items: center; color: white; font-size: 9px; font-weight: 800; border: 2px solid white; }
+.subwayMapLabel { padding: 1px 4px; border-radius: 4px; color: #344054; background: rgb(255 255 255 / 82%); font-size: 10px; font-weight: 600; text-shadow: 0 1px 0 white; }
+.subwayMapLabel.strong { color: #101828; background: white; font-weight: 800; box-shadow: 0 1px 4px rgb(16 24 40 / 15%); }
 .subwayBoardFooter { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 20px; color: #667085; font-size: 10px; }
 .subwayBoardFooter span { display: inline-flex; align-items: center; gap: 6px; }
+.subwayLineLegend { padding: 3px 7px; border-radius: 999px; cursor: default; }
+.subwayLineLegend:hover { background: #eef2f7; color: #101828; }
 .subwayBoardFooter i { width: 9px; height: 9px; border-radius: 50%; background: #0052a4; }
 .timelineStationRole { display: inline-block; margin-left: 6px; vertical-align: 2px; }
 
