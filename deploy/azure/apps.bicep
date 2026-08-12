@@ -7,6 +7,8 @@ param acrName string
 param imageTag string
 param mysqlHost string
 param mysqlAdminUser string
+param frontendCustomDomain string = 'metrip.kro.kr'
+param frontendManagedCertificateName string = 'metrip.kro.kr-metrotri-260812232706'
 
 @secure()
 param mysqlAdminPassword string
@@ -19,6 +21,11 @@ param jwtSecret string
 
 resource environment 'Microsoft.App/managedEnvironments@2024-03-01' existing = {
   name: environmentName
+}
+
+resource frontendManagedCertificate 'Microsoft.App/managedEnvironments/managedCertificates@2024-03-01' existing = {
+  parent: environment
+  name: frontendManagedCertificateName
 }
 
 resource acr 'Microsoft.ContainerRegistry/registries@2023-07-01' existing = {
@@ -106,6 +113,13 @@ resource frontend 'Microsoft.App/containerApps@2024-03-01' = {
         targetPort: 5173
         transport: 'auto'
         allowInsecure: false
+        customDomains: [
+          {
+            name: frontendCustomDomain
+            certificateId: frontendManagedCertificate.id
+            bindingType: 'SniEnabled'
+          }
+        ]
       }
       registries: [
         {

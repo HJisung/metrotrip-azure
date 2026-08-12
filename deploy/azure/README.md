@@ -8,6 +8,11 @@ GitHub Actions가 다음 순서로 배포합니다.
 4. `apps.bicep`으로 내부 API, 외부 프론트, 수동 DB 초기화 Job 배포
 5. DB 초기화 Job 실행 후 프론트와 DB health 확인
 
+`apps.bicep`은 기존 Container Apps Managed Certificate
+`metrip.kro.kr-metrotri-260812232706`을 `existing` 리소스로 참조하고 frontend ingress에
+`metrip.kro.kr`을 `SniEnabled`로 선언합니다. 따라서 Bicep 재배포 후에도 사용자 지정 도메인
+바인딩이 유지되며, Container Apps 기본 `*.azurecontainerapps.io` 주소도 함께 사용할 수 있습니다.
+
 Container Apps는 최소 replica 0, 최대 1로 제한합니다. MySQL, ACR, Storage, Log Analytics는 별도 과금되며 워크플로 실행 전에 비용 승인이 필요합니다.
 
 ## GitHub 설정

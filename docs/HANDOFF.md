@@ -2,6 +2,10 @@
 
 ## 2026-08-13 Azure 배포 준비
 
+- Azure Container Apps 환경의 기존 Managed Certificate
+  `metrip.kro.kr-metrotri-260812232706`을 `apps.bicep`에서 existing으로 참조하고 frontend ingress의
+  `metrip.kro.kr` custom domain에 SNI 바인딩했다. 이후 Bicep 재배포에도 Portal 수동 바인딩이
+  제거되지 않으며 기본 `*.azurecontainerapps.io` 주소도 유지된다.
 - `mysql:8.0`이 8.0.46으로 갱신된 뒤 source 방식으로 실행되는 `infra/init-db.sh`의 `set -u`가
   공식 entrypoint에 누출되어 `MYSQL_ONETIME_PASSWORD: unbound variable`이 발생했다. SQL 오류 즉시
   종료를 위한 `set -e`만 유지해 fresh init 호환성을 복구했다.
