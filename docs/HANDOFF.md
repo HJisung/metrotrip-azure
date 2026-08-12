@@ -2,6 +2,8 @@
 
 ## 2026-08-13 Azure 배포 준비
 
+- Next.js standalone runtime 이미지에 `frontend/public/`을 별도로 복사해 배포 후
+  `/logo-transparent.png` 등 public 정적 파일이 404가 되지 않도록 수정했다.
 - Azure 첫 실제 배포에서 frontend의 `/api/v1/health/db`가 이미지 빌드 시 `http://api:8000`으로
   고정된 Next.js rewrite 때문에 `getaddrinfo ENOTFOUND api`로 실패했다. build-time rewrite를 제거하고
   `frontend/app/api/v1/[...path]/route.ts` 런타임 프록시로 교체했으며, standalone 컨테이너에서

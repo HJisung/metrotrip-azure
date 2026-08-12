@@ -175,9 +175,9 @@ frontend 이미지 빌드 시 `NEXT_PUBLIC_KAKAO_JS_KEY`를 build-arg로 넘긴�
    소용없다. `API_INTERNAL_BASE_URL`은 build argument가 아니라 런타임 환경변수로 받으며,
    `app/api/v1/[...path]/route.ts`가 요청마다 읽어서 백엔드로 프록시한다. 따라서 동일 이미지가
    Docker Compose의 `http://api:8000`과 Azure Container Apps의 내부 FQDN을 모두 사용할 수 있다.
-3. **runtime** — `package.json`/`node_modules`/`.next`만 복사해 `npm run start`(`next start
-   --port 5173`)로 기동. 정적 파일이 아니라 Node 서버가 계속 떠 있어야 하는 구조라 nginx가
-   필요 없다.
+3. **runtime** — standalone 서버와 `.next/static`, `public`을 복사해 `node server.js`로 기동한다.
+   `public`을 별도로 복사하지 않으면 로고 같은 `/public` 정적 파일이 runtime 이미지에 없어 404가
+   발생한다. 정적 파일만 배포하는 구조가 아니라 Node 서버가 계속 떠 있어야 하므로 nginx는 필요 없다.
 
 컨테이너 포트는 **5173**(`next start --port 5173`), 80이 아니다.
 
