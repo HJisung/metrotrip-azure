@@ -270,8 +270,10 @@ export function mapLegacyPlan(plan: LegacyJson, metadata: PlanMetadata = {}) {
   const dayDate = metadata.startDate ?? dateOnly(createdAt);
   const startId = toId(plan.startStationId);
   const endId = toId(plan.endStationId);
-  const responsePlaceItems = Array.isArray(plan.items) ? plan.items : [];
-  const placeItems = responsePlaceItems
+  const responseItems = Array.isArray(plan.items) ? plan.items : [];
+  const serverHasOrderedItems = responseItems.some((item: LegacyJson) => item.itemType || item.item_type);
+  const placeItems = responseItems
+    .filter((item: LegacyJson) => !item.itemType || item.itemType === "PLACE")
     .map((item: LegacyJson, index: number) => ({
         id: toId(item.planItemId),
         itemType: "PLACE",
@@ -284,9 +286,24 @@ export function mapLegacyPlan(plan: LegacyJson, metadata: PlanMetadata = {}) {
         position: index + 2,
       }));
   let items: LegacyJson[];
-  if (metadata.items?.length) {
+  if (serverHasOrderedItems) {
+    items = responseItems.map((item: LegacyJson, index: number) => {
+      const itemType = String(item.itemType ?? item.item_type ?? "PLACE");
+      return {
+        id: toId(item.planItemId),
+        itemType,
+        stationId: item.stationId == null ? null : toId(item.stationId),
+        placeId: item.placeId == null ? null : toId(item.placeId),
+        routeSnapshot: null,
+        note: item.memo == null ? null : String(item.memo),
+        scheduledTime: item.visitTime == null ? null : String(item.visitTime),
+        durationMinutes: null,
+        position: toNumber(item.position, index + 1),
+      };
+    });
+  } else if (metadata.items?.length) {
     const placeQueues = new Map<string, LegacyJson[]>();
-    for (const item of responsePlaceItems) {
+    for (const item of responseItems) {
       const placeId = toId(item.placeId);
       placeQueues.set(placeId, [...(placeQueues.get(placeId) ?? []), item]);
     }
