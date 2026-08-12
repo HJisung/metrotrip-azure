@@ -13,6 +13,12 @@ type SyncResult = components["schemas"]["DataSyncResult"];
 type PlaceRow = { id: string; name: string; dataStatus: string };
 type AuditRow = { id: string; action: string; resourceType: string; resourceId: string; reason: string; createdAt: string };
 
+function pageItems<T>(data: unknown): T[] {
+  if (!data || typeof data !== "object" || !("items" in data)) return [];
+  const items = (data as { items?: unknown }).items;
+  return Array.isArray(items) ? items as T[] : [];
+}
+
 function message(error: unknown): string {
   if (error && typeof error === "object" && "error" in error) {
     const envelope = error as { error?: { message?: string } };
@@ -43,10 +49,10 @@ export default function AdminPage() {
       ]);
       const firstError = noticeResult.error ?? reportResult.error ?? placeResult.error ?? auditResult.error;
       if (firstError) setError(message(firstError));
-      if (noticeResult.data) setNotices(noticeResult.data.items);
-      if (reportResult.data) setReports(reportResult.data.items);
-      if (placeResult.data) setPlaces(placeResult.data as PlaceRow[]);
-      if (auditResult.data) setAudits(auditResult.data as AuditRow[]);
+      setNotices(pageItems<Notice>(noticeResult.data));
+      setReports(pageItems<Report>(reportResult.data));
+      setPlaces(pageItems<PlaceRow>(placeResult.data));
+      setAudits(pageItems<AuditRow>(auditResult.data));
     } catch {
       setError("운영 데이터를 불러오지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요.");
     }
