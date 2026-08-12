@@ -53,7 +53,7 @@ Oracle 백업 DB를 별도로 구성하는 경우 `schema/oracle/schema_oracle_V
 | `seed_08_train_timetables.sql` | `train_timetables` | 1,690 | 02, 03 |
 
 각 파일 상단에 재적재용 `DELETE` 문이 주석으로 들어 있습니다.
-`seed_01_users.sql` 의 비밀번호는 전건 `test1234` 의 bcrypt 해시이며 테스트 전용입니다.
+`seed_01_users.sql` 의 비밀번호는 전건 `test1234` 의 scrypt 해시이며 테스트 전용입니다.
 
 ### 실행 결과 확인
 
