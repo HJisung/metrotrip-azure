@@ -28,7 +28,7 @@ DB 접속 정보의 기본값은 다음과 같습니다.
 $env:METROTRIP_DATABASE_URL="mysql+pymysql://metrotrip:metrotrip@127.0.0.1:3307/metrotrip?charset=utf8mb4"
 ```
 
-최초 실행 시 `db/schema/mysql/schema_mysql_V1.11.sql`과 `db/seed` 파일이 UTF-8로 번호 순서대로 적용됩니다.
+최초 실행 시 `db/schema/mysql/schema_mysql_V1.12.sql`과 `db/seed` 파일이 UTF-8로 번호 순서대로 적용됩니다.
 초기화 스크립트는 빈 Docker 볼륨에서만 실행됩니다.
 
 DB를 중지할 때는 다음 명령을 사용합니다.

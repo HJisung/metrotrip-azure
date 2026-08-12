@@ -1,123 +1,179 @@
-# main CD 파이프라인. develop은 CI만(ci-backend.yml/ci-frontend.yml), main은 테스트 →
-# Docker 이미지 빌드 → Docker Hub push까지 — 여기까지가 GitHub Actions의 역할이다. 이미지를
-# pull해서 실제로 컨테이너를 올리는(재)배포는 서버에서 한다(docs/CICD.md 7장) — 이
-# 워크플로우는 그 부분을 다루지 않는다.
-#
-# self-hosted runner가 필요 없다. "이미지를 만들어서 registry에 올린다"까지만 하므로
-# GitHub이 제공하는 ubuntu-latest에서 전부 끝난다.
-#
-# test-backend/test-frontend를 ci-backend.yml/ci-frontend.yml의 workflow_call로 재사용하지
-# 않고 이 파일 안에 그대로 인라인했다 — main 파이프라인이 develop CI 파일의 변경에 영향받지
-# 않고 독립적으로 동작하게 하기 위해서다. 대신 두 파일이 갈라지지 않도록 backend/frontend
-# 쪽 검증 스텝을 고치면 양쪽 다 같이 봐야 한다.
-#
-# 필요한 저장소 설정 (Settings > Secrets and variables > Actions):
-#   Variables — DOCKERHUB_USERNAME(Docker Hub 로그인 계정명),
-#               DOCKERHUB_NAMESPACE(이미지 태그 앞에 붙는 네임스페이스. 로그인 계정과
-#               다를 수 있어 별도로 뒀다 — 팀원 계정을 쓰기로 해서 하드코딩하지 않는다)
-#               NEXT_PUBLIC_KAKAO_JS_KEY(카카오 JavaScript 키, frontend 이미지 빌드 시
-#               클라이언트 번들에 박힘 — 비밀이 아니라 클라이언트에 노출되는 값이라 Variable)
-#   Secrets   — DOCKERHUB_TOKEN(비밀번호 아님, Docker Hub Access Token)
-name: Test and publish Docker images
+name: Azure deploy
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:  # Actions 탭에서 수동 실행 가능
+    branches: ["main"]
+  workflow_dispatch:
 
-# main에 짧은 시간에 커밋이 연달아 올라오면 이전 실행은 취소한다 — 어차피 최신 커밋의
-# 이미지만 의미가 있다. 진행 중이던 push가 취소돼도 레지스트리에는 그때까지 올라간
-# 레이어만 남고, 다음 실행이 나머지를 이어 올리므로 이미지가 깨지지 않는다.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: azure-production
+  cancel-in-progress: false
 
 permissions:
   contents: read
+  id-token: write
+
+env:
+  RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+  LOCATION: ${{ vars.AZURE_LOCATION }}
+  NAME_PREFIX: ${{ vars.AZURE_NAME_PREFIX }}
+  IMAGE_TAG: ${{ github.sha }}
 
 jobs:
   test-backend:
     runs-on: ubuntu-latest
-
     defaults:
       run:
         working-directory: backend
-
     env:
-      # 실제 DB 접속은 안 한다 — Settings.database_url이 필수 필드라 형식만 유효한
-      # 더미 값을 준다. 테스트는 전부 자체 인메모리 SQLite 엔진을 만들어 쓴다.
       METROTRIP_DATABASE_URL: sqlite:///./ci.db
-
     steps:
       - uses: actions/checkout@v6
-
       - uses: actions/setup-python@v6
         with:
           python-version: "3.10"
           cache: pip
           cache-dependency-path: backend/pyproject.toml
-
       - run: python -m pip install -e ".[dev]"
-      - run: python -m pytest -q
       - run: python -m ruff check .
+      - run: python -m pytest -q
 
   test-frontend:
     runs-on: ubuntu-latest
-
     defaults:
       run:
         working-directory: frontend
-
     steps:
       - uses: actions/checkout@v6
-
       - uses: actions/setup-node@v5
         with:
           node-version: "24"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-
       - run: npm ci
-      - run: npm run typecheck
       - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
 
-  publish:
-    needs:
-      - test-backend
-      - test-frontend
-
+  test-database:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Start and initialize MySQL
+        run: |
+          cp infra/.env.example infra/.env
+          docker compose --env-file infra/.env -f infra/compose.yaml up -d --wait db
+      - name: Verify schema and seed data
+        run: |
+          table_count="$(docker exec metrotrip-db mysql -uroot -pmetrotrip-root --batch --skip-column-names --execute="SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='metrotrip'")"
+          station_count="$(docker exec metrotrip-db mysql -uroot -pmetrotrip-root --batch --skip-column-names --database=metrotrip --execute="SELECT COUNT(*) FROM stations")"
+          test "$table_count" -eq 23
+          test "$station_count" -eq 100
+      - name: Show MySQL logs on failure
+        if: failure()
+        run: docker compose --env-file infra/.env -f infra/compose.yaml logs db
 
+  deploy:
+    needs: [test-backend, test-frontend, test-database]
+    runs-on: ubuntu-latest
+    environment: azure-production
     steps:
       - uses: actions/checkout@v6
 
-      - uses: docker/login-action@v4
-        with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Validate deployment settings
+        env:
+          MYSQL_ADMIN_PASSWORD: ${{ secrets.MYSQL_ADMIN_PASSWORD }}
+          JWT_SECRET: ${{ secrets.METROTRIP_JWT_SECRET }}
+        run: |
+          test -n "$RESOURCE_GROUP"
+          test -n "$LOCATION"
+          test -n "$NAME_PREFIX"
+          test ${#NAME_PREFIX} -ge 3
+          test ${#NAME_PREFIX} -le 12
+          test ${#MYSQL_ADMIN_PASSWORD} -ge 12
+          test ${#JWT_SECRET} -ge 32
 
-      - uses: docker/setup-buildx-action@v4
-
-      - name: Build and push backend
-        uses: docker/build-push-action@v7
+      - uses: azure/login@v2
         with:
-          context: ./backend
-          platforms: linux/amd64
-          push: true
-          tags: |
-            ${{ vars.DOCKERHUB_NAMESPACE }}/metrotrip-backend:main
-            ${{ vars.DOCKERHUB_NAMESPACE }}/metrotrip-backend:${{ github.sha }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Build and push frontend
-        uses: docker/build-push-action@v7
-        with:
-          context: ./frontend
-          platforms: linux/amd64
-          push: true
-          build-args: |
-            API_INTERNAL_BASE_URL=http://api:8000
-            NEXT_PUBLIC_KAKAO_JS_KEY=${{ vars.NEXT_PUBLIC_KAKAO_JS_KEY }}
-          tags: |
-            ${{ vars.DOCKERHUB_NAMESPACE }}/metrotrip-frontend:main
-            ${{ vars.DOCKERHUB_NAMESPACE }}/metrotrip-frontend:${{ github.sha }}
+      - name: Prepare Azure CLI
+        run: |
+          az config set extension.use_dynamic_install=yes_without_prompt
+          az bicep build --file deploy/azure/foundation.bicep
+          az bicep build --file deploy/azure/apps.bicep
+
+      - name: Create resource group
+        run: az group create --name "$RESOURCE_GROUP" --location "$LOCATION" --tags project=metrotrip environment=production managed-by=github-actions
+
+      - name: Deploy shared infrastructure
+        env:
+          MYSQL_ADMIN_PASSWORD: ${{ secrets.MYSQL_ADMIN_PASSWORD }}
+        run: |
+          az deployment group create \
+            --resource-group "$RESOURCE_GROUP" \
+            --template-file deploy/azure/foundation.bicep \
+            --parameters namePrefix="$NAME_PREFIX" location="$LOCATION" mysqlAdminPassword="$MYSQL_ADMIN_PASSWORD" \
+            --name "foundation-${GITHUB_RUN_ID}"
+
+      - name: Read infrastructure outputs
+        run: |
+          outputs="$(az deployment group show --resource-group "$RESOURCE_GROUP" --name "foundation-${GITHUB_RUN_ID}" --query properties.outputs -o json)"
+          echo "ACR_NAME=$(echo "$outputs" | jq -r .acrName.value)" >> "$GITHUB_ENV"
+          echo "ACR_LOGIN_SERVER=$(echo "$outputs" | jq -r .acrLoginServer.value)" >> "$GITHUB_ENV"
+          echo "CONTAINER_ENVIRONMENT=$(echo "$outputs" | jq -r .environmentName.value)" >> "$GITHUB_ENV"
+          echo "MYSQL_HOST=$(echo "$outputs" | jq -r .mysqlHost.value)" >> "$GITHUB_ENV"
+          echo "MYSQL_USER=$(echo "$outputs" | jq -r .mysqlAdminUser.value)" >> "$GITHUB_ENV"
+
+      - name: Build and push images
+        env:
+          KAKAO_KEY: ${{ vars.NEXT_PUBLIC_KAKAO_JS_KEY }}
+        run: |
+          az acr login --name "$ACR_NAME"
+          docker build -t "$ACR_LOGIN_SERVER/metrotrip-backend:$IMAGE_TAG" backend
+          docker build --build-arg "NEXT_PUBLIC_KAKAO_JS_KEY=$KAKAO_KEY" -t "$ACR_LOGIN_SERVER/metrotrip-frontend:$IMAGE_TAG" frontend
+          docker build -f deploy/azure/db-init/Dockerfile -t "$ACR_LOGIN_SERVER/metrotrip-db-init:$IMAGE_TAG" .
+          docker push "$ACR_LOGIN_SERVER/metrotrip-backend:$IMAGE_TAG"
+          docker push "$ACR_LOGIN_SERVER/metrotrip-frontend:$IMAGE_TAG"
+          docker push "$ACR_LOGIN_SERVER/metrotrip-db-init:$IMAGE_TAG"
+
+      - name: Deploy applications
+        env:
+          MYSQL_ADMIN_PASSWORD: ${{ secrets.MYSQL_ADMIN_PASSWORD }}
+          JWT_SECRET: ${{ secrets.METROTRIP_JWT_SECRET }}
+        run: |
+          DATABASE_URL="$(python -c 'import os, urllib.parse; p=urllib.parse.quote(os.environ["MYSQL_ADMIN_PASSWORD"], safe=""); print("mysql+pymysql://{}:{}@{}:3306/metrotrip?charset=utf8mb4".format(os.environ["MYSQL_USER"], p, os.environ["MYSQL_HOST"]))')"
+          echo "::add-mask::$DATABASE_URL"
+          az deployment group create \
+            --resource-group "$RESOURCE_GROUP" \
+            --template-file deploy/azure/apps.bicep \
+            --parameters namePrefix="$NAME_PREFIX" location="$LOCATION" environmentName="$CONTAINER_ENVIRONMENT" acrName="$ACR_NAME" imageTag="$IMAGE_TAG" mysqlHost="$MYSQL_HOST" mysqlAdminUser="$MYSQL_USER" mysqlAdminPassword="$MYSQL_ADMIN_PASSWORD" databaseUrl="$DATABASE_URL" jwtSecret="$JWT_SECRET" \
+            --name "apps-${GITHUB_RUN_ID}"
+
+      - name: Initialize database
+        run: |
+          job_name="$(az deployment group show --resource-group "$RESOURCE_GROUP" --name "apps-${GITHUB_RUN_ID}" --query properties.outputs.dbInitJobName.value -o tsv)"
+          execution_name="$(az containerapp job start --resource-group "$RESOURCE_GROUP" --name "$job_name" --query name -o tsv)"
+          for attempt in $(seq 1 60); do
+            status="$(az containerapp job execution show --resource-group "$RESOURCE_GROUP" --name "$job_name" --job-execution-name "$execution_name" --query properties.status -o tsv)"
+            if [ "$status" = "Succeeded" ]; then exit 0; fi
+            if [ "$status" = "Failed" ]; then exit 1; fi
+            sleep 10
+          done
+          echo "DB initialization timed out" >&2
+          exit 1
+
+      - name: Verify deployed application
+        run: |
+          frontend_url="$(az deployment group show --resource-group "$RESOURCE_GROUP" --name "apps-${GITHUB_RUN_ID}" --query properties.outputs.frontendUrl.value -o tsv)"
+          az containerapp update --resource-group "$RESOURCE_GROUP" --name "${NAME_PREFIX}-api" --set-env-vars "METROTRIP_PUBLIC_FRONTEND_URL=$frontend_url" "METROTRIP_CORS_ORIGINS=[\"$frontend_url\"]" > /dev/null
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error --retry 2 "$frontend_url" > /dev/null && curl --fail --silent --show-error --retry 2 "$frontend_url/api/v1/health/db" > /dev/null; then
+              echo "Deployment verified: $frontend_url"
+              exit 0
+            fi
+            sleep 10
+          done
+          exit 1

@@ -3,7 +3,7 @@ name: metrotrip
 
 services:
   api:
-    image: jeonseho00/metrotrip-backend:main
+    image: ${CONTAINER_REGISTRY:-docker.io}/${CONTAINER_NAMESPACE:?CONTAINER_NAMESPACE is required}/metrotrip-backend:${IMAGE_TAG:-latest}
     env_file:
       - ${BACKEND_ENV_FILE:-./deploy/docker/backend.env}
     expose:
@@ -27,7 +27,7 @@ services:
       - internal
 
   frontend:
-    image: jeonseho00/metrotrip-frontend:main
+    image: ${CONTAINER_REGISTRY:-docker.io}/${CONTAINER_NAMESPACE:?CONTAINER_NAMESPACE is required}/metrotrip-frontend:${IMAGE_TAG:-latest}
     expose:
       - "5173"
     depends_on:

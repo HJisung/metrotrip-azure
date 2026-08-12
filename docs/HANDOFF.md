@@ -1,5 +1,16 @@
 # 다른 PC에서 이어서 작업하기
 
+## 2026-08-13 Azure 배포 준비
+
+- Azure 실습 배포 기준은 `deploy/azure/`와 `.github/workflows/cd-main.yml`이다.
+- `main` push 시 백엔드 144개 테스트·ruff, 프론트 lint/typecheck/build, MySQL V1.12 스키마·시드 검증을 통과해야 배포한다.
+- 배포는 Resource Group → ACR Basic/Container Apps 환경/MySQL B1ms/Azure Files → 이미지 3종 → 앱 2종/DB 초기화 Job 순서로 자동화했다.
+- API는 내부 ingress, 프론트만 외부 ingress이며 두 앱은 비용 절감을 위해 replica 0~1이다.
+- Azure Files를 `/app/media`에 마운트해 기존 로컬 미디어 구현을 그대로 재사용한다.
+- 필요한 GitHub Environment Secrets/Variables는 `deploy/azure/README.md`에 정리했다.
+- 워크플로를 실제 실행하면 유료 Azure 리소스가 만들어지므로 비용 승인 전에는 실행하지 않는다.
+- 이 PC에는 Azure CLI가 없고 Docker Desktop 엔진이 정지되어 있어 Bicep 실제 배포와 MySQL/Docker 런타임 검증은 GitHub Actions 또는 준비된 PC에서 확인해야 한다.
+
 > 데스크톱에서 작업하던 내용을 **노트북 등 다른 PC에서 그대로 이어받기 위한 문서**입니다.
 > 이 문서만 읽으면 지금까지의 맥락 없이도 이어서 작업할 수 있습니다.
 >

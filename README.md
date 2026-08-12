@@ -144,7 +144,7 @@ MetroTrip/
 ### 1. 저장소와 브랜치
 
 ```powershell
-git clone https://github.com/lellon0403/MetroTrip.git
+git clone https://github.com/HJisung/metrotrip-azure.git
 cd MetroTrip
 git switch develop
 git pull origin develop
@@ -156,7 +156,7 @@ git pull origin develop
 
 새 DB는 다음 순서로 적용합니다.
 
-1. `db/schema/mysql/schema_mysql_V1.11.sql`
+1. `db/schema/mysql/schema_mysql_V1.12.sql`
 2. `db/seed/seed_01_users.sql`
 3. `db/seed/seed_02_subway_lines.sql`
 4. `db/seed/seed_03_stations.sql`

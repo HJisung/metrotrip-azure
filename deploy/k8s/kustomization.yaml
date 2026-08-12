@@ -10,3 +10,12 @@ resources:
   - frontend-service.yaml
   - cluster-issuer.yaml
   - ingress.yaml
+
+# 배포 환경의 레지스트리와 불변 태그로 덮어쓴다.
+images:
+  - name: metrotrip-backend
+    newName: registry.example.com/metrotrip-backend
+    newTag: latest
+  - name: metrotrip-frontend
+    newName: registry.example.com/metrotrip-frontend
+    newTag: latest
