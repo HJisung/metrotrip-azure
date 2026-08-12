@@ -280,16 +280,20 @@ CREATE TABLE travel_plans (
 -- =====================================================================
 -- 15. travel_plan_items : 여행 계획 상세
 -- 근거 요구사항 : MB-008, MB-015
--- 동선 순서는 visit_time 오름차순. 조회 시 ORDER BY visit_time, plan_item_id
+-- 동선 순서는 position 오름차순. 조회 시 ORDER BY position, plan_item_id
 -- =====================================================================
 CREATE TABLE travel_plan_items (
   plan_item_id  BIGINT       NOT NULL AUTO_INCREMENT COMMENT '식별자',
   plan_id       BIGINT       NOT NULL                COMMENT 'travel_plans.plan_id',
-  place_id      BIGINT       NOT NULL                COMMENT 'places.place_id. MB-015 방문 장소',
+  item_type     VARCHAR(10)  NOT NULL DEFAULT 'PLACE' COMMENT 'STATION 또는 PLACE',
+  place_id      BIGINT       NULL                    COMMENT 'PLACE 항목의 places.place_id',
   station_id    BIGINT       NULL                    COMMENT 'stations.station_id. 장소 접근 역',
-  visit_time    TIME         NOT NULL                COMMENT '방문 시간. 동선 순서는 본 컬럼 오름차순으로 결정',
+  position      INT          NOT NULL DEFAULT 1      COMMENT '일정 내 표시 순서',
+  visit_time    TIME         NULL                    COMMENT '선택한 방문·도착 시간',
   memo          VARCHAR(255) NULL                    COMMENT '사용자 메모',
-  CONSTRAINT pk_travel_plan_items PRIMARY KEY (plan_item_id)
+  CONSTRAINT pk_travel_plan_items PRIMARY KEY (plan_item_id),
+  CONSTRAINT ck_tpi_item_type CHECK (item_type IN ('STATION', 'PLACE')),
+  CONSTRAINT ck_tpi_item_reference CHECK ((item_type = 'STATION' AND station_id IS NOT NULL AND place_id IS NULL) OR (item_type = 'PLACE' AND place_id IS NOT NULL))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='여행 계획 상세';
 
 
