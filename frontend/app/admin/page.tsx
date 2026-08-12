@@ -38,12 +38,19 @@ export default function AdminPage() {
     } catch (reason) { setError(reason instanceof Error ? reason.message : "관리자 데이터를 불러오지 못했습니다."); }
   }, [status, user?.role]);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    const task = window.setTimeout(() => void load(), 0);
+    return () => window.clearTimeout(task);
+  }, [load]);
 
   async function saveNotice(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); const form = event.currentTarget; const data = new FormData(form);
     const body = { title: String(data.get("title")), content: String(data.get("content")), noticeType: String(data.get("noticeType")) };
-    try { editingNotice ? await adminApi.updateNotice(editingNotice.noticeId, body) : await adminApi.createNotice(body); setEditingNotice(null); form.reset(); setFeedback(editingNotice ? "공지를 수정했습니다." : "공지를 추가했습니다."); await load(); } catch (reason) { setError(reason instanceof Error ? reason.message : "공지를 저장하지 못했습니다."); }
+    try {
+      if (editingNotice) await adminApi.updateNotice(editingNotice.noticeId, body);
+      else await adminApi.createNotice(body);
+      setEditingNotice(null); form.reset(); setFeedback(editingNotice ? "공지를 수정했습니다." : "공지를 추가했습니다."); await load();
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "공지를 저장하지 못했습니다."); }
   }
 
   async function remove(kind: "notice" | "review" | "post" | "place", id: number, label: string) {
@@ -57,7 +64,11 @@ export default function AdminPage() {
   async function savePlace(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); const form = event.currentTarget; const data = new FormData(form); const id = Number(data.get("placeId")); const body = placeBody(data);
     if (!body.stationIds.length) return setError("접근 가능한 역 ID를 하나 이상 입력해 주세요.");
-    try { id ? await adminApi.updatePlace(id, body) : await adminApi.createPlace(body); setFeedback(id ? "장소를 수정했습니다." : "장소를 추가했습니다."); form.reset(); } catch (reason) { setError(reason instanceof Error ? reason.message : "장소를 저장하지 못했습니다."); }
+    try {
+      if (id) await adminApi.updatePlace(id, body);
+      else await adminApi.createPlace(body);
+      setFeedback(id ? "장소를 수정했습니다." : "장소를 추가했습니다."); form.reset();
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "장소를 저장하지 못했습니다."); }
   }
 
   if (status === "loading") return <main className="centerState"><p>관리자 권한을 확인하는 중…</p></main>;

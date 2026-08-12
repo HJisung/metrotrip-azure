@@ -72,12 +72,6 @@ async function forward(path: string, request: Request, init: RequestInit = {}): 
   try { data = await response.clone().json(); } catch { data = null; }
   return { response, data };
 }
-function oldPassthrough(result: ForwardResult) {
-  if (result.response.ok) return json(result.data, result.response.status);
-  const detail = result.data?.detail;
-  const message = typeof detail === "string" ? detail : "백엔드 요청을 처리하지 못했습니다.";
-  return json(errorEnvelope(message, result.response.headers.get("X-Error-Code") ?? "LEGACY_API_ERROR"), result.response.status);
-}
 function backendError(result: ForwardResult) {
   const code = String(result.data?.code ?? result.data?.error?.code ?? result.response.headers.get("X-Error-Code") ?? `HTTP_${result.response.status}`);
   const message = String(result.data?.message ?? result.data?.error?.message ?? result.data?.detail ?? `백엔드 요청이 실패했습니다. (${code})`);

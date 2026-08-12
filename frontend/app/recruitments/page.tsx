@@ -69,7 +69,7 @@ export default function RecruitmentsPage() {
   }, [load]);
 
   useEffect(() => {
-    if (status !== "authenticated") { setPlans([]); return; }
+    if (status !== "authenticated") return;
     void api.GET("/api/v1/plans", { params: { query: { limit: 50 } } }).then(({ data }) => setPlans(data?.items ?? []));
   }, [status]);
 
