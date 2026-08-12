@@ -7,9 +7,7 @@ FROM node:24-alpine AS build
 WORKDIR /app
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
-ARG API_INTERNAL_BASE_URL=http://api:8000
 ARG NEXT_PUBLIC_KAKAO_JS_KEY
-ENV API_INTERNAL_BASE_URL=$API_INTERNAL_BASE_URL
 ENV NEXT_PUBLIC_KAKAO_JS_KEY=$NEXT_PUBLIC_KAKAO_JS_KEY
 RUN npm run build
 

@@ -1,14 +1,5 @@
 import type { NextConfig } from "next";
 
-function apiOrigin() {
-  const configured =
-    process.env.API_INTERNAL_BASE_URL ??
-    process.env.NEXT_PUBLIC_API_BASE_URL ??
-    process.env.VITE_API_BASE_URL ??
-    "http://localhost:8000";
-  return configured.replace(/\/api\/v1\/?$/, "").replace(/\/$/, "");
-}
-
 const nextConfig: NextConfig = {
   output: "standalone",
   allowedDevOrigins: ["127.0.0.1", "localhost"],
@@ -17,14 +8,6 @@ const nextConfig: NextConfig = {
       process.env.NEXT_PUBLIC_KAKAO_JS_KEY ??
       process.env.VITE_KAKAO_MAP_KEY ??
       "",
-  },
-  async rewrites() {
-    return [
-      {
-        source: "/api/v1/:path*",
-        destination: `${apiOrigin()}/api/v1/:path*`,
-      },
-    ];
   },
   async headers() {
     return [{

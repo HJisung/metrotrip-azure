@@ -131,9 +131,9 @@ images`다. 팀원이 준 참고 워크플로를 거의 그대로 따르고, 하
 | `test-frontend` | `frontend/`에서 `npm ci` → `npm run typecheck` → `npm run lint`. **`next build`는 안 돈다** — 실제 프로덕션 빌드 검증은 다음 `publish` 잡이 Docker 이미지를 만들면서 하므로(중복 빌드 회피로 보임) |
 | `publish` | `needs: [test-backend, test-frontend]`. Docker Hub 로그인 후 backend·frontend 이미지를 각각 빌드해 `<네임스페이스>/metrotrip-backend:main`/`:<커밋 SHA>`, `<네임스페이스>/metrotrip-frontend:main`/`:<커밋 SHA>`로 push |
 
-frontend 이미지 빌드 시 `API_INTERNAL_BASE_URL=http://api:8000`과 `NEXT_PUBLIC_KAKAO_JS_KEY`를
-build-arg로 넘긴다 — 후자는 Next.js가 빌드 시점에 클라이언트 번들에 박아 넣으므로 여기서 반드시
-필요하다 (4.2절).
+frontend 이미지 빌드 시 `NEXT_PUBLIC_KAKAO_JS_KEY`를 build-arg로 넘긴다. 이 값은 Next.js가
+빌드 시점에 클라이언트 번들에 박아 넣으므로 여기서 반드시 필요하다(4.2절).
+`API_INTERNAL_BASE_URL`은 배포 환경에서 런타임 환경변수로 주입한다.
 
 **아직 안 한 것:** 저장소 설정(6장)을 실제로 넣고 `main`에 한 번 push해서 Docker Hub에 이미지가
 실제로 올라가는지 확인하는 절차가 남아 있다. `docker/build-push-action`은 널리 쓰이는 표준
@@ -172,9 +172,9 @@ build-arg로 넘긴다 — 후자는 Next.js가 빌드 시점에 클라이언트
 2. **build** — 소스 복사 후 `npm run build`(`next build`). `NEXT_PUBLIC_KAKAO_JS_KEY`를 빌드
    인자(`ARG`)로 받는다 — Next.js는 `NEXT_PUBLIC_` 접두사가 붙은 값을 **빌드 시점에 클라이언트
    번들에 그대로 박아 넣고** 런타임에 다시 안 읽으므로, 컨테이너 `environment:`로 넘겨봐야
-   소용없다. `API_INTERNAL_BASE_URL`도 `ARG`로 받지만 이건 서버 전용 값이라 실제로는
-   **런타임에** 읽힌다(`next.config.ts`의 `rewrites()`가 서버 시작 시 평가) — 빌드 인자는
-   Dockerfile의 이름 통일용에 가깝다.
+   소용없다. `API_INTERNAL_BASE_URL`은 build argument가 아니라 런타임 환경변수로 받으며,
+   `app/api/v1/[...path]/route.ts`가 요청마다 읽어서 백엔드로 프록시한다. 따라서 동일 이미지가
+   Docker Compose의 `http://api:8000`과 Azure Container Apps의 내부 FQDN을 모두 사용할 수 있다.
 3. **runtime** — `package.json`/`node_modules`/`.next`만 복사해 `npm run start`(`next start
    --port 5173`)로 기동. 정적 파일이 아니라 Node 서버가 계속 떠 있어야 하는 구조라 nginx가
    필요 없다.

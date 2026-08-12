@@ -2,6 +2,10 @@
 
 ## 2026-08-13 Azure 배포 준비
 
+- Azure 첫 실제 배포에서 frontend의 `/api/v1/health/db`가 이미지 빌드 시 `http://api:8000`으로
+  고정된 Next.js rewrite 때문에 `getaddrinfo ENOTFOUND api`로 실패했다. build-time rewrite를 제거하고
+  `frontend/app/api/v1/[...path]/route.ts` 런타임 프록시로 교체했으며, standalone 컨테이너에서
+  frontend → FastAPI → MySQL 경로가 HTTP 200인지 검증했다.
 - Azure 실습 배포 기준은 `deploy/azure/`와 `.github/workflows/cd-main.yml`이다.
 - `main` push 시 백엔드 144개 테스트·ruff, 프론트 lint/typecheck/build, MySQL V1.12 스키마·시드 검증을 통과해야 배포한다.
 - 배포는 Resource Group → ACR Basic/Container Apps 환경/MySQL B1ms/Azure Files → 이미지 3종 → 앱 2종/DB 초기화 Job 순서로 자동화했다.
