@@ -4,6 +4,7 @@ import Link from "next/link";
 import { mapLegacyNotice, mapLegacyPlace, mapLegacyRecruitment } from "@/lib/legacyMappers";
 
 type HomeResponse = components["schemas"]["HomeResponse"];
+type HomeData = HomeResponse & { recommendationStationId?: string };
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,7 @@ function apiBase() {
   return configured.replace(/\/api\/v1\/?$/, "").replace(/\/$/, "");
 }
 
-async function loadHome(): Promise<HomeResponse | null> {
+async function loadHome(): Promise<HomeData | null> {
   try {
     const [noticeResponse, recruitmentResponse, stationResponse] = await Promise.all([
       fetch(new URL("/api/v1/notices?size=10", apiBase()), { cache: "no-store" }),
@@ -34,6 +35,7 @@ async function loadHome(): Promise<HomeResponse | null> {
     const recruitments = (recruitmentData.items ?? []).map((item: Record<string, unknown>) => mapLegacyRecruitment(item));
     const allNotices = (noticeData.items ?? []).map((item: Record<string, unknown>) => mapLegacyNotice(item));
     return {
+      recommendationStationId: station?.stationId == null ? undefined : String(station.stationId),
       recommendedPlaces: places.slice(0, 6),
       popularPlaces: places.slice(0, 6),
       latestRecruitments: recruitments,
@@ -55,6 +57,11 @@ export default async function HomePage() {
   const popularRecruitments = home?.popularRecruitments ?? [];
   const events = home?.activeEvents ?? [];
   const notices = home?.notices ?? [];
+  const placeHref = (placeId: string, category: string) => {
+    const params = new URLSearchParams({ place: placeId, category });
+    if (home?.recommendationStationId) params.set("station", home.recommendationStationId);
+    return `/discover?${params.toString()}`;
+  };
 
   return (
     <main className="homePage">
@@ -91,7 +98,7 @@ export default async function HomePage() {
         {places.length ? (
           <div className="homePlaceGrid">
             {places.slice(0, 6).map((place) => (
-              <Link key={place.id} href={`/discover?place=${place.id}`} className="homePlaceCard">
+              <Link key={place.id} href={placeHref(place.id, place.category)} className="homePlaceCard">
                 <span className={`homePlaceVisual ${place.category.toLowerCase()}`}>
                   <b>{place.category === "FOOD" ? "맛집" : place.category === "CAFE" ? "카페" : "장소"}</b>
                 </span>
@@ -110,7 +117,7 @@ export default async function HomePage() {
           </header>
           <div className="popularPlaceRail">
             {popularPlaces.slice(0, 6).map((place, index) => (
-              <Link key={place.id} href={`/discover?place=${place.id}`} className="popularPlaceItem">
+              <Link key={place.id} href={placeHref(place.id, place.category)} className="popularPlaceItem">
                 <b>{String(index + 1).padStart(2, "0")}</b>
                 <span><strong>{place.name}</strong><small>저장 {place.favoriteCount} · {place.address}</small></span>
               </Link>
