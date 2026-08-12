@@ -61,7 +61,11 @@ export default async function HomePage() {
       <section className="homeHero contentShell">
         <div className="homeHeroCopy">
           <p className="eyebrow">CHEONAN · ASAN METRO JOURNEY</p>
-          <h1>역에서 시작하는<br /><em>나만의 하루.</em></h1>
+          <h1>
+            역에서<br />
+            시작하는<br />
+            <em>나만의 하루.</em>
+          </h1>
           <p className="lead">
             맛집과 카페를 발견하고, 지도 위에서 순서를 정해 여행을 완성해 보세요.
           </p>
