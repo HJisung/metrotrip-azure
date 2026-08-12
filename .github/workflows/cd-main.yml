@@ -105,8 +105,18 @@ jobs:
           az bicep build --file deploy/azure/foundation.bicep
           az bicep build --file deploy/azure/apps.bicep
 
-      - name: Create resource group
-        run: az group create --name "$RESOURCE_GROUP" --location "$LOCATION" --tags project=metrotrip environment=production managed-by=github-actions
+      - name: Ensure resource group
+        run: |
+          if [ "$(az group exists --name "$RESOURCE_GROUP")" = "true" ]; then
+            az group update \
+              --name "$RESOURCE_GROUP" \
+              --set tags.project=metrotrip tags.environment=production tags.managedBy=github-actions
+          else
+            az group create \
+              --name "$RESOURCE_GROUP" \
+              --location "$LOCATION" \
+              --tags project=metrotrip environment=production managedBy=github-actions
+          fi
 
       - name: Deploy shared infrastructure
         env:
