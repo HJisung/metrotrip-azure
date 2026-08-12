@@ -12,7 +12,7 @@ run_sql() {
     < "$1"
 }
 
-run_sql /opt/metrotrip/schema/schema_mysql_V1.11.sql
+run_sql /opt/metrotrip/schema/schema_mysql_V1.12.sql
 
 for seed_file in /opt/metrotrip/seed/seed_*.sql; do
   run_sql "$seed_file"

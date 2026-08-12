@@ -1,0 +1,32 @@
+name: Database CI
+
+on:
+  push:
+    branches: ["develop"]
+    paths: ["db/**", "infra/**", ".github/workflows/ci-database.yml"]
+  pull_request:
+    branches: ["main", "develop"]
+    paths: ["db/**", "infra/**", ".github/workflows/ci-database.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mysql-schema:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - run: cp infra/.env.example infra/.env
+      - run: docker compose --env-file infra/.env -f infra/compose.yaml up -d --wait db
+      - name: Validate baseline
+        run: |
+          table_count="$(docker exec metrotrip-db mysql -uroot -pmetrotrip-root --batch --skip-column-names --execute="SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='metrotrip'")"
+          station_count="$(docker exec metrotrip-db mysql -uroot -pmetrotrip-root --batch --skip-column-names --database=metrotrip --execute="SELECT COUNT(*) FROM stations")"
+          timetable_count="$(docker exec metrotrip-db mysql -uroot -pmetrotrip-root --batch --skip-column-names --database=metrotrip --execute="SELECT COUNT(*) FROM train_timetables")"
+          test "$table_count" -eq 23
+          test "$station_count" -eq 100
+          test "$timetable_count" -eq 1690
+      - if: failure()
+        run: docker compose --env-file infra/.env -f infra/compose.yaml logs db

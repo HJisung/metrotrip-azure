@@ -247,3 +247,12 @@
 - 노선 범위: 1호선 천안·아산 구간 우선 (탕정, 아산, 배방, 온양온천, 천안). 전체 노선은 최종 목표
 - 발표 10분 = 아이디어 3분 + 프론트 시연 2분 + 백엔드 5분
 - 프론트 담당 분할은 보류 (Claude Code로 개발하므로 현재 불필요)
+# 2026-08-13 Azure 자동 배포 준비
+
+- Docker/도메인/LAN IP 하드코딩을 환경값 또는 배포용 placeholder로 교체했다.
+- 로컬 DB 초기화 기준을 V1.11에서 V1.12로 수정했다.
+- Azure Bicep을 추가해 ACR, Container Apps, MySQL Flexible Server, Azure Files, Log Analytics와 DB 초기화 Job을 정의했다.
+- `main` push 자동 배포를 Azure OIDC 기반으로 전환하고 백엔드·프론트·DB 검증, 이미지 빌드·푸시, 앱 배포, DB 초기화, health 확인까지 연결했다.
+- 백엔드는 Azure MySQL 시스템 신뢰 저장소 TLS 연결 옵션과 프록시 헤더 처리를 추가했다.
+- 로컬 검증: 백엔드 pytest 144개 및 ruff 통과, 프론트 lint·typecheck·production build 통과.
+- 미검증: 이 PC에 Azure CLI가 없고 Docker 엔진이 정지되어 Bicep 실제 배포와 MySQL 컨테이너 검증은 아직 필요하다.

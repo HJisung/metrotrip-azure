@@ -1,4 +1,4 @@
-# metrotrip.kro.kr HTTPS 요청을 Traefik을 통해 프론트엔드로 전달한다.
+# 실제 배포 도메인의 HTTPS 요청을 Traefik을 통해 프론트엔드로 전달한다.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -10,10 +10,10 @@ spec:
   ingressClassName: traefik
   tls:
     - hosts:
-        - metrotrip.kro.kr
+        - metrotrip.example.com
       secretName: metrotrip-tls
   rules:
-    - host: metrotrip.kro.kr
+    - host: metrotrip.example.com
       http:
         paths:
           - path: /
