@@ -2,6 +2,11 @@
 
 ## 2026-08-13 Azure 배포 준비
 
+- 후기 이미지 업로드·조회 URL은 프론트 동일 출처의 `/api/v1/review-media/...`와
+  `/api/v1/media/...`로 정규화하고 기존 API 프록시를 통해 내부 `metrotrip-api`로 전달하므로
+  내부 Container Apps 주소가 브라우저에 노출되지 않는다.
+- 이미지 업로드 중 네트워크 예외가 발생해도 후기 작성 버튼의 처리 중 상태를 해제하고
+  재시도 안내를 표시한다.
 - Azure Container Apps 환경의 기존 Managed Certificate
   `metrip.kro.kr-metrotri-260812232706`을 `apps.bicep`에서 existing으로 참조하고 frontend ingress의
   `metrip.kro.kr` custom domain에 SNI 바인딩했다. 이후 Bicep 재배포에도 Portal 수동 바인딩이
@@ -22,7 +27,7 @@
 - Azure Files를 `/app/media`에 마운트해 기존 로컬 미디어 구현을 그대로 재사용한다.
 - 필요한 GitHub Environment Secrets/Variables는 `deploy/azure/README.md`에 정리했다.
 - 워크플로를 실제 실행하면 유료 Azure 리소스가 만들어지므로 비용 승인 전에는 실행하지 않는다.
-- 이 PC에는 Azure CLI가 없고 Docker Desktop 엔진이 정지되어 있어 Bicep 실제 배포와 MySQL/Docker 런타임 검증은 GitHub Actions 또는 준비된 PC에서 확인해야 한다.
+- 이 PC에는 Azure CLI 2.89.1이 설치되어 있다. Docker Desktop 엔진은 실행 상태를 확인한 뒤 로컬 컨테이너 검증에 사용한다.
 
 > 데스크톱에서 작업하던 내용을 **노트북 등 다른 PC에서 그대로 이어받기 위한 문서**입니다.
 > 이 문서만 읽으면 지금까지의 맥락 없이도 이어서 작업할 수 있습니다.

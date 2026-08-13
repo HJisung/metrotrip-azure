@@ -22,6 +22,9 @@ export function normalizeMediaUrl(value: unknown) {
   if (!raw) return raw;
   try {
     const url = new URL(raw);
+    if (url.pathname.startsWith("/api/v1/review-media/") || url.pathname.startsWith("/api/v1/media/")) {
+      return `${url.pathname}${url.search}${url.hash}`;
+    }
     if (!/^localhost$|^127(?:\.\d{1,3}){3}$/.test(url.hostname)) return raw;
     const configured = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
     const configuredUrl = new URL(configured.replace(/\/api\/v1\/?$/, ""));
